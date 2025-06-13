@@ -15,4 +15,8 @@ public enum LocationType {
     public String getDescription() {
         return description;
     }
+
+    public boolean isStorageType() {
+        return this == YARD || this == WAREHOUSE;
+    }
 } 

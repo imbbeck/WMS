@@ -7,14 +7,19 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.util.Assert;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "move_order")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class MoveOrder {
 
     @Id
@@ -51,6 +56,17 @@ public class MoveOrder {
     @Column(name = "quantity", nullable = false)
     private Long quantity;
 
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "executed_at")
+    private LocalDateTime executedAt;
+
     public MoveOrder(String name, MoveOrderType type, Location fromLocation, Location toLocation, LocalDate scheduledDate, Ware ware, Long quantity) {
         validate(name, type, fromLocation, toLocation, scheduledDate, ware, quantity);
 
@@ -66,6 +82,7 @@ public class MoveOrder {
 
     public void complete() {
         this.status = MoveOrderStatus.COMPLETED;
+        this.executedAt = LocalDateTime.now();
     }
 
     public void cancel() {
@@ -85,23 +102,6 @@ public class MoveOrder {
         Assert.notNull(ware, "상품은 필수입니다.");
         Assert.notNull(quantity, "수량은 필수입니다.");
         Assert.isTrue(quantity > 0, "수량은 0보다 커야합니다.");
-
-        switch (type) {
-            case INBOUND:
-                Assert.isTrue(fromLocation.getType() == LocationType.INBOUND, "입고 오더의 출발지는 입고처여야 합니다.");
-                Assert.isTrue(toLocation.getType() == LocationType.YARD, "입고 오더의 도착지는 야적장이어야 합니다.");
-                break;
-            case OUTBOUND:
-                Assert.isTrue(fromLocation.getType() == LocationType.YARD, "출고 오더의 출발지는 야적장여야 합니다.");
-                Assert.isTrue(toLocation.getType() == LocationType.OUTBOUND, "출고 오더의 도착지는 출고처여야 합니다.");
-                break;
-            case TRANSFER:
-                Assert.isTrue(
-                        (fromLocation.getType() == LocationType.YARD || fromLocation.getType() == LocationType.WAREHOUSE) &&
-                        (toLocation.getType() == LocationType.YARD || toLocation.getType() == LocationType.WAREHOUSE),
-                        "내부이동 오더는 야적장/창고 간에만 가능합니다."
-                );
-                break;
-        }
+        Assert.isTrue(!fromLocation.equals(toLocation), "출발지와 도착지는 같을 수 없습니다.");
     }
 } 
