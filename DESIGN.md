@@ -6,13 +6,14 @@
 
 ## 목표
 
--   입고, 출고, 내부이동 오더를 통해 물류 이동을 관리, 물류이동 계획 생성 시 정합성을 엄격히 검증하여 시스템 전체의 재고 일관성을 보장.
--   캐싱을 활용한 성능 개선
+-   입고, 출고, 내부 이동를 통해 물류이동을 관리, 물류이동 계획 생성 시 정합성을 엄격히 검증하여 시스템 전체의 재고 일관성을 보장.
+-   재고 등 캐싱을 활용한 성능 개선
 -   배치로 매일자정 전체 완료 실행된 작업 결과와 재고 상황 일치 여부 검사
 -   별도의 배치 서버에서 작업자별 쓰레드에서 스케줄에 맞춰 메인 서버의 api를 호출하는 방식으로 통합테스트
 
 ### 향후 확장 가능 항목
 
+-   물류이동 장애(CANCEL, FAILED, DELAYED 상황) 발생시 대처 시나리오.
 -   로깅 및 장애 알림 mq 적용
 -   최선의 물류이동 루트를 제시하는 시스템
 
@@ -20,8 +21,11 @@
 
 ### 필요 페이지
 
--   전체 물류이동 상황 대시보드
+-   로그인 페이지
+-   유저관리 페이지
 -   물류이동계획 crud 페이지
+-   물류이동 crud 페이지
+-   전체 물류이동 상황 대시보드
 -   작업자별 물류이동계획 대시보드 - 배정받은 물류이동계획 조회 및 물류이동 시작/완료 처리 페이지
 
 ---
@@ -80,18 +84,19 @@
 -   **비즈니스 규칙**:
     -   재고는 음수가 될 수 없음
     -   재고 CUD 정책: 물류이동을 통해서만 생성, 수정, 삭제됨
-        -   재고변화 트리거: 물류이동 생성 후 이벤트 발행 → 재고가 해당 이벤트 구독 처리
+        -   재고변화: 물류이동 상태변화 시 이벤트 발행 → 재고 쪽에서 해당 이벤트 구독 처리
+        -   재고상황 캐싱(inventoryStaus:{locationId}:{wareId} quantity, wareHouseStatus:{locationId} sum of quantity)
         -   비동기로 재고변화 처리되야 함.
 
 ### 4. 물류이동 (Movement)
 
 -   `id`: PK
 -   `name`: 문자열
--   `type`: [INBOUND, OUTBOUND, TRANSFER] (이넘)
+-   `type`: [INBOUND, OUTBOUND, INNER] (이넘)
 -   `from_location_id`: FK
 -   `to_location_id`: FK
 -   `scheduled_date`: 실행 예정일
--   `status`: [PENDING, STARTED, COMPLETED, CANCELLED, FAILED] (이넘)
+-   `status`: [PENDING, STARTED, COMPLETED, DELAYED, CANCELLED, FAILED] (이넘)
 -   `ware_id`: FK
 -   `quantity`: 정수
 
@@ -183,7 +188,8 @@
 2. **시간 순으로 재고 변화 예상**
     - 시간 흐름에 따라 작업 실행 시뮬레이션
 3. **예상 시점별 재고/카파 상태 캐싱**
-    - in-memory map: `Map<TimeSlot, Map<LocationId, StockState>>`
+    - sim_inventoryStatus:{locationId}:{wareId} quantity, sim_wareHouseStatus:{locationId} sum of quantity
+    - 시뮬 시작시 inventoryStatus, wareHouseStatus 를 복사, 종료시 캐시 삭제 
 4. **각 작업 실행 가능 여부 확인**
     - 선행 작업 완료 여부
     - 출발지 재고 부족 여부

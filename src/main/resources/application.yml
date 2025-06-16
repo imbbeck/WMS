@@ -1,26 +1,39 @@
 spring:
   application:
-    name: WMS
+    name: wms
   datasource:
-    url: jdbc:mysql://localhost:3306/wms?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://localhost:3306/wms?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
-    password:
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
+    show-sql: true
     properties:
       hibernate:
-        show_sql: true
         format_sql: true
-        use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10분
+      cache-null-values: false
   data:
     redis:
       host: localhost
       port: 6379
+      database: 0
 
+# 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# 로깅 설정
 logging:
   level:
-    org.hibernate.SQL: debug
-#    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    root: INFO
+    com.wms: DEBUG
+    org.hibernate.SQL: DEBUG
