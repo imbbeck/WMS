@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.wms.location.domain.model.LocationConnection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,5 +28,9 @@ public interface LocationConnectionRepository extends JpaRepository<LocationConn
 	// 특정 Location들 중 하나라도 포함된 모든 연결
 	@Query("SELECT lc FROM LocationConnection lc WHERE lc.locationAId IN :locationIds OR lc.locationBId IN :locationIds")
 	List<LocationConnection> findAllByLocationIds(@Param("locationIds") List<Long> locationIds);
+
+	@Modifying
+	@Query("DELETE FROM LocationConnection lc WHERE lc.locationAId = :locationId OR lc.locationBId = :locationId")
+	void deleteByLocationId(@Param("locationId") Long locationId);
 }
 

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class LocationConnectionController {
 
 	private final LocationConnectionService connectionService;
-	private final LocationCacheManager locationCache;
 
 	// 연결 생성
 	@PostMapping
@@ -26,26 +25,16 @@ public class LocationConnectionController {
 	public LocationConnectionDTO.Res createConnection(@Valid @RequestBody LocationConnectionDTO.CreateReq request) {
 		LocationConnection connection = connectionService.createConnection(request);
 		return LocationConnectionDTO.Res.builder()
-				.connection(connection)
-				.locationCache(locationCache)
+				.locationAId(connection.getLocationAId())
+				.locationBId(connection.getLocationBId())
 				.build();
 	}
 
-	// 연결 상세 조회
-	@GetMapping("/{connectionId}")
-	public LocationConnectionDTO.Res getConnection(@PathVariable Long connectionId) {
-		LocationConnection connection = connectionService.getConnection(connectionId);
-		return LocationConnectionDTO.Res.builder()
-				.connection(connection)
-				.locationCache(locationCache)
-				.build();
-	}
-
-	// 모든 연결 조회 (간단 정보)
+	// 모든 연결 조회(개별 연결 조회는 필요없음. 연결조회는 비지니스로직상 장소와 같이 조회되므로)
 	@GetMapping
-	public List<LocationConnectionDTO.SimpleRes> getAllConnections() {
+	public List<LocationConnectionDTO.Res> getAllConnections() {
 		return connectionService.getAllConnections().stream()
-				.map(LocationConnectionDTO.SimpleRes::new)
+				.map(LocationConnectionDTO.Res::from)
 				.collect(Collectors.toList());
 	}
 
@@ -57,12 +46,10 @@ public class LocationConnectionController {
 		return connections.stream()
 				.map(conn -> {
 					Long connectedLocationId = conn.getOtherLocationId(locationId);
-					String connectedLocationName = locationCache.getName(connectedLocationId);
 
 					return LocationConnectionDTO.ConnectionInfo.builder()
 							.connectionId(conn.getId())
 							.connectedLocationId(connectedLocationId)
-							.connectedLocationName(connectedLocationName)
 							.trt(conn.getTrt())
 							.build();
 				})
@@ -76,8 +63,8 @@ public class LocationConnectionController {
 			@Valid @RequestBody LocationConnectionDTO.UpdateReq request) {
 		LocationConnection connection = connectionService.updateConnection(connectionId, request);
 		return LocationConnectionDTO.Res.builder()
-				.connection(connection)
-				.locationCache(locationCache)
+				.locationAId(connection.getLocationAId())
+				.locationBId(connection.getLocationBId())
 				.build();
 	}
 
@@ -86,39 +73,6 @@ public class LocationConnectionController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteConnection(@PathVariable Long connectionId) {
 		connectionService.deleteConnection(connectionId);
-	}
-
-	// 두 Location 간 연결 조회
-	@GetMapping("/between")
-	public LocationConnectionDTO.Res getConnectionBetweenLocations(
-			@RequestParam Long locationId1,
-			@RequestParam Long locationId2) {
-		LocationConnection connection = connectionService.getConnectionByLocations(locationId1, locationId2);
-		return LocationConnectionDTO.Res.builder()
-				.connection(connection)
-				.locationCache(locationCache)
-				.build();
-	}
-
-	// 특정 Location의 연결 개수 조회
-	@GetMapping("/count/{locationId}")
-	public Long getConnectionCount(@PathVariable Long locationId) {
-		return connectionService.getConnectionCount(locationId);
-	}
-
-	// 🚨 연결 존재 여부 확인
-	@GetMapping("/exists")
-	public Boolean isConnected(@RequestParam Long locationId1, @RequestParam Long locationId2) {
-		return connectionService.isConnected(locationId1, locationId2);
-	}
-
-	// 여러 Location과 관련된 연결들 조회
-	@GetMapping("/by-locations")
-	public List<LocationConnectionDTO.SimpleRes> getConnectionsByLocationIds(
-			@RequestParam List<Long> locationIds) {
-		return connectionService.getConnectionsByLocationIds(locationIds).stream()
-				.map(LocationConnectionDTO.SimpleRes::new)
-				.collect(Collectors.toList());
 	}
 
 }

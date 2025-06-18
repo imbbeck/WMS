@@ -50,11 +50,13 @@ public class LocationConnectionDTO {
 		@Positive(message = "이동 시간은 0보다 커야 합니다")
 		private Integer trt;
 
+		// 테스트와 사용 편의를 위해 추가
 		@Builder
 		public UpdateReq(Integer trt) {
 			this.trt = trt;
 		}
 	}
+
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -62,41 +64,24 @@ public class LocationConnectionDTO {
 
 		private Long id;
 		private Long locationAId;
-		private String locationAName;
 		private Long locationBId;
-		private String locationBName;
 		private Integer trt;
-		private LocalDateTime createdAt;
-		private LocalDateTime updatedAt;
 
-		// Location 이름 정보 포함 생성자
-		@Builder
-		public Res(LocationConnection connection, LocationCacheManager locationCache) {
-			this.id = connection.getId();
-			this.locationAId = connection.getLocationAId();
-			this.locationAName = locationCache.getName(this.locationAId);
-			this.locationBId = connection.getLocationBId();
-			this.locationBName = locationCache.getName(this.locationBId);
-			this.trt = connection.getTrt();
-			this.createdAt = connection.getCreatedAt();
-			this.updatedAt = connection.getUpdatedAt();
+		public static Res from(LocationConnection connection) {
+			return Res.builder()
+					.id(connection.getId())
+					.locationAId(connection.getLocationAId())
+					.locationBId(connection.getLocationBId())
+					.trt(connection.getTrt())
+					.build();
 		}
-	}
 
-	@Getter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class SimpleRes {
-
-		private Long id;
-		private Long locationAId;
-		private Long locationBId;
-		private Integer trt;
-
-		public SimpleRes(LocationConnection connection) {
-			this.id = connection.getId();
-			this.locationAId = connection.getLocationAId();
-			this.locationBId = connection.getLocationBId();
-			this.trt = connection.getTrt();
+		@Builder
+		public Res(Long id, Long locationAId, Long locationBId, Integer trt) {
+			this.id = id;
+			this.locationAId = locationAId;
+			this.locationBId = locationBId;
+			this.trt = trt;
 		}
 	}
 
@@ -107,14 +92,12 @@ public class LocationConnectionDTO {
 
 		private Long connectionId;
 		private Long connectedLocationId;
-		private String connectedLocationName;
 		private Integer trt;
 
 		@Builder
-		public ConnectionInfo(Long connectionId, Long connectedLocationId, String connectedLocationName, Integer trt) {
+		public ConnectionInfo(Long connectionId, Long connectedLocationId, Integer trt) {
 			this.connectionId = connectionId;
 			this.connectedLocationId = connectedLocationId;
-			this.connectedLocationName = connectedLocationName;
 			this.trt = trt;
 		}
 	}

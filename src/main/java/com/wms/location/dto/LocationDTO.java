@@ -1,10 +1,6 @@
 package com.wms.location.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.wms.location.domain.model.Location;
-import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +23,7 @@ public class LocationDTO {
 
 		private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
+		// 테스트 편의성을 위한 빌더 패턴 생성자
 		@Builder
 		public createReq(String name, LocationType type, Integer capacity) {
 			this.name = name;
@@ -62,13 +59,6 @@ public class LocationDTO {
 			this.capacity = capacity;
 		}
 
-		public Location toEntity() {
-			return Location.builder()
-					.name(name)
-					.type(type)
-					.capacity(capacity)
-					.build();
-		}
 	}
 
 	// 연결 정보 없는 간단한 응답용
@@ -88,36 +78,4 @@ public class LocationDTO {
 			this.capacity = location.getCapacity();
 		}
 	}
-
-	@Getter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class ResFetch {
-
-		private Long id;
-		private String name;
-		private LocationType type;
-		private Integer capacity;
-		private LocalDateTime updatedAt;
-		private LocalDateTime createdAt;
-
-		// 연결 정보 추가
-		private List<LocationConnection> connections;
-
-		public ResFetch(Location location) {
-			this.id = location.getId();
-			this.name = location.getName();
-			this.type = location.getType();
-			this.capacity = location.getCapacity();
-			this.createdAt = location.getCreatedAt();
-			this.updatedAt = location.getUpdatedAt();
-
-			// 연결 정보 포함 (연결 정보가 로드된 경우에만)
-			this.connections = location.getAllConnections();
-		}
-	}
-
-
-
-
-
 }

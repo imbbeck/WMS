@@ -7,6 +7,7 @@ import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.dto.LocationDTO;
+import com.wms.location.dto.LocationWithConnectionsDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -51,16 +52,8 @@ public class LocationController {
 
 	@GetMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.OK)
-	public LocationDTO.ResFetch getLocation(@PathVariable Long id) {
-		return new LocationDTO.ResFetch(locationService.getLocationWithConnections(id));
-	}
-
-	// 연결 정보만 따로 조회
-	@GetMapping("/{id}/connections")
-	@ResponseStatus(value = HttpStatus.OK)
-	public List<LocationConnection> getConnections(@PathVariable Long id) {
-		Location location = locationService.getLocationWithConnections(id);
-		return location.getAllConnections();
+	public LocationWithConnectionsDTO getLocation(@PathVariable Long id) {
+		return locationService.getLocationWithConnections(id);
 	}
 
 	@PutMapping("/{id}")

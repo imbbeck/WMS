@@ -1,13 +1,15 @@
 package com.wms.location.application;
 
+import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.model.Location;
-import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.domain.exception.LocationException.*;
 import com.wms.location.domain.repository.LocationCacheManager;
 import com.wms.location.domain.repository.LocationRepository;
 import com.wms.location.dto.LocationDTO;
+import com.wms.location.dto.LocationWithConnectionsDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +22,7 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
     private final LocationCacheManager locationCache;
-
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Location createLocation(LocationDTO.createReq request) {
@@ -28,11 +30,9 @@ public class LocationService {
             throw new IllegalArgumentException("이미 존재하는 장소 이름입니다.");
         }
 
-        Location location = Location.builder()
-                .name(request.getName())
-                .type(request.getType())
-                .capacity(request.getCapacity())
-                .build();
+        //  엔티티 생성 책임을 DTO에 위임
+        Location location = request.toEntity();
+
 
         Location saved = locationRepository.save(location);
 
@@ -42,16 +42,10 @@ public class LocationService {
         return saved;
     }
 
-    // Location 조회시 연결 그래프 정보도 함께
-    public Location getLocationWithConnections(Long id) {
-        return locationRepository.findByIdWithAllConnections(id)
+    // Location 조회시 연결 그래프 정보도 함께.
+    public LocationWithConnectionsDTO getLocationWithConnections(Long id) {
+        return locationRepository.findLocationWithConnections(id)
                 .orElseThrow(() -> new NotFoundException(id));
-    }
-
-    // 연결 그래프 정보 조회
-    public List<LocationConnection> getConnectionInfo(Long locationId) {
-        Location location = getLocationWithConnections(locationId);
-        return location.getAllConnections();
     }
 
     // 단순 조회: 그래프 불필요
@@ -86,5 +80,8 @@ public class LocationService {
         locationRepository.delete(location);
         // Walk-through: 즉시 캐시에서 제거
         locationCache.removeFromCache(id);
+
+        // 이벤트 발행
+        eventPublisher.publishEvent(new LocationDeletedEvent(id));
     }
 } 

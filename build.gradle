@@ -1,3 +1,4 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
@@ -22,6 +23,7 @@ ext {
     mapstructVersion = '1.5.5.Final'
     lombokVersion = '1.18.30'
     lombokMapstructBindingVersion = '0.2.0'
+    querydslVersion = '5.0.0'
 }
 
 dependencies {
@@ -40,12 +42,20 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
+    //QueryDSL
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
     // MapStruct
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
 
     // Test
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -55,8 +65,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+sourceSets {
+    main.java.srcDirs += 'build/generated/sources/annotationProcessor/java/main'
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += [
-        '-Amapstruct.defaultComponentModel=spring'
+            '-Amapstruct.defaultComponentModel=spring'
     ]
 }
