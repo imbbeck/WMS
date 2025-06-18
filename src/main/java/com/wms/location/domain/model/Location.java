@@ -1,15 +1,25 @@
 package com.wms.location.domain.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.wms.common.domain.BaseEntity;
+import com.wms.location.domain.exception.LocationException.*;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "location")
@@ -27,6 +37,15 @@ public class Location extends BaseEntity {
     @Column
     private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
+    // 🎯 해당 Location과 연결된 모든 Connection들 (A 또는 B로 참여하는 것들)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_a_id")
+    private List<LocationConnection> connectionsAsA = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_b_id")
+    private List<LocationConnection> connectionsAsB = new ArrayList<>();
+
     @Builder
     public Location(String name, LocationType type, Integer capacity) {
         validateLocationData(name, type, capacity);
@@ -35,7 +54,21 @@ public class Location extends BaseEntity {
         this.capacity = capacity;
     }
 
-    // 검증 로직을 별도 메서드로 분리
+    // 모든 연결 조회
+    public List<LocationConnection> getAllConnections() {
+        List<LocationConnection> allConnections = new ArrayList<>();
+        allConnections.addAll(connectionsAsA);
+        allConnections.addAll(connectionsAsB);
+        return allConnections;
+    }
+
+    public void update(String name, LocationType type, Integer capacity) {
+        validateLocationData(name, type, capacity);
+        this.name = name;
+        this.type = type;
+        this.capacity = capacity;
+    }
+
     private static void validateLocationData(String name, LocationType type, Integer capacity) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("위치 이름은 필수입니다.");
@@ -56,26 +89,4 @@ public class Location extends BaseEntity {
         }
     }
 
-    public boolean isWarehouse() {
-        return this.type == LocationType.WAREHOUSE;
-    }
-
-    public boolean isInbound() {
-        return this.type == LocationType.INBOUND;
-    }
-
-    public boolean isOutbound() {
-        return this.type == LocationType.OUTBOUND;
-    }
-
-    public void validateCapacity(int quantity) {
-        if (isWarehouse() && capacity != null && quantity > capacity) {
-            throw new IllegalArgumentException("창고 용량을 초과할 수 없습니다.");
-        }
-    }
-
-    public void update(String name, LocationType type) {
-        this.name = name;
-        this.type = type;
-    }
 } 

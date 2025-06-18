@@ -20,9 +20,9 @@ public class LocationException extends BusinessException {
     }
 
     public static class CapacityExceededException extends LocationException {
-        public CapacityExceededException(Long locationId, int requested, int capacity) {
-            super(String.format("위치 용량 초과: 위치(%d) 요청수량(%d) 최대용량(%d)", 
-                locationId, requested, capacity));
+        public CapacityExceededException(String name, int requested, int capacity) {
+            super(String.format("위치 용량 초과: 위치(%s) 요청수량(%d) 최대용량(%d)",
+                    name, requested, capacity));
         }
     }
 } 

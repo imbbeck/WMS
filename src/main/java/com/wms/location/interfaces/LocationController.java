@@ -1,102 +1,81 @@
 package com.wms.location.interfaces;
 
+import java.util.List;
+
 import com.wms.location.application.LocationService;
-import com.wms.location.application.TransferDurationService;
+import com.wms.location.domain.model.Location;
+import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
-import com.wms.location.dto.*;
-import com.wms.location.mapper.LocationMapper;
-import com.wms.location.mapper.TransferDurationMapper;
+import com.wms.location.dto.LocationDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/locations")
 @RequiredArgsConstructor
 public class LocationController {
 
-    private final LocationService locationService;
-    private final TransferDurationService transferDurationService;
-    private final LocationMapper locationMapper;
-    private final TransferDurationMapper transferDurationMapper;
+	private final LocationService locationService;
 
-    @PostMapping
-    public ResponseEntity<LocationResponse> createLocation(@Valid @RequestBody LocationRequest request) {
-        return ResponseEntity.ok(locationMapper.toResponse(locationService.createLocation(request)));
-    }
+	@PostMapping
+	@ResponseStatus(value = HttpStatus.CREATED)
+	public LocationDTO.Res createLocation(@Valid @RequestBody LocationDTO.createReq request) {
+		return new LocationDTO.Res(locationService.createLocation(request));
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<LocationResponse> getLocation(@PathVariable Long id) {
-        return ResponseEntity.ok(locationMapper.toResponse(locationService.getLocation(id)));
-    }
+	@GetMapping
+	@ResponseStatus(value = HttpStatus.OK)
+	public List<LocationDTO.Res> getLocations() {
+		return locationService.getLocations().stream()
+				.map(LocationDTO.Res::new)
+				.toList();
+	}
 
-    @GetMapping("/type/{type}")
-    public ResponseEntity<List<LocationResponse>> getLocationsByType(@PathVariable LocationType type) {
-        return ResponseEntity.ok(
-            locationService.getLocationsByType(type).stream()
-                .map(locationMapper::toResponse)
-                .toList()
-        );
-    }
+	@GetMapping("/type/{type}")
+	@ResponseStatus(value = HttpStatus.OK)
+	public List<LocationDTO.Res> getLocationsByType(@PathVariable LocationType type) {
+		return locationService.getLocationsByType(type).stream()
+				.map(LocationDTO.Res::new)
+				.toList();
+	}
 
-    @PutMapping("/{id}")
-    public ResponseEntity<LocationResponse> updateLocation(
-            @PathVariable Long id,
-            @Valid @RequestBody LocationUpdateRequest request) {
-        return ResponseEntity.ok(
-            locationMapper.toResponse(locationService.updateLocation(id, request))
-        );
-    }
+	@GetMapping("/{id}")
+	@ResponseStatus(value = HttpStatus.OK)
+	public LocationDTO.ResFetch getLocation(@PathVariable Long id) {
+		return new LocationDTO.ResFetch(locationService.getLocationWithConnections(id));
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
-        locationService.deleteLocation(id);
-        return ResponseEntity.noContent().build();
-    }
+	// 연결 정보만 따로 조회
+	@GetMapping("/{id}/connections")
+	@ResponseStatus(value = HttpStatus.OK)
+	public List<LocationConnection> getConnections(@PathVariable Long id) {
+		Location location = locationService.getLocationWithConnections(id);
+		return location.getAllConnections();
+	}
 
-    @PostMapping("/transfer-duration")
-    public ResponseEntity<TransferDurationResponse> createTransferDuration(
-            @Valid @RequestBody TransferDurationRequest request) {
-        return ResponseEntity.ok(
-            transferDurationMapper.toResponse(transferDurationService.createTransferDuration(request))
-        );
-    }
+	@PutMapping("/{id}")
+	@ResponseStatus(value = HttpStatus.OK)
+	public LocationDTO.Res updateLocation(
+			@PathVariable Long id,
+			@Valid @RequestBody LocationDTO.updateReq request) {
+		return new LocationDTO.Res(locationService.updateLocation(id, request));
+	}
 
-    @GetMapping("/transfer-duration/{id}")
-    public ResponseEntity<TransferDurationResponse> getTransferDuration(@PathVariable Long id) {
-        return ResponseEntity.ok(
-            transferDurationMapper.toResponse(transferDurationService.getTransferDuration(id))
-        );
-    }
+	@DeleteMapping("/{id}")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	public void deleteLocation(@PathVariable Long id) {
+		locationService.deleteLocation(id);
+	}
 
-    @GetMapping("/transfer-duration")
-    public ResponseEntity<TransferDurationResponse> getTransferDurationByLocations(
-            @RequestParam Long fromLocationId,
-            @RequestParam Long toLocationId) {
-        return ResponseEntity.ok(
-            transferDurationMapper.toResponse(
-                transferDurationService.getTransferDurationByLocations(fromLocationId, toLocationId)
-            )
-        );
-    }
 
-    @PutMapping("/transfer-duration/{id}")
-    public ResponseEntity<TransferDurationResponse> updateTransferDuration(
-            @PathVariable Long id,
-            @Valid @RequestBody TransferDurationUpdateRequest request) {
-        return ResponseEntity.ok(
-            transferDurationMapper.toResponse(
-                transferDurationService.updateTransferDuration(id, request)
-            )
-        );
-    }
-
-    @DeleteMapping("/transfer-duration/{id}")
-    public ResponseEntity<Void> deleteTransferDuration(@PathVariable Long id) {
-        transferDurationService.deleteTransferDuration(id);
-        return ResponseEntity.noContent().build();
-    }
 } 

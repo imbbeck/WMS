@@ -11,8 +11,6 @@ import com.wms.movement.domain.model.Movement;
 import com.wms.movement.domain.model.MovementStatus;
 import com.wms.movement.domain.repository.MovementRepository;
 import com.wms.movement.dto.MovementRequest;
-import com.wms.stock.application.StockService;
-import com.wms.stock.domain.model.Stock;
 import com.wms.ware.domain.exception.WareException;
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
@@ -33,7 +31,6 @@ public class MovementService {
     private final MovementRepository movementRepository;
     private final WareRepository wareRepository;
     private final LocationRepository locationRepository;
-    private final StockService stockService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -63,27 +60,27 @@ public class MovementService {
 
     public List<Movement> getAllMovements() {
         log.debug("전체 물류이동 목록 조회");
-        return movementRepository.findAllWithDetails();
+        return movementRepository.findAll();
     }
 
     public List<Movement> getMovementsByStatus(String status) {
         log.debug("상태별 물류이동 목록 조회: {}", status);
-        return movementRepository.findByStatusWithDetails(MovementStatus.valueOf(status));
+        return movementRepository.findAllByStatus(MovementStatus.valueOf(status));
     }
 
     public List<Movement> getMovementsByWare(Long wareId) {
         log.debug("물품별 물류이동 목록 조회: {}", wareId);
-        return movementRepository.findByWareIdWithDetails(wareId);
+        return movementRepository.findAllByWareId(wareId);
     }
 
     public List<Movement> getMovementsByFromLocation(Long fromLocationId) {
         log.debug("출발지별 물류이동 목록 조회: {}", fromLocationId);
-        return movementRepository.getMovementsByFromLocationWithDetails(fromLocationId);
+        return movementRepository.findByFromLocation(fromLocationId);
     }
 
     public List<Movement> getMovementsByToLocation(Long toLocationId) {
         log.debug("도착지별 물류이동 목록 조회: {}", toLocationId);
-        return movementRepository.getMovementsByToLocationWithDetails(toLocationId);
+        return movementRepository.findByToLocation(toLocationId);
     }
 
     @Transactional
