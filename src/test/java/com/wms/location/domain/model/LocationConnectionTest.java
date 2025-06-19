@@ -1,7 +1,7 @@
 package com.wms.location.domain.model;
 
-import com.wms.common.config.JpaAuditingConfig;
-import com.wms.common.config.QuerydslConfig;
+import com.wms.Infra.config.JpaAuditingConfig;
+import com.wms.Infra.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,12 +29,16 @@ class LocationConnectionTest {
                 .name("Location A")
                 .type(LocationType.WAREHOUSE)
                 .capacity(100)
+                .coordinateX(100)
+                .coordinateY(100)
                 .build());
 
         locationB = entityManager.persistAndFlush(Location.builder()
                 .name("Location B")
                 .type(LocationType.WAREHOUSE)
                 .capacity(200)
+                .coordinateX(100)
+                .coordinateY(100)
                 .build());
     }
 

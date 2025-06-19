@@ -2,12 +2,12 @@ package com.wms.ware.application;
 
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
-import com.wms.ware.dto.WareRequest;
-import com.wms.ware.dto.WareUpdateRequest;
-import com.wms.ware.mapper.WareMapper;
+import com.wms.ware.dto.WareDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -17,30 +17,41 @@ import java.util.List;
 public class WareService {
 
     private final WareRepository wareRepository;
-    private final WareMapper wareMapper;
 
     @Transactional
-    public Ware createWare(WareRequest request) {
-        return wareRepository.save(wareMapper.toEntity(request));
+    public Ware createWare(WareDTO.createReq request) {
+        if (wareRepository.existsByName(request. getName())) {
+            throw  new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+
+        Ware ware = request.toEntity();
+
+        Ware saved = wareRepository.save(ware);
+
+        // 캐시 추가 고민
+
+        return saved;
     }
+
+
 
     public Ware getWare(Long id) {
         return wareRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 물품입니다: " + id));
     }
 
-    public List<Ware> getAllWares() {
+    public List<Ware> getWares() {
         return wareRepository.findAll();
     }
 
+    public List<Ware> getWaresByType(String type) {
+        return wareRepository.findAllByType(type);
+    }
+
     @Transactional
-    public Ware updateWare(Long id, WareUpdateRequest request) {
+    public Ware updateWare(Long id, WareDTO.updateReq request) {
         Ware ware = getWare(id);
-        ware.update(
-            request.name(),
-            request.type(),
-            request.paletteUnit()
-        );
+        ware.update(request.getName(), request.getType(), request.getPaletteUnit());
         return ware;
     }
 

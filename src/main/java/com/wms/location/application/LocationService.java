@@ -33,7 +33,6 @@ public class LocationService {
         //  엔티티 생성 책임을 DTO에 위임
         Location location = request.toEntity();
 
-
         Location saved = locationRepository.save(location);
 
         // Walk-through: 즉시 캐시 갱신
@@ -65,10 +64,10 @@ public class LocationService {
     @Transactional
     public Location updateLocation(Long id, LocationDTO.updateReq request) {
         Location location = getLocation(id);
-        location.update(request.getName(), request.getType(), request.getCapacity());
+        location.update(request.getName(), request.getCapacity(), request.getCoordinateX(), request.getCoordinateY());
 
         // Walk-through: 즉시 캐시 갱신
-        locationCache.updateCache(id, request.getName(), request.getType());
+        locationCache.updateCache(id, request.getName(), location.getType());
 
         return location;
     }
@@ -76,12 +75,13 @@ public class LocationService {
     @Transactional
     public void deleteLocation(Long id) {
         Location location = getLocation(id);
-        // cascade 옵션으로 연결된 Connection들 자동 삭제
+
+        // 연결된 Connection들 자동 삭제 이벤트 발행
+        eventPublisher.publishEvent(new LocationDeletedEvent(id));
+
         locationRepository.delete(location);
         // Walk-through: 즉시 캐시에서 제거
         locationCache.removeFromCache(id);
 
-        // 이벤트 발행
-        eventPublisher.publishEvent(new LocationDeletedEvent(id));
     }
 } 

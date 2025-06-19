@@ -1,6 +1,6 @@
 package com.wms.location.domain.exception;
 
-import com.wms.common.exception.BusinessException;
+import com.wms.Infra.exception.BusinessException;
 
 public class LocationException extends BusinessException {
     public LocationException(String message) {

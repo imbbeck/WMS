@@ -1,6 +1,6 @@
 package com.wms.location.domain.repository;
 
-import com.wms.common.config.QuerydslConfig;
+import com.wms.Infra.config.QuerydslConfig;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
@@ -32,9 +32,9 @@ class LocationConnectionRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        locA = entityManager.persist(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).build());
-        locB = entityManager.persist(Location.builder().name("B").type(LocationType.WAREHOUSE).capacity(100).build());
-        locC = entityManager.persist(Location.builder().name("C").type(LocationType.WAREHOUSE).capacity(100).build());
+        locA = entityManager.persist(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
+        locB = entityManager.persist(Location.builder().name("B").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
+        locC = entityManager.persist(Location.builder().name("C").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
 
         connAB = entityManager.persist(LocationConnection.builder().locationId1(locA.getId()).locationId2(locB.getId()).trt(50).build());
         connBC = entityManager.persist(LocationConnection.builder().locationId1(locB.getId()).locationId2(locC.getId()).trt(30).build());

@@ -1,7 +1,7 @@
 package com.wms.location.domain.model;
 
-import com.wms.common.config.JpaAuditingConfig;
-import com.wms.common.config.QuerydslConfig;
+import com.wms.Infra.config.JpaAuditingConfig;
+import com.wms.Infra.config.QuerydslConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,8 @@ class LocationAuditingTest {
                 .name("새로운 창고")
                 .type(LocationType.WAREHOUSE)
                 .capacity(500)
+                .coordinateX(100)
+                .coordinateY(100)
                 .build();
 
         // when
@@ -48,7 +50,7 @@ class LocationAuditingTest {
         }
 
         Location foundLocation = entityManager.find(Location.class, savedLocation.getId());
-        foundLocation.update("이름 변경", foundLocation.getType(), foundLocation.getCapacity());
+        foundLocation.update("이름 변경", foundLocation.getCapacity(), foundLocation.getCoordinateX(), foundLocation.getCoordinateY());
 
         // when
         Location updatedLocation = entityManager.persistAndFlush(foundLocation);

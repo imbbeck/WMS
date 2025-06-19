@@ -16,6 +16,8 @@ class LocationTest {
 					.name("창고 A")
 					.type(LocationType.WAREHOUSE)
 					.capacity(null) // 용량 누락
+					.coordinateX(100)
+					.coordinateY(100)
 					.build();
 		}).isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("창고의 용량은 0보다 커야 합니다.");
@@ -30,6 +32,8 @@ class LocationTest {
 					.name("입고존")
 					.type(LocationType.INBOUND)
 					.capacity(100) // 불필요한 용량 지정
+					.coordinateX(100)
+					.coordinateY(100)
 					.build();
 		}).isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("입고/출고처는 용량을 지정할 수 없습니다.");

@@ -39,9 +39,9 @@ class LocationConnectionServiceTest {
 	void setUp() {
 		// 테스트에 필요한 위치 정보 미리 생성
 		locationRepository.deleteAll(); // 이전 테스트 데이터 클리어
-		locationA = locationRepository.save(Location.builder().name("테스트A").type(LocationType.WAREHOUSE).capacity(100).build());
-		locationB = locationRepository.save(Location.builder().name("테스트B").type(LocationType.WAREHOUSE).capacity(200).build());
-		locationC = locationRepository.save(Location.builder().name("테스트C").type(LocationType.INBOUND).build());
+		locationA = locationRepository.save(Location.builder().name("테스트A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
+		locationB = locationRepository.save(Location.builder().name("테스트B").type(LocationType.WAREHOUSE).capacity(200).coordinateX(100).coordinateY(100).build());
+		locationC = locationRepository.save(Location.builder().name("테스트C").type(LocationType.INBOUND).coordinateX(100).coordinateY(100).build());
 	}
 
 	@Test
@@ -101,7 +101,7 @@ class LocationConnectionServiceTest {
 		// when & then
 		assertThatThrownBy(() -> connectionService.createConnection(request))
 				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("Location not found with id: " + nonExistentId);
+				.hasMessageContaining("존재하지 않는 위치입니다: " + nonExistentId);
 	}
 
 	@Test

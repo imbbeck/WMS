@@ -3,8 +3,6 @@ package com.wms.location.interfaces;
 import java.util.List;
 
 import com.wms.location.application.LocationService;
-import com.wms.location.domain.model.Location;
-import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.dto.LocationDTO;
 import com.wms.location.dto.LocationWithConnectionsDTO;

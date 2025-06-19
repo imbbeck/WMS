@@ -1,11 +1,13 @@
 package com.wms.location.interfaces;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.wms.Infra.domain.ReferenceDataCacheManager;
 import com.wms.location.application.LocationConnectionService;
 import com.wms.location.domain.model.LocationConnection;
-import com.wms.location.domain.repository.LocationCacheManager;
 import com.wms.location.dto.LocationConnectionDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -75,4 +77,11 @@ public class LocationConnectionController {
 		connectionService.deleteConnection(connectionId);
 	}
 
+	private final ReferenceDataCacheManager cache;
+
+	@GetMapping("/id_name_pair")
+	@ResponseStatus(HttpStatus.OK)
+	public Map<Long, String> getIdNamePair() {
+		return  cache.getLocationCache();
+	}
 }

@@ -1,13 +1,9 @@
 package com.wms.location.domain.event;
 
-public class LocationDeletedEvent {
-	private final Long locationId;
+import com.wms.Infra.domain.ReferenceEvent;
 
-	public LocationDeletedEvent(Long locationId) {
-		this.locationId = locationId;
-	}
-
-	public Long getLocationId() {
-		return locationId;
+public class LocationDeletedEvent extends ReferenceEvent {
+	public LocationDeletedEvent(Long id) {
+		super(id);
 	}
 }

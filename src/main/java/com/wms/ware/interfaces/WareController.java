@@ -37,7 +37,7 @@ public class WareController {
     @GetMapping
     public ResponseEntity<List<WareResponse>> getAllWares() {
         return ResponseEntity.ok(
-            wareService.getAllWares().stream()
+            wareService.getWares().stream()
                 .map(wareMapper::toResponse)
                 .toList()
         );

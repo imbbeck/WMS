@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import com.wms.common.config.QuerydslConfig; // QueryDslConfig를 사용한다면 Import
+import com.wms.Infra.config.QuerydslConfig; // QueryDslConfig를 사용한다면 Import
 
 import java.util.Optional;
 
@@ -33,8 +33,8 @@ class LocationRepositoryTest {
 	@DisplayName("findLocationWithConnections는 위치와 모든 연결 정보를 함께 조회한다.")
 	void findLocationWithConnections_Success() {
 		// given
-		Location locA = entityManager.persist(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).build());
-		Location locB = entityManager.persist(Location.builder().name("B").type(LocationType.WAREHOUSE).capacity(100).build());
+		Location locA = entityManager.persist(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
+		Location locB = entityManager.persist(Location.builder().name("B").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
 		entityManager.persist(LocationConnection.builder().locationId1(locA.getId()).locationId2(locB.getId()).trt(50).build());
 
 		// when

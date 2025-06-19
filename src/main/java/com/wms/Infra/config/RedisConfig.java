@@ -1,4 +1,4 @@
-package com.wms.common.config;
+package com.wms.Infra.config;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;

@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.exception.LocationException;
-import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.repository.LocationConnectionRepository;
 import com.wms.location.domain.repository.LocationRepository;
 import com.wms.location.dto.LocationConnectionDTO;
+import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -109,10 +109,10 @@ public class LocationConnectionService {
 
 	//	Location 삭제 시 LocationDeletedEvent 발행
 	//	이벤트 리스너가 LocationConnection 삭제 처리
-	//	트랜잭션 경계에 맞춰 안전하고, 애그리거트 간 결합도 낮춤
-	@TransactionalEventListener // 트랜잭션 커밋 후 실행 보장
+	// 같은 트랜잭션에서 실행됨 - 실패 시 전체 롤백!
+	@EventListener
 	public void onLocationDeleted(LocationDeletedEvent event) {
-		Long locationId = event.getLocationId();
+		Long locationId = event.getId();
 		connectionRepository.deleteByLocationId(locationId);
 	}
 }
