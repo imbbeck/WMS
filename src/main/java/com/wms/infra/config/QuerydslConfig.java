@@ -1,4 +1,4 @@
-package com.wms.Infra.config;
+package com.wms.infra.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

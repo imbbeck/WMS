@@ -13,7 +13,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,7 @@ class LocationServiceTest {
 	@DisplayName("창고 타입의 위치를 성공적으로 생성한다.")
 	void createWarehouseLocation_Success() {
 		// given
-		var request = LocationDTO.createReq.builder()
+		var request = LocationDTO.CreateReq.builder()
 				.name("메인 창고")
 				.type(LocationType.WAREHOUSE)
 				.capacity(1000)
@@ -59,7 +58,7 @@ class LocationServiceTest {
 	@DisplayName("이미 존재하는 이름으로 위치를 생성하면 예외가 발생한다.")
 	void createLocation_WithDuplicateName_ThrowsException() {
 		// given
-		var request1 = LocationDTO.createReq.builder()
+		var request1 = LocationDTO.CreateReq.builder()
 				.name("중복 이름 창고")
 				.type(LocationType.WAREHOUSE)
 				.capacity(100)
@@ -68,7 +67,7 @@ class LocationServiceTest {
 				.build();
 		locationService.createLocation(request1);
 
-		var request2 = LocationDTO.createReq.builder()
+		var request2 = LocationDTO.CreateReq.builder()
 				.name("중복 이름 창고")
 				.type(LocationType.INBOUND)
 				.coordinateX(100)
@@ -92,7 +91,7 @@ class LocationServiceTest {
 				.coordinateX(100)
 				.coordinateY(100)
 				.build());
-		var updateRequest = LocationDTO.updateReq.builder()
+		var updateRequest = LocationDTO.UpdateReq.builder()
 				.name("수정 후 이름")
 				.capacity(100)
 				.coordinateX(100)

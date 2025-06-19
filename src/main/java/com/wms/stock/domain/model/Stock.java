@@ -1,18 +1,24 @@
 package com.wms.stock.domain.model;
 
-import com.wms.Infra.domain.BaseEntity;
+import java.time.LocalDateTime;
+
+import com.wms.infra.domain.BaseEntity;
 import com.wms.location.domain.model.Location;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "stocks")
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Stock extends BaseEntity {
+public class Stock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +37,12 @@ public class Stock extends BaseEntity {
 
     @Version
     private Long version;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     public static Stock create(Ware ware, Location location, Integer quantity) {
         Stock stock = new Stock();

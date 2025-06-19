@@ -12,6 +12,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
   cache:
     type: redis
     redis:

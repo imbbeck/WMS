@@ -1,29 +1,46 @@
 package com.wms.location.interfaces;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.wms.Infra.domain.ReferenceDataCacheManager;
+import com.wms.infra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.application.LocationConnectionService;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.dto.LocationConnectionDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/location-connections")
+@Tag(name = "Location Connection Management", description = "APIs for managing connections between warehouse locations")
 public class LocationConnectionController {
 
 	private final LocationConnectionService connectionService;
 
-	// 연결 생성
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "Create location connection", description = "Creates a new connection between two warehouse locations")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Connection created successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request data")
+	})
 	public LocationConnectionDTO.Res createConnection(@Valid @RequestBody LocationConnectionDTO.CreateReq request) {
 		LocationConnection connection = connectionService.createConnection(request);
 		return LocationConnectionDTO.Res.builder()
@@ -32,17 +49,23 @@ public class LocationConnectionController {
 				.build();
 	}
 
-	// 모든 연결 조회(개별 연결 조회는 필요없음. 연결조회는 비지니스로직상 장소와 같이 조회되므로)
 	@GetMapping
+	@Operation(summary = "Get all location connections", description = "Retrieves all connections between warehouse locations")
+	@ApiResponse(responseCode = "200", description = "Successfully retrieved connections")
 	public List<LocationConnectionDTO.Res> getAllConnections() {
 		return connectionService.getAllConnections().stream()
 				.map(LocationConnectionDTO.Res::from)
 				.collect(Collectors.toList());
 	}
 
-	// 특정 Location의 연결 정보 조회
 	@GetMapping("/by-location/{locationId}")
-	public List<LocationConnectionDTO.ConnectionInfo> getConnectionsByLocation(@PathVariable Long locationId) {
+	@Operation(summary = "Get connections by location", description = "Retrieves all connections for a specific location")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved connections"),
+			@ApiResponse(responseCode = "404", description = "Location not found")
+	})
+	public List<LocationConnectionDTO.ConnectionInfo> getConnectionsByLocation(
+			@Parameter(description = "Location ID") @PathVariable Long locationId) {
 		List<LocationConnection> connections = connectionService.getConnectionsByLocationId(locationId);
 
 		return connections.stream()
@@ -58,10 +81,15 @@ public class LocationConnectionController {
 				.collect(Collectors.toList());
 	}
 
-	// 연결 수정 (이동 시간 변경)
 	@PutMapping("/{connectionId}")
+	@Operation(summary = "Update location connection", description = "Updates an existing connection between locations (e.g., travel time)")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Connection updated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request data"),
+			@ApiResponse(responseCode = "404", description = "Connection not found")
+	})
 	public LocationConnectionDTO.Res updateConnection(
-			@PathVariable Long connectionId,
+			@Parameter(description = "Connection ID") @PathVariable Long connectionId,
 			@Valid @RequestBody LocationConnectionDTO.UpdateReq request) {
 		LocationConnection connection = connectionService.updateConnection(connectionId, request);
 		return LocationConnectionDTO.Res.builder()
@@ -70,18 +98,15 @@ public class LocationConnectionController {
 				.build();
 	}
 
-	// 연결 삭제
 	@DeleteMapping("/{connectionId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteConnection(@PathVariable Long connectionId) {
+	@Operation(summary = "Delete location connection", description = "Deletes a connection between two locations")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Connection deleted successfully"),
+			@ApiResponse(responseCode = "404", description = "Connection not found")
+	})
+	public void deleteConnection(@Parameter(description = "Connection ID") @PathVariable Long connectionId) {
 		connectionService.deleteConnection(connectionId);
 	}
 
-	private final ReferenceDataCacheManager cache;
-
-	@GetMapping("/id_name_pair")
-	@ResponseStatus(HttpStatus.OK)
-	public Map<Long, String> getIdNamePair() {
-		return  cache.getLocationCache();
-	}
 }

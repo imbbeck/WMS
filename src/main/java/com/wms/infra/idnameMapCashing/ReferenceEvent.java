@@ -1,4 +1,4 @@
-package com.wms.Infra.domain;
+package com.wms.infra.idnameMapCashing;
 
 import lombok.Getter;
 

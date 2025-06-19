@@ -1,10 +1,12 @@
 package com.wms.location.application;
 
+import com.wms.infra.idnameMapCashing.DomainCacheManager;
+import com.wms.location.domain.event.LocationCreatedEvent;
 import com.wms.location.domain.event.LocationDeletedEvent;
+import com.wms.location.domain.event.LocationUpdatedEvent;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.domain.exception.LocationException.*;
-import com.wms.location.domain.repository.LocationCacheManager;
 import com.wms.location.domain.repository.LocationRepository;
 import com.wms.location.dto.LocationDTO;
 import com.wms.location.dto.LocationWithConnectionsDTO;
@@ -21,11 +23,11 @@ import java.util.List;
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final LocationCacheManager locationCache;
+    private final DomainCacheManager<Long, String> locationCacheManager;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public Location createLocation(LocationDTO.createReq request) {
+    public Location createLocation(LocationDTO.CreateReq request) {
         if (locationRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("이미 존재하는 장소 이름입니다.");
         }
@@ -35,8 +37,9 @@ public class LocationService {
 
         Location saved = locationRepository.save(location);
 
-        // Walk-through: 즉시 캐시 갱신
-        locationCache.updateCache(saved.getId(), saved.getName(), saved.getType());
+        // 생성 이벤트 발행
+        // ReferenceDataCacheManager.handleLocationCreated에서 구독. 캐시 생성
+        eventPublisher.publishEvent(new LocationCreatedEvent(saved.getId(), saved.getName()));
 
         return saved;
     }
@@ -62,12 +65,13 @@ public class LocationService {
     }
 
     @Transactional
-    public Location updateLocation(Long id, LocationDTO.updateReq request) {
+    public Location updateLocation(Long id, LocationDTO.UpdateReq request) {
         Location location = getLocation(id);
         location.update(request.getName(), request.getCapacity(), request.getCoordinateX(), request.getCoordinateY());
 
-        // Walk-through: 즉시 캐시 갱신
-        locationCache.updateCache(id, request.getName(), location.getType());
+        // 수정 이벤트 발행
+        // ReferenceDataCacheManager.handleLocationUpdated에서 구독. 캐시 갱신
+        eventPublisher.publishEvent(new LocationUpdatedEvent(location.getId(), location.getName()));
 
         return location;
     }
@@ -76,12 +80,12 @@ public class LocationService {
     public void deleteLocation(Long id) {
         Location location = getLocation(id);
 
-        // 연결된 Connection들 자동 삭제 이벤트 발행
+        // 삭제 이벤트 발행
+        // LocationConnectionService.onLocationDeleted에서 구독. 연결된 Connection들 자동 삭제
+        // ReferenceDataCacheManager.handleLocationDeleted에서 구독. 캐시 삭제
         eventPublisher.publishEvent(new LocationDeletedEvent(id));
 
         locationRepository.delete(location);
-        // Walk-through: 즉시 캐시에서 제거
-        locationCache.removeFromCache(id);
 
     }
 } 

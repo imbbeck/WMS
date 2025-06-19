@@ -1,9 +1,13 @@
 package com.wms.ware.application;
 
+import com.wms.location.domain.event.LocationCreatedEvent;
+import com.wms.location.domain.event.LocationDeletedEvent;
+import com.wms.location.domain.event.LocationUpdatedEvent;
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
 import com.wms.ware.dto.WareDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +21,10 @@ import java.util.List;
 public class WareService {
 
     private final WareRepository wareRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public Ware createWare(WareDTO.createReq request) {
+    public Ware createWare(WareDTO.CreateReq request) {
         if (wareRepository.existsByName(request. getName())) {
             throw  new ResponseStatusException(HttpStatus.CONFLICT);
         }
@@ -28,7 +33,9 @@ public class WareService {
 
         Ware saved = wareRepository.save(ware);
 
-        // 캐시 추가 고민
+        // 생성 이벤트 발행
+        // ReferenceDataCacheManager.handleLocationCreated에서 구독. 캐시 생성
+        eventPublisher.publishEvent(new LocationCreatedEvent(saved.getId(), saved.getName()));
 
         return saved;
     }
@@ -49,15 +56,26 @@ public class WareService {
     }
 
     @Transactional
-    public Ware updateWare(Long id, WareDTO.updateReq request) {
+    public Ware updateWare(Long id, WareDTO.UpdateReq request) {
         Ware ware = getWare(id);
         ware.update(request.getName(), request.getType(), request.getPaletteUnit());
+
+        // 수정 이벤트 발행
+        // ReferenceDataCacheManager.handleLocationUpdated에서 구독. 캐시 갱신
+        eventPublisher.publishEvent(new LocationUpdatedEvent(ware.getId(), ware.getName()));
+
         return ware;
     }
 
     @Transactional
     public void deleteWare(Long id) {
         Ware ware = getWare(id);
+
+        // 삭제 이벤트 발행
+        // LocationConnectionService.onLocationDeleted에서 구독. 연결된 Connection들 자동 삭제
+        // ReferenceDataCacheManager.handleLocationDeleted에서 구독. 캐시 삭제
+        eventPublisher.publishEvent(new LocationDeletedEvent(id));
+
         wareRepository.delete(ware);
     }
 } 

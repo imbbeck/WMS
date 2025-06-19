@@ -1,4 +1,4 @@
-package com.wms.Infra.config;
+package com.wms.infra.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

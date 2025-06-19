@@ -1,4 +1,4 @@
-package com.wms.Infra.exception;
+package com.wms.infra.exception;
 
 import com.wms.location.domain.exception.LocationException;
 import com.wms.stock.domain.exception.StockException;

@@ -1,4 +1,4 @@
-package com.wms.Infra.exception;
+package com.wms.infra.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

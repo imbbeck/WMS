@@ -1,6 +1,6 @@
 package com.wms.location.domain.model;
 
-import com.wms.Infra.domain.BaseEntity;
+import com.wms.infra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

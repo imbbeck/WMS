@@ -1,6 +1,6 @@
 package com.wms.movement.domain.model;
 
-import com.wms.Infra.domain.BaseEntity;
+import com.wms.infra.domain.BaseEntity;
 import com.wms.location.domain.model.Location;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;

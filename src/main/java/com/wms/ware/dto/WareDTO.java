@@ -13,7 +13,7 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class createReq {
+	public static class CreateReq {
 		@NotBlank(message = "물품 이름은 필수입니다")
 		private String name;
 
@@ -25,7 +25,7 @@ public class WareDTO {
 		private Integer paletteUnit;
 
 		@Builder
-		public createReq(String name, String type, Integer paletteUnit) {
+		public CreateReq(String name, String type, Integer paletteUnit) {
 			this.name = name;
 			this.type = type;
 			this.paletteUnit = paletteUnit;
@@ -42,7 +42,7 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class updateReq {
+	public static class UpdateReq {
 		@NotBlank(message = "물품 이름은 필수입니다")
 		private String name;
 
@@ -54,7 +54,7 @@ public class WareDTO {
 		private Integer paletteUnit;
 
 		@Builder
-		public updateReq(String name, String type, Integer paletteUnit) {
+		public UpdateReq(String name, String type, Integer paletteUnit) {
 			this.name = name;
 			this.type = type;
 			this.paletteUnit = paletteUnit;

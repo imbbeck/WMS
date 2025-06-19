@@ -1,6 +1,6 @@
 package com.wms.location.domain.model;
 
-import com.wms.Infra.domain.BaseEntity;
+import com.wms.infra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,7 +28,7 @@ public class Location extends BaseEntity {
 	@Column
 	private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
-	@Column(nullable = false)
+	@Column( nullable = false)
 	private Integer coordinateX; // 장소 페이지 내 location 요소 위치 x좌표
 
 	@Column(nullable = false)

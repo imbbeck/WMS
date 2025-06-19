@@ -1,6 +1,6 @@
 package com.wms.movement.domain.exception;
 
-import com.wms.Infra.exception.BusinessException;
+import com.wms.infra.exception.BusinessException;
 
 public class MovementException extends BusinessException {
     public MovementException(String message) {

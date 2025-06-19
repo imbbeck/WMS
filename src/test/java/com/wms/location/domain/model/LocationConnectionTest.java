@@ -1,7 +1,7 @@
 package com.wms.location.domain.model;
 
-import com.wms.Infra.config.JpaAuditingConfig;
-import com.wms.Infra.config.QuerydslConfig;
+import com.wms.infra.config.JpaAuditingConfig;
+import com.wms.infra.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

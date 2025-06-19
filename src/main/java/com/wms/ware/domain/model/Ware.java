@@ -1,6 +1,6 @@
 package com.wms.ware.domain.model;
 
-import com.wms.Infra.domain.BaseEntity;
+import com.wms.infra.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

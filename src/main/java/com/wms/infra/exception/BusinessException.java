@@ -1,4 +1,4 @@
-package com.wms.Infra.exception;
+package com.wms.infra.exception;
 
 public class BusinessException extends RuntimeException {
     public BusinessException(String message) {

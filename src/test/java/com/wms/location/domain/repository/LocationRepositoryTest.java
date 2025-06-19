@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import com.wms.Infra.config.QuerydslConfig; // QueryDslConfig를 사용한다면 Import
+import com.wms.infra.config.QuerydslConfig; // QueryDslConfig를 사용한다면 Import
 
 import java.util.Optional;
 

@@ -1,16 +1,17 @@
 package com.wms.ware.interfaces;
 
+import com.wms.infra.idnameMapCashing.DomainCacheManager;
 import com.wms.ware.application.WareService;
-import com.wms.ware.dto.WareRequest;
-import com.wms.ware.dto.WareResponse;
-import com.wms.ware.dto.WareUpdateRequest;
-import com.wms.ware.mapper.WareMapper;
+import com.wms.ware.dto.WareDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/wares")
@@ -18,43 +19,48 @@ import java.util.List;
 public class WareController {
 
     private final WareService wareService;
-    private final WareMapper wareMapper;
 
     @PostMapping
-    public ResponseEntity<WareResponse> createWare(@Valid @RequestBody WareRequest request) {
-        return ResponseEntity.ok(
-            wareMapper.toResponse(wareService.createWare(request))
-        );
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public WareDTO.Res createWare(@Valid @RequestBody WareDTO.CreateReq request) {
+        return new WareDTO.Res(wareService.createWare(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WareResponse> getWare(@PathVariable Long id) {
-        return ResponseEntity.ok(
-            wareMapper.toResponse(wareService.getWare(id))
-        );
+    @ResponseStatus(value = HttpStatus.OK)
+    public WareDTO.Res getWare(@PathVariable Long id) {
+        return new WareDTO.Res(wareService.getWare(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<WareResponse>> getAllWares() {
-        return ResponseEntity.ok(
-            wareService.getWares().stream()
-                .map(wareMapper::toResponse)
-                .toList()
-        );
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<WareDTO.Res> getWares() {
+        return wareService.getWares().stream()
+                .map(WareDTO.Res::new)
+                .toList();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WareResponse> updateWare(
+    @ResponseStatus(value = HttpStatus.OK)
+    public WareDTO.Res updateWare(
             @PathVariable Long id,
-            @Valid @RequestBody WareUpdateRequest request) {
-        return ResponseEntity.ok(
-            wareMapper.toResponse(wareService.updateWare(id, request))
-        );
+            @Valid @RequestBody WareDTO.UpdateReq request) {
+        return new WareDTO.Res(wareService.updateWare(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWare(@PathVariable Long id) {
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void deleteWare(@PathVariable Long id) {
         wareService.deleteWare(id);
-        return ResponseEntity.noContent().build();
+    }
+
+    private final DomainCacheManager<Long, String> wareCacheManager;
+
+    @GetMapping("/id_name_pair")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get ware ID-name pairs", description = "Retrieves a map of ware IDs to ware names for reference")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved ware ID-name pairs")
+    public Map<Long, String> getIdNamePair() {
+        return  wareCacheManager.getIdNamePair();
     }
 } 

@@ -1,10 +1,10 @@
 package com.wms.location.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wms.infra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.application.LocationService;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
-import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.dto.LocationConnectionDTO;
 import com.wms.location.dto.LocationDTO;
@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,11 +41,14 @@ class LocationControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@MockBean
+	private DomainCacheManager<Long, String> domainCacheManager;
+
 	@Test
 	@DisplayName("POST /locations - 위치 생성 요청을 성공하고 201 Created를 반환한다.")
 	void createLocation_Success() throws Exception {
 		// given
-		var requestDto = LocationDTO.createReq.builder()
+		var requestDto = LocationDTO.CreateReq.builder()
 				.name("창고A")
 				.type(LocationType.WAREHOUSE)
 				.capacity(100)
@@ -61,7 +63,7 @@ class LocationControllerTest {
 				.coordinateY(100)
 				.build();
 
-		given(locationService.createLocation(any(LocationDTO.createReq.class))).willReturn(mockLocation);
+		given(locationService.createLocation(any(LocationDTO.CreateReq.class))).willReturn(mockLocation);
 
 		// when & then
 		mockMvc.perform(post("/locations")
@@ -75,7 +77,7 @@ class LocationControllerTest {
 	@DisplayName("POST /locations - 유효성 검증 실패 시 400 Bad Request를 반환한다.")
 	void createLocation_WithInvalidInput_ReturnsBadRequest() throws Exception {
 		// given
-		var invalidRequestDto = new LocationDTO.createReq("", null, null, null, null); // Name, Type이 비어있음
+		var invalidRequestDto = new LocationDTO.CreateReq("", null, null, null, null); // Name, Type이 비어있음
 
 		// when & then
 		mockMvc.perform(post("/locations")
@@ -224,7 +226,7 @@ class LocationControllerTest {
 	@DisplayName("PUT /locations/{id} - 위치 정보를 수정하고 200 OK를 반환한다.")
 	void updateLocation_Success() throws Exception {
 		// given
-		var requestDto = LocationDTO.updateReq.builder()
+		var requestDto = LocationDTO.UpdateReq.builder()
 				.name("수정된 창고")
 				.capacity(200)
 				.coordinateX(100)
@@ -240,7 +242,7 @@ class LocationControllerTest {
 				.build(); //
 
 
-		given(locationService.updateLocation(eq(1L), any(LocationDTO.updateReq.class))).willReturn(updatedLocation);
+		given(locationService.updateLocation(eq(1L), any(LocationDTO.UpdateReq.class))).willReturn(updatedLocation);
 
 		// when & then
 		mockMvc.perform(put("/locations/{id}", 1L)

@@ -1,6 +1,6 @@
 package com.wms.location.domain.repository;
 
-import com.wms.Infra.config.QuerydslConfig;
+import com.wms.infra.config.QuerydslConfig;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;

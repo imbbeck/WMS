@@ -74,7 +74,7 @@
 -   `type`: 문자열 (예: 가전제품, 나사 등)
 -   `palette_unit` : 파레트 당 물품 개수 (예: 휴지곽은 100개/1파레트) <- 나중에 오더 수량이 물품개수로 들어올 경우 감안.
 
-### 재고 (Inventory) - 장소:물품 연결 테이블, (fk,fk)유일성있어야함
+### 재고 (Stock) - 장소:물품 연결 테이블, (fk,fk)유일성있어야함
 
 -   `id`: PK
 -   `location_id`: FK → 장소
@@ -88,17 +88,16 @@
         -   재고상황 캐싱(inventoryStaus:{locationId}:{wareId} quantity, wareHouseStatus:{locationId} sum of quantity)
         -   비동기로 재고변화 처리되야 함.
 
-### 4. 물류이동 (Movement)
+### 4. 물류이동 템플릿 (LogisticTemplate)
 
 -   `id`: PK
 -   `name`: 문자열
 -   `type`: [INBOUND, OUTBOUND, INNER] (이넘)
 -   `from_location_id`: FK
 -   `to_location_id`: FK
--   `scheduled_date`: 실행 예정일
 -   `status`: [PENDING, STARTED, COMPLETED, DELAYED, CANCELLED, FAILED] (이넘)
 -   `ware_id`: FK
--   `quantity`: 정수
+-   `standard_quantity`: 표준 수량 (기본값, 실제 실행시 조정 가능)
 
 -   **비즈니스 규칙**:
     -   PENDING 상태일 때만 실행 가능
@@ -113,24 +112,47 @@
 -   OUTBOUND : 창고 -> 출고처
 -   TRANSFER : 창고 -> 창고
 
-### 작업자 (Worker)
-
--   `id`: PK
--   `name`: 문자열
--   `...` (기타 속성)
-
-### 물류이동 계획 (TransferPlan)
+### 물류이동 계획 (LogisticPlan)
 
 -   `id`: PK
 -   `worker_id`: FK
 -   `scheduled_date`: 예정 실행날짜
 
-### 물류이동 계획 세부 (TransferPlanDetail)
+### 물류이동 계획 세부 (LogisticPlanDetail)
 
 -   `id`: PK
 -   `plan_id`: FK
--   `movement_id`: 배정받은 물류이동(매핑 여부는 고민)
+-   `logistic_template_id`: 배정받은 물류이동(매핑 여부는 고민)
 -   `scheduled_hour`: 예정 실행시간, 예정 완료시간은 plan_hour + duration_min
+
+### 사용자 (UserInfo)
+
+| 항목명   | 타입     | 제약조건              | 설명                                |
+| -------- | -------- | --------------------- | --------------------------------- |
+| id       | String   | PK, Not Null          | 사용자 식별자 (예: UUID, 사번 등) |
+| name     | String   | Not Null              | 사용자 이름                       |
+| role     | Enum     | Not Null              | 사용자 역할 (ADMIN, WORKER)       |
+| worker   | Worker   | OneToOne (optional)   | 작업자 정보 (role이 WORKER일 경우 존재) |
+
+### 작업자 (Worker)
+
+| 항목명    | 타입       | 제약조건                   | 설명                          |
+| --------- | ---------- | -------------------------- | ----------------------------- |
+| id        | String     | PK, FK(UserInfo.id), Not Null | 사용자 ID와 동일 (1:1 매핑)  |
+| department| String     | Nullable                   | 작업자 소속 부서명            |
+| shift     | String     | Nullable                   | 작업자 근무조 정보            |
+| hiredDate | LocalDate  | Nullable                   | 입사 일자                    |
+| user      | UserInfo   | OneToOne                   | 소유자 UserInfo 엔티티 참조  |
+
+#### 관계 및 특이사항
+
+- `UserInfo`는 애그리거트 루트로 인증 및 권한 관리를 담당한다.
+- `Worker`는 `UserInfo`에 종속된 하위 엔티티이며, `role`이 `WORKER`인 경우에만 생성.
+- `Worker.id`는 `UserInfo.id`와 동일하며, `@MapsId`를 통해 매핑.
+- `UserInfo` 삭제 시 연관된 `Worker`도 함께 삭제되어야 하며, 생명주기가 동일.
+- `Worker` 정보 관리는 `UserInfo` 서비스 내에서 처리.
+
+---
 
 #### 물류이동 계획 생성시 ui/ux는 타임테이블 형태로. x축에 커서올리면 창고별 재고 정보 호버
 
