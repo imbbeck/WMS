@@ -1,4 +1,4 @@
-package com.wms.user.domain.model;
+package com.wms.userInfo.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

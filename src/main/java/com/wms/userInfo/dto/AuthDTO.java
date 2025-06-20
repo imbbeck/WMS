@@ -1,4 +1,4 @@
-package com.wms.auth.dto;
+package com.wms.userInfo.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -24,12 +24,26 @@ public class AuthDTO {
 			this.userId = userId;
 			this.password = password;
 		}
+
 	}
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "Login response")
-	public static class LoginRes {
+	@Schema(description = "RefreshToken request")
+	public static class RefreshTokenReq  {
+
+		@Schema(description = "JWT refresh token")
+		private String refreshToken;
+
+		public RefreshTokenReq(String refreshToken) {
+			this.refreshToken = refreshToken;
+		}
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@Schema(description = "Token response")
+	public static class TokenRes {
 
 		@Schema(description = "JWT access token")
 		private String accessToken;
@@ -37,7 +51,7 @@ public class AuthDTO {
 		@Schema(description = "JWT refresh token")
 		private String refreshToken;
 
-		public LoginRes(String accessToken, String refreshToken) {
+		public TokenRes(String accessToken, String refreshToken) {
 			this.accessToken = accessToken;
 			this.refreshToken = refreshToken;
 		}

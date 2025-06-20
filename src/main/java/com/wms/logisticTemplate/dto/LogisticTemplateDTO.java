@@ -1,4 +1,156 @@
 package com.wms.logisticTemplate.dto;
 
+import com.wms.location.domain.model.Location;
+import com.wms.logisticTemplate.domain.model.LogisticTemplate;
+import com.wms.logisticTemplate.domain.model.LogisticType;
+import com.wms.ware.domain.model.Ware;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 public class LogisticTemplateDTO {
+
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "LogisticTemplate creation request")
+	public static class CreateReq {
+
+		@NotBlank(message = "LogisticTemplate name is required")
+		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate A")
+		private String name;
+
+		@NotNull(message = "LogisticTemplate type is required")
+		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
+		private LogisticType type;
+
+		@NotNull(message = "WareId is required")
+		@Schema(description = "WareId", example = "1")
+		private Long wareId;
+
+		@NotNull(message = "fromLocationId is required")
+		@Schema(description = "fromLocationId", example = "1")
+		private Long fromLocationId;
+
+		@NotNull(message = "toLocationId is required")
+		@Schema(description = "toLocationId", example = "2")
+		private Long toLocationId;
+
+		@NotNull(message = "Standard Quantity is required")
+		@Schema(description = "Standard Quantity", example = "100")
+		private Integer standardQuantity;
+
+		// 테스트 편의성을 위한 빌더 패턴 생성자
+		@Builder
+		public CreateReq(String name, LogisticType type, Long wareId, Long fromLocationId, Long toLocationId, Integer standardQuantity) {
+			this.name = name;
+			this.type = type;
+			this.wareId = wareId;
+			this.fromLocationId = fromLocationId;
+			this.toLocationId = toLocationId;
+			this.standardQuantity = standardQuantity;
+		}
+
+		public LogisticTemplate toEntity(Ware ware, Location fromLocation, Location toLocation) {
+			return LogisticTemplate.builder()
+					.name(name)
+					.type(type)
+					.ware(ware)
+					.fromLocation(fromLocation)
+					.toLocation(toLocation)
+					.standardQuantity(standardQuantity)
+					.build();
+		}
+	}
+
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "Location update request")
+	public static class UpdateReq {
+		@NotBlank(message = "LogisticTemplate name is required")
+		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate 1")
+		private String name;
+
+		@NotNull(message = "LogisticTemplate type is required")
+		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
+		private LogisticType type;
+
+		@Schema(description = "Standard Quantity", example = "100")
+		private Integer standardQuantity;
+
+		@Builder
+		public UpdateReq(String name, LogisticType type, Integer standardQuantity) {
+			this.name = name;
+			this.type = type;
+			this.standardQuantity = standardQuantity;
+		}
+
+	}
+
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "LogisticTemplate response")
+	public static class Res {
+
+		@Schema(description = "LogisticTemplate ID", example = "1")
+		private Long id;
+
+		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate A")
+		private String name;
+
+		@Schema(description = "LogisticTemplate type", example = "INNER")
+		private LogisticType type;
+
+		@Schema(description = "WareId", example = "1")
+		private Long wareId;
+
+		@Schema(description = "WareName", example = "Ware A")
+		private String wareName;
+
+		@Schema(description = "fromLocationId", example = "1")
+		private Long fromLocationId;
+
+		@Schema(description = "fromLocationName", example = "Location A")
+		private String fromLocationName;
+
+		@Schema(description = "toLocationId", example = "2")
+		private Long toLocationId;
+
+		@Schema(description = "toLocationName", example = "Location B")
+		private String toLocationName;
+
+		@Schema(description = "Standard Quantity", example = "100")
+		private Integer standardQuantity;
+
+
+		public Res(LogisticTemplate logisticTemplate) {
+			this.id = logisticTemplate.getId();
+			this.name = logisticTemplate.getName();
+			this.type = logisticTemplate.getType();
+			this.wareId = logisticTemplate.getWare().getId();
+			this.wareName = logisticTemplate.getWare().getName();
+			this.fromLocationId = logisticTemplate.getFromLocation().getId();
+			this.fromLocationName = logisticTemplate.getFromLocation().getName();
+			this.toLocationId = logisticTemplate.getToLocation().getId();
+			this.toLocationName = logisticTemplate.getToLocation().getName();
+			this.standardQuantity = logisticTemplate.getStandardQuantity();
+		}
+
+		@Builder
+		public Res(Long id, String name, LogisticType type, Ware ware, Location fromLocation, Location toLocation, Integer standardQuantity) {
+			this.id = id;
+			this.name = name;
+			this.type = type;
+			this.wareId = ware.getId();
+			this.wareName = ware.getName();
+			this.fromLocationId = fromLocation.getId();
+			this.fromLocationName = fromLocation.getName();
+			this.toLocationId = toLocation.getId();
+			this.toLocationName = toLocation.getName();
+			this.standardQuantity = standardQuantity;
+		}
+	}
 }

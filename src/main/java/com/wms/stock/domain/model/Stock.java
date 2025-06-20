@@ -2,7 +2,6 @@ package com.wms.stock.domain.model;
 
 import java.time.LocalDateTime;
 
-import com.wms.infra.domain.BaseEntity;
 import com.wms.location.domain.model.Location;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;

@@ -31,3 +31,7 @@ logging:
     root: WARN
     com.wms: DEBUG
     org.hibernate.SQL: DEBUG
+
+# JWT
+jwt:
+  secret: your-secret-key-hereyour-secret-key-hereyour-secret-key-hereyour-secret-key-here

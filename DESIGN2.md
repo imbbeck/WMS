@@ -39,15 +39,6 @@
 
 ## 주요 테이블 및 도메인
 
-### 사용자 (UserInfo)
-
--   `id`: String, PK
--   `name`: 이름
--   `type`: [Admin, Worker] (이넘)
-
--   **비즈니스 규칙**:
-    -   Worker는 자기자신의 물류이동계획 대시보드 페이지에만 접근가능
-
 ### 장소 (Location)
 
 -   `id`: PK
@@ -141,7 +132,8 @@
 | name     | String   | Not Null              | 사용자 이름                       |
 | role     | Enum     | Not Null              | 사용자 역할 (ADMIN, WORKER)       |
 | worker   | Worker   | OneToOne (optional)   | 작업자 정보 (role이 WORKER일 경우 존재) |
-
+-   **비즈니스 규칙**:
+    -   Worker는 자기자신의 물류이동계획 대시보드 페이지에만 접근가능
 ### 작업자 (Worker)
 
 | 항목명    | 타입       | 제약조건                   | 설명                          |

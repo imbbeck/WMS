@@ -1,16 +1,14 @@
-package com.wms.auth.application;
+package com.wms.userInfo.application;
 
-import com.wms.auth.dto.AuthDTO;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
-import com.wms.userInfo.domain.model.UserType;
-import com.wms.userInfo.dto.UserInfoDTO;
+import com.wms.userInfo.dto.AuthDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -19,14 +17,10 @@ public class AuthService {
 
 	private final UserInfoRepository userInfoRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final JwtProvider jwtProvider; // JWT 발급/검증 유틸 클래스 (아래 별도 구현 예정)
+	private final JwtProvider jwtProvider;
 
-	/**
-	 * 로그인 처리
-	 * WORKER 타입만 로그인 가능
-	 */
 	@Transactional
-	public AuthDTO.LoginRes login(AuthDTO.LoginReq request) {
+	public AuthDTO.TokenRes login(AuthDTO.LoginReq request) {
 		UserInfo user = userInfoRepository.findByUsername(request.getUserId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid userId or password"));
 
@@ -34,32 +28,39 @@ public class AuthService {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid userId or password");
 		}
 
-		// JWT 토큰 발급
 		String accessToken = jwtProvider.generateAccessToken(user);
 		String refreshToken = jwtProvider.generateRefreshToken(user);
 
-		return new AuthDTO.LoginRes(accessToken, refreshToken);
+		return new AuthDTO.TokenRes(accessToken, refreshToken);
 	}
 
 	@Transactional
-	public UserInfo join(UserInfoDTO.JoinReq request) {
-		
-		UserInfo user = request.toEntity();
-		return userInfoRepository.save(user);
-	}
-
-	@Transactional
-	public void withdraw(Long userId, UserInfo currentUser) {
-		if (currentUser.getType() != UserType.WORKER) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only WORKER users can withdraw");
+	public AuthDTO.TokenRes refreshToken(AuthDTO.RefreshTokenReq refreshToken) {
+		if (!jwtProvider.validateToken(refreshToken.getRefreshToken())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
 		}
 
-		UserInfo user = userInfoRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+		String username = jwtProvider.getUsernameFromToken(refreshToken.getRefreshToken());
+		UserInfo user = userInfoRepository.findByUsername(username)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
-		userInfoRepository.delete(user);
+		String newAccessToken = jwtProvider.generateAccessToken(user);
+		String newRefreshToken = jwtProvider.generateRefreshToken(user);
+
+		return new AuthDTO.TokenRes(newAccessToken, newRefreshToken);
 	}
 
-	// 토큰 재발급, 로그아웃 등은 필요하면 추가
-}
+	@Transactional
+	public void logout(String refreshToken) {
+		// 토큰 블랙리스트 저장 로직 필요 (예: Redis)
+		// 또는 클라이언트에서 토큰 폐기 후 서버에서 별도 관리 안함
+		// 간단히 validate만 해서 예외처리
+		if (!jwtProvider.validateToken(refreshToken)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+		}
 
+		// TODO: Redis 등에 블랙리스트 저장 처리
+
+		// 실제 구현 시 클라이언트에게서 토큰 삭제 권고
+	}
+}

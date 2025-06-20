@@ -1,9 +1,9 @@
-package com.wms.z.domain.event;
+package com.wms.userInfo.domain.event;
 
 import com.wms.applicationInfra.idnameMapCashing.ReferenceEvent;
 
-public class EntityUpdatedEvent extends ReferenceEvent {
-	public EntityUpdatedEvent(Long id, String name) {
+public class UserInfoUpdatedEvent extends ReferenceEvent {
+	public UserInfoUpdatedEvent(Long id, String name) {
 		super(id, name);
 	}
 }

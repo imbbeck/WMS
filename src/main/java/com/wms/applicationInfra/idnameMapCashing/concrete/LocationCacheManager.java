@@ -1,9 +1,9 @@
-package com.wms.infra.idnameMapCashing.concrete;
+package com.wms.applicationInfra.idnameMapCashing.concrete;
 
 import java.util.Map;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
-import com.wms.infra.idnameMapCashing.AbstractDomainCacheManager;
+import com.wms.applicationInfra.idnameMapCashing.AbstractDomainCacheManager;
 import com.wms.location.domain.event.LocationCreatedEvent;
 import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.event.LocationUpdatedEvent;

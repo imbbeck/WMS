@@ -1,4 +1,4 @@
-package com.wms.infra.domain;
+package com.wms.applicationInfra.domain;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;

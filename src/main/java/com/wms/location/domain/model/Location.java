@@ -1,6 +1,6 @@
 package com.wms.location.domain.model;
 
-import com.wms.infra.domain.BaseEntity;
+import com.wms.applicationInfra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,14 +18,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Location extends BaseEntity {
 
-	@Column(nullable = false, unique = true)
+	@Column(name = "name", nullable = false, unique = true)
 	private String name;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name = "type", nullable = false)
 	private LocationType type;
 
-	@Column
+	@Column(name = "capacity")
 	private Integer capacity;  // WAREHOUSE 타입일 때만 유효;
 
 	@Column(name = "coordinate_x", nullable = false)

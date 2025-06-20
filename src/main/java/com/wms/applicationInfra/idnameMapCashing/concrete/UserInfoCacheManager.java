@@ -4,44 +4,44 @@ import java.util.Map;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 import com.wms.applicationInfra.idnameMapCashing.AbstractDomainCacheManager;
-import com.wms.ware.domain.event.WareCreatedEvent;
-import com.wms.ware.domain.event.WareDeletedEvent;
-import com.wms.ware.domain.event.WareUpdatedEvent;
-import com.wms.ware.domain.repository.WareRepository;
+import com.wms.userInfo.domain.event.UserInfoCreatedEvent;
+import com.wms.userInfo.domain.event.UserInfoDeletedEvent;
+import com.wms.userInfo.domain.event.UserInfoUpdatedEvent;
+import com.wms.userInfo.domain.repository.UserInfoRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-public class WareCacheManager extends AbstractDomainCacheManager<Long, String> {
-	private final WareRepository wareRepository;
+public class UserInfoCacheManager extends AbstractDomainCacheManager<Long, String> {
+	private final UserInfoRepository userInfoRepository;
 
-	public WareCacheManager(WareRepository wareRepository) {
-		this.wareRepository = wareRepository;
+	public UserInfoCacheManager(UserInfoRepository userInfoRepository) {
+		this.userInfoRepository = userInfoRepository;
 	}
 
 	@PostConstruct
 	public void initialize() {
-		wareRepository.findAll()
+		userInfoRepository.findAll()
 				.forEach(loc -> cache.put(loc.getId(), loc.getName()));
 	}
 
 	@Async
 	@TransactionalEventListener(phase = AFTER_COMMIT)
-	public void onCreated(WareCreatedEvent event) {
+	public void onCreated(UserInfoCreatedEvent event) {
 		handleCreated(event.getId(), event.getName());
 	}
 
 	@Async
 	@TransactionalEventListener(phase = AFTER_COMMIT)
-	public void onUpdated(WareUpdatedEvent event) {
+	public void onUpdated(UserInfoUpdatedEvent event) {
 		handleUpdated(event.getId(), event.getName());
 	}
 
 	@Async
 	@TransactionalEventListener(phase = AFTER_COMMIT)
-	public void onDeleted(WareDeletedEvent event) {
+	public void onDeleted(UserInfoDeletedEvent event) {
 		handleDeleted(event.getId());
 	}
 

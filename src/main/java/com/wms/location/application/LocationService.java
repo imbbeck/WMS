@@ -1,6 +1,6 @@
 package com.wms.location.application;
 
-import com.wms.infra.idnameMapCashing.DomainCacheManager;
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.domain.event.LocationCreatedEvent;
 import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.event.LocationUpdatedEvent;

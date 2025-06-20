@@ -1,6 +1,6 @@
 package com.wms.ware.domain.exception;
 
-import com.wms.infra.exception.BusinessException;
+import com.wms.applicationInfra.exception.BusinessException;
 
 public class WareException extends BusinessException {
     public WareException(String message) {

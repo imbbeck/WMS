@@ -1,6 +1,6 @@
 package com.wms.ware.domain.model;
 
-import com.wms.infra.domain.BaseEntity;
+import com.wms.applicationInfra.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 public class Ware extends BaseEntity {
 
     @Column(nullable = false, unique = true)
-    private String name;  // 물품명
+    private String name;  // Product name
 
     @Column(nullable = false)
-    private String type;  // 물품 타입 (예: 가전제품, 나사 등)
+    private String type;  // Product type (e.g., electronics, screws, etc.)
 
     @Column(nullable = false)
-    private Integer paletteUnit;  // 파레트 당 물품 개수
+    private Integer paletteUnit;  // Number of items per palette
 
     @Builder
     public Ware(String name, String type, Integer paletteUnit) {
@@ -39,17 +39,15 @@ public class Ware extends BaseEntity {
 
     private static void validateWareData(String name, String type, Integer paletteUnit) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("물품 이름은 필수입니다.");
+            throw new IllegalArgumentException("Product name is required.");
         }
 
         if (type == null) {
-            throw new IllegalArgumentException("물품 타입은 필수입니다.");
+            throw new IllegalArgumentException("Product type is required.");
         }
 
         if (paletteUnit == null || paletteUnit <= 0) {
-            throw new IllegalArgumentException("파레트 당 물품 개수는 0보다 커야 합니다.");
+            throw new IllegalArgumentException("The number of items per palette must be greater than 0.");
         }
-
-
     }
 } 

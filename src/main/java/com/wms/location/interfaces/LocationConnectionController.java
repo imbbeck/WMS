@@ -1,10 +1,8 @@
 package com.wms.location.interfaces;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.wms.infra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.application.LocationConnectionService;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.dto.LocationConnectionDTO;

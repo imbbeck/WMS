@@ -1,9 +1,9 @@
-package com.wms.z.domain.event;
+package com.wms.userInfo.domain.event;
 
 import com.wms.applicationInfra.idnameMapCashing.ReferenceEvent;
 
-public class EntityDeletedEvent extends ReferenceEvent {
-	public EntityDeletedEvent(Long id) {
+public class UserInfoDeletedEvent extends ReferenceEvent {
+	public UserInfoDeletedEvent(Long id) {
 		super(id);
 	}
 }

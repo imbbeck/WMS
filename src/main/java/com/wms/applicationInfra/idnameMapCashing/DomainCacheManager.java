@@ -1,4 +1,4 @@
-package com.wms.infra.idnameMapCashing;
+package com.wms.applicationInfra.idnameMapCashing;
 
 import java.util.Map;
 

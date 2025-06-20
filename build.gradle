@@ -20,7 +20,7 @@ repositories {
 }
 
 ext {
-    mapstructVersion = '1.5.5.Final'
+//    mapstructVersion = '1.5.5.Final'
     lombokVersion = '1.18.30'
     lombokMapstructBindingVersion = '0.2.0'
     querydslVersion = '5.0.0'
@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
@@ -51,10 +51,15 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+    //JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 직렬화용
+
     // MapStruct
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+/*    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
-    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
+    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"*/
 
     // Test
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -72,8 +77,9 @@ sourceSets {
     main.java.srcDirs += 'build/generated/sources/annotationProcessor/java/main'
 }
 
-tasks.withType(JavaCompile).configureEach {
+// MapStruct
+/*tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += [
             '-Amapstruct.defaultComponentModel=spring'
     ]
-}
+}*/

@@ -3,7 +3,7 @@ package com.wms.location.interfaces;
 import java.util.List;
 import java.util.Map;
 
-import com.wms.infra.idnameMapCashing.DomainCacheManager;
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.application.LocationService;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.dto.LocationDTO;

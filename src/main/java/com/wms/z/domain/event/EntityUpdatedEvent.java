@@ -1,9 +1,9 @@
-package com.wms.location.domain.event;
+package com.wms.z.domain.event;
 
 import com.wms.applicationInfra.idnameMapCashing.ReferenceEvent;
 
-public class LocationUpdatedEvent extends ReferenceEvent {
-	public LocationUpdatedEvent(Long id, String name) {
+public class EntityUpdatedEvent extends ReferenceEvent {
+	public EntityUpdatedEvent(Long id, String name) {
 		super(id, name);
 	}
 }

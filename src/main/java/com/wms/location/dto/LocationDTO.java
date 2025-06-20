@@ -17,22 +17,22 @@ public class LocationDTO {
 	@Schema(description = "Location creation request")
 	public static class CreateReq {
 
-		@NotBlank(message = "장소 이름은 필수입니다")
+		@NotBlank(message = "Location name is required")
 		@Schema(description = "Location name", example = "Warehouse A")
 		private String name;
 
-		@NotNull(message = "장소 타입은 필수입니다")
+		@NotNull(message = "Location type is required")
 		@Schema(description = "Location type", example = "INBOUND, OUTBOUND, WAREHOUSE")
 		private LocationType type;
 
 		@Schema(description = "Storage capacity (only valid for WAREHOUSE type)", example = "1000")
 		private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
-		@NotNull(message = "x좌표는 필수입니다")
+		@NotNull(message = "X coordinate is required")
 		@Schema(description = "X coordinate", example = "10")
 		private Integer coordinateX;
 
-		@NotNull(message = "y좌표는 필수입니다")
+		@NotNull(message = "Y coordinate is required")
 		@Schema(description = "Y coordinate", example = "20")
 		private Integer coordinateY;
 
@@ -61,19 +61,19 @@ public class LocationDTO {
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@Schema(description = "Location update request")
 	public static class UpdateReq {
-		@NotBlank(message = "장소 이름은 필수입니다")
+		@NotBlank(message = "Location name is required")
 		@Schema(description = "Location name", example = "Updated Warehouse A")
 		private String name;
 
 		@Schema(description = "Storage capacity (only valid for WAREHOUSE type)", example = "1500")
 		private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
-		@NotNull(message = "x좌표는 필수입니다")
-		@Schema(description = "X coordinate", example = "15")
+		@NotNull(message = "X coordinate is required")
+		@Schema(description = "X coordinate", example = "10")
 		private Integer coordinateX;
 
-		@NotNull(message = "y좌표는 필수입니다")
-		@Schema(description = "Y coordinate", example = "25")
+		@NotNull(message = "Y coordinate is required")
+		@Schema(description = "Y coordinate", example = "20")
 		private Integer coordinateY;
 
 		@Builder

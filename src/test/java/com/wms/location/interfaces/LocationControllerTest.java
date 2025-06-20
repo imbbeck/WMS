@@ -1,7 +1,8 @@
 package com.wms.location.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wms.infra.idnameMapCashing.DomainCacheManager;
+import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.application.LocationService;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(TestSecurityConfig.class)
 @WebMvcTest(LocationController.class)
 class LocationControllerTest {
 

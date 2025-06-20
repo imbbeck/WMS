@@ -1,4 +1,4 @@
-package com.wms.infra.config;
+package com.wms.applicationInfra.config;
 
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;

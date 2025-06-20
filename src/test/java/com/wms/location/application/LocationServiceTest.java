@@ -2,6 +2,7 @@ package com.wms.location.application;
 
 import java.util.List;
 
+import com.wms.applicationInfra.config.TestSecurityConfig;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
@@ -13,11 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
 
+@Import(TestSecurityConfig.class)
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")

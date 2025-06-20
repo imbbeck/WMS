@@ -1,10 +1,11 @@
 package com.wms.ware.interfaces;
 
-import com.wms.infra.idnameMapCashing.DomainCacheManager;
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.ware.application.WareService;
 import com.wms.ware.dto.WareDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/wares")
 @RequiredArgsConstructor
+@Tag(name = "Ware Management", description = "APIs for managing Ware")
 public class WareController {
 
     private final WareService wareService;
@@ -36,6 +38,14 @@ public class WareController {
     @ResponseStatus(value = HttpStatus.OK)
     public List<WareDTO.Res> getWares() {
         return wareService.getWares().stream()
+                .map(WareDTO.Res::new)
+                .toList();
+    }
+
+    @GetMapping("/type")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<WareDTO.Res> getWaresByType(@RequestParam(value = "type") String type) {
+        return wareService.getWaresByType(type).stream()
                 .map(WareDTO.Res::new)
                 .toList();
     }

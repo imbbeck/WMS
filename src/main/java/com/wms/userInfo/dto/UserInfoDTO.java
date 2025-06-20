@@ -1,8 +1,8 @@
-package com.wms.user.dto;
+package com.wms.userInfo.dto;
 
-import com.wms.user.domain.model.Password;
-import com.wms.user.domain.model.UserInfo;
-import com.wms.user.domain.model.UserType;
+import com.wms.userInfo.domain.model.Password;
+import com.wms.userInfo.domain.model.UserInfo;
+import com.wms.userInfo.domain.model.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -67,6 +67,49 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "User join request")
+	public static class JoinReq {
+
+		@NotBlank(message = "UserId is required")
+		@Pattern(regexp = "^[a-z0-9_]+$", message = "Username must contain only lowercase letters, numbers, and underscore")
+		@Size(min = 3, max = 20, message = "Username length must be between 3 and 20")
+		@Schema(description = "userId", example = "admin_1")
+		private String userId;
+
+		@NotBlank(message = "Name is required")
+		@Schema(description = "User's real name", example = "정도영")
+		private String name;
+
+		@NotBlank(message = "Email is required")
+		@Email(message = "Email format must be valid")
+		private String email;
+
+		@NotBlank(message = "Password is required")
+		@Size(min = PASSWORD_MIN_LENGTH, message = "Password must be at least " + PASSWORD_MIN_LENGTH + " characters")
+		private String password;
+
+
+		@Builder
+		public JoinReq(String userId, String name, String email, String password) {
+			this.userId = userId;
+			this.name = name;
+			this.email = email;
+			this.password = password;
+		}
+
+		public UserInfo toEntity() {
+			return UserInfo.builder()
+					.username(userId)
+					.name(name)
+					.email(email)
+					.password(new Password(password)) // Password 엔티티 생성자에 평문 비밀번호 전달
+					.type(UserType.WORKER)
+					.build();
+		}
+	}
+
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@Schema(description = "User update request")
 	public static class UpdateReq {
 
@@ -83,6 +126,25 @@ public class UserInfoDTO {
 		public UpdateReq(String name, String email) {
 			this.name = name;
 			this.email = email;
+		}
+	}
+
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "Password change request")
+	public static class ChangePasswordReq {
+
+		@NotBlank(message = "Old password is required")
+		private String oldPassword;
+
+		@NotBlank(message = "New password is required")
+		@Size(min = PASSWORD_MIN_LENGTH, message = "Password must be at least " + PASSWORD_MIN_LENGTH + " characters")
+		private String newPassword;
+
+		@Builder
+		public ChangePasswordReq(String oldPassword, String newPassword) {
+			this.oldPassword = oldPassword;
+			this.newPassword = newPassword;
 		}
 	}
 

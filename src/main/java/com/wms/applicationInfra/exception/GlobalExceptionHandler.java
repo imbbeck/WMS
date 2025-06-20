@@ -1,6 +1,7 @@
-package com.wms.infra.exception;
+package com.wms.applicationInfra.exception;
 
 import com.wms.location.domain.exception.LocationException;
+import com.wms.logisticTemplate.domain.exception.LogisticTaskException;
 import com.wms.stock.domain.exception.StockException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(LogisticTaskException.class)
+    public ResponseEntity<ErrorResponse> handleLogisticTaskException(LogisticTaskException ex) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(LocationException.NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleLocationNotFoundException(LocationException.NotFoundException ex) {
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -46,8 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StockException.class)
     public ResponseEntity<ErrorResponse> handleStockException(StockException e) {
         log.error("Stock error occurred: ", e);
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
 
