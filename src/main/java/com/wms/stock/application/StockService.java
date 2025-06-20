@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.domain.repository.LocationRepository;
-import com.wms.movement.domain.event.MovementCompletedEvent;
-import com.wms.movement.domain.event.MovementStartedEvent;
+//import com.wms.logisticTemplate.domain.event.MovementCompletedEvent;
+//import com.wms.logisticTemplate.domain.event.MovementStartedEvent;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.repository.StockRepository;
@@ -18,9 +18,7 @@ import com.wms.ware.domain.repository.WareRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -165,106 +163,106 @@ public class StockService {
 		}
 	}
 
-	@EventListener
-	@Transactional
-	public void handleMovementStarted(MovementStartedEvent event) {
-		log.info("물류이동 시작 이벤트 처리: {}", event.getMovementId());
-
-		int retry = 0;
-		while (retry < MAX_RETRIES) {
-			try {
-				Stock fromStock = stockRepository.findByWareIdAndLocationId(event.getWareId(), event.getFromLocationId())
-						.orElseThrow(() -> new StockException.InsufficientStockException(
-								event.getWareId(), event.getFromLocationId(), event.getQuantity(), 0));
-
-				if (fromStock.getQuantity() < event.getQuantity()) {
-					throw new StockException.InsufficientStockException(
-							event.getWareId(), event.getFromLocationId(), event.getQuantity(), fromStock.getQuantity());
-				}
-
-				fromStock.subtractQuantity(event.getQuantity());
-				stockRepository.save(fromStock);
-
-				// 캐시 업데이트
-				String cacheKey = getCacheKey(event.getFromLocationId(), event.getWareId());
-				redisTemplate.opsForValue().set(cacheKey, fromStock.getQuantity(), CACHE_TTL, TimeUnit.MINUTES);
-				
-				log.info("재고 차감 완료: locationId={}, wareId={}, quantity={}", 
-						event.getFromLocationId(), event.getWareId(), fromStock.getQuantity());
-				return;
-			}
-			catch (OptimisticLockingFailureException e) {
-				log.warn("Optimistic locking failed for movement {} (attempt {}/{})",
-						event.getMovementId(), retry + 1, MAX_RETRIES);
-				if (retry == MAX_RETRIES - 1) {
-					throw new StockException("재고 처리 중 충돌이 발생했습니다. 다시 시도해주세요.");
-				}
-				try {
-					Thread.sleep(RETRY_DELAYS[retry]);
-				}
-				catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-					throw new StockException("재고 처리 중 중단되었습니다.");
-				}
-				retry++;
-			}
-		}
-	}
-
-	@EventListener
-	@Transactional
-	public void handleMovementCompleted(MovementCompletedEvent event) {
-		log.info("물류이동 완료 이벤트 처리: {}", event.getMovementId());
-
-		int retry = 0;
-		while (retry < MAX_RETRIES) {
-			try {
-				Location toLocation = locationRepository.findById(event.getToLocationId())
-						.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 위치입니다: " + event.getToLocationId()));
-
-				// 창고인 경우 용량 검증
-				if (toLocation.getType() == LocationType.WAREHOUSE) {
-					int currentQuantity = getTotalQuantityByLocation(event.getToLocationId());
-					if (currentQuantity + event.getQuantity() > toLocation.getCapacity()) {
-						throw new StockException.WarehouseCapacityExceededException(
-								event.getToLocationId(), event.getQuantity(), toLocation.getCapacity());
-					}
-				}
-
-				try {
-					Stock toStock = stockRepository.findByWareIdAndLocationId(event.getWareId(), event.getToLocationId())
-							.orElseThrow(() -> new IllegalArgumentException("도착 위치에 재고가 존재하지 않습니다."));
-					toStock.addQuantity(event.getQuantity());
-					stockRepository.save(toStock);
-
-					// 캐시 업데이트
-					String cacheKey = getCacheKey(event.getToLocationId(), event.getWareId());
-					redisTemplate.opsForValue().set(cacheKey, toStock.getQuantity(), CACHE_TTL, TimeUnit.MINUTES);
-					
-					log.info("재고 증가 완료: locationId={}, wareId={}, quantity={}", 
-							event.getToLocationId(), event.getWareId(), toStock.getQuantity());
-				}
-				catch (IllegalArgumentException e) {
-					// 도착 위치에 재고가 없는 경우 새로 생성
-					createStock(event.getToLocationId(), event.getWareId(), event.getQuantity());
-				}
-				return;
-			}
-			catch (OptimisticLockingFailureException e) {
-				log.warn("Optimistic locking failed for movement {} (attempt {}/{})",
-						event.getMovementId(), retry + 1, MAX_RETRIES);
-				if (retry == MAX_RETRIES - 1) {
-					throw new StockException("재고 처리 중 충돌이 발생했습니다. 다시 시도해주세요.");
-				}
-				try {
-					Thread.sleep(RETRY_DELAYS[retry]);
-				}
-				catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-					throw new StockException("재고 처리 중 중단되었습니다.");
-				}
-				retry++;
-			}
-		}
-	}
+//	@EventListener
+//	@Transactional
+//	public void handleMovementStarted(MovementStartedEvent event) {
+//		log.info("물류이동 시작 이벤트 처리: {}", event.getMovementId());
+//
+//		int retry = 0;
+//		while (retry < MAX_RETRIES) {
+//			try {
+//				Stock fromStock = stockRepository.findByWareIdAndLocationId(event.getWareId(), event.getFromLocationId())
+//						.orElseThrow(() -> new StockException.InsufficientStockException(
+//								event.getWareId(), event.getFromLocationId(), event.getQuantity(), 0));
+//
+//				if (fromStock.getQuantity() < event.getQuantity()) {
+//					throw new StockException.InsufficientStockException(
+//							event.getWareId(), event.getFromLocationId(), event.getQuantity(), fromStock.getQuantity());
+//				}
+//
+//				fromStock.subtractQuantity(event.getQuantity());
+//				stockRepository.save(fromStock);
+//
+//				// 캐시 업데이트
+//				String cacheKey = getCacheKey(event.getFromLocationId(), event.getWareId());
+//				redisTemplate.opsForValue().set(cacheKey, fromStock.getQuantity(), CACHE_TTL, TimeUnit.MINUTES);
+//
+//				log.info("재고 차감 완료: locationId={}, wareId={}, quantity={}",
+//						event.getFromLocationId(), event.getWareId(), fromStock.getQuantity());
+//				return;
+//			}
+//			catch (OptimisticLockingFailureException e) {
+//				log.warn("Optimistic locking failed for movement {} (attempt {}/{})",
+//						event.getMovementId(), retry + 1, MAX_RETRIES);
+//				if (retry == MAX_RETRIES - 1) {
+//					throw new StockException("재고 처리 중 충돌이 발생했습니다. 다시 시도해주세요.");
+//				}
+//				try {
+//					Thread.sleep(RETRY_DELAYS[retry]);
+//				}
+//				catch (InterruptedException ie) {
+//					Thread.currentThread().interrupt();
+//					throw new StockException("재고 처리 중 중단되었습니다.");
+//				}
+//				retry++;
+//			}
+//		}
+//	}
+//
+//	@EventListener
+//	@Transactional
+//	public void handleMovementCompleted(MovementCompletedEvent event) {
+//		log.info("물류이동 완료 이벤트 처리: {}", event.getMovementId());
+//
+//		int retry = 0;
+//		while (retry < MAX_RETRIES) {
+//			try {
+//				Location toLocation = locationRepository.findById(event.getToLocationId())
+//						.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 위치입니다: " + event.getToLocationId()));
+//
+//				// 창고인 경우 용량 검증
+//				if (toLocation.getType() == LocationType.WAREHOUSE) {
+//					int currentQuantity = getTotalQuantityByLocation(event.getToLocationId());
+//					if (currentQuantity + event.getQuantity() > toLocation.getCapacity()) {
+//						throw new StockException.WarehouseCapacityExceededException(
+//								event.getToLocationId(), event.getQuantity(), toLocation.getCapacity());
+//					}
+//				}
+//
+//				try {
+//					Stock toStock = stockRepository.findByWareIdAndLocationId(event.getWareId(), event.getToLocationId())
+//							.orElseThrow(() -> new IllegalArgumentException("도착 위치에 재고가 존재하지 않습니다."));
+//					toStock.addQuantity(event.getQuantity());
+//					stockRepository.save(toStock);
+//
+//					// 캐시 업데이트
+//					String cacheKey = getCacheKey(event.getToLocationId(), event.getWareId());
+//					redisTemplate.opsForValue().set(cacheKey, toStock.getQuantity(), CACHE_TTL, TimeUnit.MINUTES);
+//
+//					log.info("재고 증가 완료: locationId={}, wareId={}, quantity={}",
+//							event.getToLocationId(), event.getWareId(), toStock.getQuantity());
+//				}
+//				catch (IllegalArgumentException e) {
+//					// 도착 위치에 재고가 없는 경우 새로 생성
+//					createStock(event.getToLocationId(), event.getWareId(), event.getQuantity());
+//				}
+//				return;
+//			}
+//			catch (OptimisticLockingFailureException e) {
+//				log.warn("Optimistic locking failed for movement {} (attempt {}/{})",
+//						event.getMovementId(), retry + 1, MAX_RETRIES);
+//				if (retry == MAX_RETRIES - 1) {
+//					throw new StockException("재고 처리 중 충돌이 발생했습니다. 다시 시도해주세요.");
+//				}
+//				try {
+//					Thread.sleep(RETRY_DELAYS[retry]);
+//				}
+//				catch (InterruptedException ie) {
+//					Thread.currentThread().interrupt();
+//					throw new StockException("재고 처리 중 중단되었습니다.");
+//				}
+//				retry++;
+//			}
+//		}
+//	}
 }

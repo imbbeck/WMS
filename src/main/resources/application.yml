@@ -2,9 +2,9 @@ spring:
   application:
     name: wms
   datasource:
-    url: jdbc:mysql://localhost:3306/wms?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: 2352
+    url: jdbc:mysql://210.95.64.60:3306/wms?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: nbs_dev
+    password: nbsdev1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -25,13 +25,14 @@ spring:
       cache-null-values: false
   data:
     redis:
-      host: localhost
+      host: 210.95.64.60
       port: 6379
       database: 0
 
 # 서버 설정
 server:
-  port: 8080
+  port: 8888
+  address: 0.0.0.0
 #  servlet:
 #    context-path: /api
 

@@ -72,7 +72,7 @@ public class LocationDTO {
 		@Schema(description = "X coordinate", example = "15")
 		private Integer coordinateX;
 
-		@NotNull(message = "ㅛ좌표는 필수입니다")
+		@NotNull(message = "y좌표는 필수입니다")
 		@Schema(description = "Y coordinate", example = "25")
 		private Integer coordinateY;
 

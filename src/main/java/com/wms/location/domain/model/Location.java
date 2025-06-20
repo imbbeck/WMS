@@ -26,12 +26,12 @@ public class Location extends BaseEntity {
 	private LocationType type;
 
 	@Column
-	private Integer capacity;  // WAREHOUSE 타입일 때만 유효
+	private Integer capacity;  // WAREHOUSE 타입일 때만 유효;
 
-	@Column( nullable = false)
+	@Column(name = "coordinate_x", nullable = false)
 	private Integer coordinateX; // 장소 페이지 내 location 요소 위치 x좌표
 
-	@Column(nullable = false)
+	@Column(name = "coordinate_y", nullable = false)
 	private Integer coordinateY; // 장소 페이지 내 location 요소 위치 x좌표
 
 	public Location(String name, LocationType type, Integer coordinateX, Integer coordinateY) {

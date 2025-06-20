@@ -18,9 +18,6 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("WMS Location Aggregate API")
                         .description("Warehouse Management System - Location Aggregate API Documentation")
-                        .version("1.0.0"))
-                .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Development Server")
-                ));
+                        .version("1.0.0"));
     }
 }
