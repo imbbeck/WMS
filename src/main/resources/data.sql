@@ -28,7 +28,7 @@ INSERT INTO ware (name, type, palette_unit, created_at, updated_at) VALUES
 ('볼펜', '사무용품', 500, NOW(), NOW()),
 ('A4용지', '사무용품', 200, NOW(), NOW());
 
--- Insert Location Connections (위치 간 연결)
+-- Insert Location Connections (장소 간 연결)
 -- 입고장 -> 창고 연결
 INSERT INTO location_connection (location_a_id, location_b_id, trt, created_at, updated_at) VALUES
 (1, 5, 10, NOW(), NOW()), -- 입고장A -> 창고A (10분)

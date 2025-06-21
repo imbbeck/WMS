@@ -1,12 +1,13 @@
 package com.wms.location.application;
 
+import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.domain.event.LocationCreatedEvent;
 import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.event.LocationUpdatedEvent;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationType;
-import com.wms.location.domain.exception.LocationException.*;
+import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.repository.LocationRepository;
 import com.wms.location.dto.LocationDTO;
 import com.wms.location.dto.LocationWithConnectionsDTO;
@@ -29,7 +30,7 @@ public class LocationService {
     @Transactional
     public Location createLocation(LocationDTO.CreateReq request) {
         if (locationRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("이미 존재하는 장소 이름입니다.");
+            throw LocationException.duplicate(FieldEnum.NAME, request.getName());
         }
 
         //  엔티티 생성 책임을 DTO에 위임
@@ -47,16 +48,16 @@ public class LocationService {
     // Location 조회시 연결 그래프 정보도 함께.
     public LocationWithConnectionsDTO getLocationWithConnections(Long id) {
         return locationRepository.findLocationWithConnections(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> LocationException.notFound(id));
     }
 
     // 단순 조회: 그래프 불필요
     public Location getLocation(Long id) {
         return locationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> LocationException.notFound(id));
     }
 
-    public List<Location> getLocations() {
+    public List<Location> getAllLocations() {
         return locationRepository.findAll();
     }
 
@@ -86,6 +87,5 @@ public class LocationService {
         eventPublisher.publishEvent(new LocationDeletedEvent(id));
 
         locationRepository.delete(location);
-
     }
 } 

@@ -2,6 +2,8 @@ package com.wms.userInfo;
 
 import com.wms.userInfo.application.AuthService;
 import com.wms.userInfo.application.JwtProvider;
+import com.wms.userInfo.domain.exception.AuthException;
+import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.Password;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -71,8 +72,8 @@ class AuthServiceTest {
 
         // when & then
         assertThatThrownBy(() -> authService.login(req))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Invalid userId or password");
+                .isInstanceOf(AuthException.UnauthorizedEx.class)
+                .hasMessageContaining("잘못된 사용자 ID 또는 비밀번호입니다");
     }
 
     @Test
@@ -83,8 +84,8 @@ class AuthServiceTest {
 
         // when & then
         assertThatThrownBy(() -> authService.login(req))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Invalid userId or password");
+                .isInstanceOf(AuthException.UnauthorizedEx.class)
+                .hasMessageContaining("잘못된 사용자 ID 또는 비밀번호입니다");
     }
 
     @Test
@@ -112,7 +113,7 @@ class AuthServiceTest {
 
         // when & then
         assertThatThrownBy(() -> authService.refreshToken(req))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Invalid refresh token");
+                .isInstanceOf(AuthException.UnauthorizedEx.class)
+                .hasMessageContaining("유효하지 않은 리프레시 토큰입니다");
     }
 } 

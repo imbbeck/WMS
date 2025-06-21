@@ -19,27 +19,27 @@ public class LogisticTemplateDTO {
 	@Schema(description = "LogisticTemplate creation request")
 	public static class CreateReq {
 
-		@NotBlank(message = "LogisticTemplate name is required")
+		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
 		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate A")
 		private String name;
 
-		@NotNull(message = "LogisticTemplate type is required")
+		@NotNull(message = "물류 템플릿 타입은 필수입니다")
 		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
 		private LogisticType type;
 
-		@NotNull(message = "WareId is required")
+		@NotNull(message = "물품 ID는 필수입니다")
 		@Schema(description = "WareId", example = "1")
 		private Long wareId;
 
-		@NotNull(message = "fromLocationId is required")
+		@NotNull(message = "출발 장소 ID는 필수입니다")
 		@Schema(description = "fromLocationId", example = "1")
 		private Long fromLocationId;
 
-		@NotNull(message = "toLocationId is required")
+		@NotNull(message = "도착 장소 ID는 필수입니다")
 		@Schema(description = "toLocationId", example = "2")
 		private Long toLocationId;
 
-		@NotNull(message = "Standard Quantity is required")
+		@NotNull(message = "표준 수량은 필수입니다")
 		@Schema(description = "Standard Quantity", example = "100")
 		private Integer standardQuantity;
 
@@ -70,11 +70,11 @@ public class LogisticTemplateDTO {
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@Schema(description = "Location update request")
 	public static class UpdateReq {
-		@NotBlank(message = "LogisticTemplate name is required")
+		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
 		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate 1")
 		private String name;
 
-		@NotNull(message = "LogisticTemplate type is required")
+		@NotNull(message = "물류 템플릿 타입은 필수입니다")
 		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
 		private LogisticType type;
 

@@ -1,5 +1,7 @@
 package com.wms.location.interfaces;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,7 +67,9 @@ public class LocationConnectionController {
 	public List<LocationConnectionDTO.ConnectionInfo> getConnectionsByLocation(
 			@Parameter(description = "Location ID") @PathVariable Long locationId) {
 		List<LocationConnection> connections = connectionService.getConnectionsByLocationId(locationId);
-
+		if (connections.isEmpty()) {
+			return new ArrayList<>();
+		}
 		return connections.stream()
 				.map(conn -> {
 					Long connectedLocationId = conn.getOtherLocationId(locationId);

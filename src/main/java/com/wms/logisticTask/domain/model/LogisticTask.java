@@ -1,22 +1,20 @@
 package com.wms.logisticTask.domain.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.wms.applicationInfra.domain.BaseEntity;
 import com.wms.location.domain.model.Location;
+import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTemplate.domain.model.LogisticType;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "logistic_task")
@@ -103,7 +101,7 @@ public class LogisticTask extends BaseEntity {
 		}
 
 		if (!(this.status == LogisticTaskStatus.PENDING || this.status == LogisticTaskStatus.INITIATE_DELAYED )) {
-			throw new IllegalArgumentException("change task only in (PENDING, INITIATE_DELAYED) status. current status is " + this.status + " .");
+			throw LogisticTaskException.taskNotModifiableEx(this.status.toString());
 		}
 
 		this.name = name;
@@ -115,7 +113,7 @@ public class LogisticTask extends BaseEntity {
 
 	public void modifyTask(UserInfo worker, LocalTime etd, LocalTime eta) {
 		if (!(this.status == LogisticTaskStatus.PENDING || this.status == LogisticTaskStatus.INITIATE_DELAYED )) {
-			throw new IllegalArgumentException("change task only in (PENDING, INITIATE_DELAYED) status. current status is " + this.status + " .");
+			throw LogisticTaskException.taskNotModifiableEx(this.status.toString());
 		}
 		this.worker = worker;
 		this.etd = etd;
@@ -145,14 +143,14 @@ public class LogisticTask extends BaseEntity {
 
 	public void cancleTask() {
 		if (!(this.status == LogisticTaskStatus.PENDING || this.status == LogisticTaskStatus.INITIATE_DELAYED)) {
-			throw new IllegalArgumentException("cancel task only in (PENDING, INITIATE_DELAYED) status. current status is " + this.status + " .");
+			throw LogisticTaskException.taskCancellationNotAllowedEx(this.status.toString());
 		}
 		changeStatus(LogisticTaskStatus.CANCELLED);
 	}
 
 	public void failTask() {
 		if (!(this.status == LogisticTaskStatus.INITIATED)) {
-			throw new IllegalArgumentException("fail task only in (INITIATED) status. current status is " + this.status + " .");
+			throw LogisticTaskException.taskFailureNotAllowedEx(this.status.toString());
 		}
 		changeStatus(LogisticTaskStatus.FAILED);
 	}

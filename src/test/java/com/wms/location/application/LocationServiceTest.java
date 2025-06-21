@@ -8,6 +8,7 @@ import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.domain.repository.LocationConnectionRepository;
 import com.wms.location.domain.repository.LocationRepository;
+import com.wms.location.domain.exception.LocationException;
 import com.wms.location.dto.LocationDTO;
 import com.wms.location.dto.LocationWithConnectionsDTO;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ class LocationServiceTest {
 	private LocationConnectionRepository locationConnectionRepository;
 
 	@Test
-	@DisplayName("창고 타입의 위치를 성공적으로 생성한다.")
+	@DisplayName("창고 타입의 장소를 성공적으로 생성한다.")
 	void createWarehouseLocation_Success() {
 		// given
 		var request = LocationDTO.CreateReq.builder()
@@ -58,7 +59,7 @@ class LocationServiceTest {
 	}
 
 	@Test
-	@DisplayName("이미 존재하는 이름으로 위치를 생성하면 예외가 발생한다.")
+	@DisplayName("이미 존재하는 이름으로 장소를 생성하면 예외가 발생한다.")
 	void createLocation_WithDuplicateName_ThrowsException() {
 		// given
 		var request1 = LocationDTO.CreateReq.builder()
@@ -79,12 +80,12 @@ class LocationServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> locationService.createLocation(request2))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessage("이미 존재하는 장소 이름입니다.");
+				.isInstanceOf(LocationException.ConflictEx.class)
+				.hasMessage("이미 존재하는 이름 입니다: 중복 이름 창고");
 	}
 
 	@Test
-	@DisplayName("위치 정보를 성공적으로 수정한다.")
+	@DisplayName("장소 정보를 성공적으로 수정한다.")
 	void updateLocation_Success() {
 		// given
 		Location savedLocation = locationRepository.save(Location.builder()
@@ -110,7 +111,7 @@ class LocationServiceTest {
 	}
 
 	@Test
-	@DisplayName("위치를 삭제하면 해당 위치와 관련된 연결 정보도 모두 삭제된다 (이벤트 리스너 동작 검증)")
+	@DisplayName("장소를 삭제하면 해당 장소와 관련된 연결 정보도 모두 삭제된다 (이벤트 리스너 동작 검증)")
 	void deleteLocation_WithConnections_AlsoDeletesConnections() {
 		// given
 		Location locationA = locationRepository.save(Location.builder().name("A 창고").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
@@ -136,7 +137,7 @@ class LocationServiceTest {
 	}
 
 	@Test
-	@DisplayName("특정 위치와 연결 정보를 함께 조회한다.")
+	@DisplayName("특정 장소와 연결 정보를 함께 조회한다.")
 	void getLocationWithConnections_Success() {
 		// given
 		Location locA = locationRepository.save(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());

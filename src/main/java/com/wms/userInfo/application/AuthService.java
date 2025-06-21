@@ -1,14 +1,14 @@
 package com.wms.userInfo.application;
 
+import com.wms.userInfo.domain.exception.AuthException;
+import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
 import com.wms.userInfo.dto.AuthDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +22,10 @@ public class AuthService {
 	@Transactional
 	public AuthDTO.TokenRes login(AuthDTO.LoginReq request) {
 		UserInfo user = userInfoRepository.findByUsername(request.getUserId())
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid userId or password"));
+				.orElseThrow(() -> AuthException.unauthorize("잘못된 사용자 ID 또는 비밀번호입니다"));
 
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword().getValue())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid userId or password");
+			throw AuthException.unauthorize("잘못된 사용자 ID 또는 비밀번호입니다");
 		}
 
 		String accessToken = jwtProvider.generateAccessToken(user);
@@ -37,12 +37,12 @@ public class AuthService {
 	@Transactional
 	public AuthDTO.TokenRes refreshToken(AuthDTO.RefreshTokenReq refreshToken) {
 		if (!jwtProvider.validateToken(refreshToken.getRefreshToken())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+			throw AuthException.unauthorize("유효하지 않은 리프레시 토큰입니다");
 		}
 
 		String username = jwtProvider.getUsernameFromToken(refreshToken.getRefreshToken());
 		UserInfo user = userInfoRepository.findByUsername(username)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+				.orElseThrow(() -> AuthException.unauthorize("유효하지 않은 리프레시 토큰입니다"));
 
 		String newAccessToken = jwtProvider.generateAccessToken(user);
 		String newRefreshToken = jwtProvider.generateRefreshToken(user);
@@ -56,7 +56,7 @@ public class AuthService {
 		// 또는 클라이언트에서 토큰 폐기 후 서버에서 별도 관리 안함
 		// 간단히 validate만 해서 예외처리
 		if (!jwtProvider.validateToken(refreshToken)) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+			throw AuthException.unauthorize("유효하지 않은 리프레시 토큰입니다");
 		}
 
 		// TODO: Redis 등에 블랙리스트 저장 처리

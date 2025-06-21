@@ -92,7 +92,7 @@ class LogisticTemplateControllerTest {
         given(service.findById(1L)).willReturn(mockTemplate);
         mockMvc.perform(get("/logistic-templates/{id}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".name").value("A"));
+                .andExpect(jsonPath("$.name").value("A"));
     }
 
     @Test
@@ -151,8 +151,8 @@ class LogisticTemplateControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".name").value("수정된 템플릿"))
-                .andExpect(jsonPath(".standardQuantity").value(20));
+                .andExpect(jsonPath("$.name").value("수정된 템플릿"))
+                .andExpect(jsonPath("$.standardQuantity").value(20));
     }
 
     @Test

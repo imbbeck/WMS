@@ -10,7 +10,7 @@ public class StockRequest {
     @NotNull(message = "물품 ID는 필수입니다")
     private Long wareId;
 
-    @NotNull(message = "위치 ID는 필수입니다")
+    @NotNull(message = "장소 ID는 필수입니다")
     private Long locationId;
 
     @NotNull(message = "수량은 필수입니다")

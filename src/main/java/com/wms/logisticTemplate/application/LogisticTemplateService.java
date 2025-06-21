@@ -1,11 +1,14 @@
 package com.wms.logisticTemplate.application;
 
+import com.wms.location.domain.exception.LocationException;
+import com.wms.logisticTemplate.domain.exception.LogisticTemplateException;
 import com.wms.logisticTemplate.domain.model.LogisticTemplate;
 import com.wms.logisticTemplate.domain.model.LogisticType;
 import com.wms.logisticTemplate.domain.repository.LogisticTemplateRepository;
 import com.wms.logisticTemplate.dto.LogisticTemplateDTO;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.repository.LocationRepository;
+import com.wms.ware.domain.exception.WareException;
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +27,13 @@ public class LogisticTemplateService {
 	@Transactional
 	public LogisticTemplate create(LogisticTemplateDTO.CreateReq req) {
 		Ware ware = wareRepository.findById(req.getWareId())
-				.orElseThrow(() -> new IllegalArgumentException("Ware not found"));
+				.orElseThrow(() -> WareException.notFound(req.getWareId()));
 
 		Location from = locationRepository.findById(req.getFromLocationId())
-				.orElseThrow(() -> new IllegalArgumentException("FromLocation not found"));
+				.orElseThrow(() -> LocationException.notFound(req.getFromLocationId()));
 
 		Location to = locationRepository.findById(req.getToLocationId())
-				.orElseThrow(() -> new IllegalArgumentException("ToLocation not found"));
+				.orElseThrow(() -> LocationException.notFound(req.getToLocationId()));
 
 		LogisticTemplate template = req.toEntity(ware, from, to);
 		return logisticTemplateRepository.save(template);
@@ -39,7 +42,7 @@ public class LogisticTemplateService {
 	@Transactional
 	public LogisticTemplate update(Long id, LogisticTemplateDTO.UpdateReq req) {
 		LogisticTemplate template = logisticTemplateRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("LogisticTemplate not found"));
+				.orElseThrow(() -> LogisticTemplateException.notFound(id));
 
 		template.update(req.getName(), req.getType(), req.getStandardQuantity());
 		return template;
@@ -48,7 +51,7 @@ public class LogisticTemplateService {
 	@Transactional(readOnly = true)
 	public LogisticTemplate findById(Long id) {
 		return logisticTemplateRepository.findWithEntityGraphById(id)
-				.orElseThrow(() -> new IllegalArgumentException("LogisticTemplate not found"));
+				.orElseThrow(() -> LogisticTemplateException.notFound(id));
 	}
 
 	// 전체 페이징 조회
@@ -69,7 +72,7 @@ public class LogisticTemplateService {
 	@Transactional
 	public void delete(Long id) {
 		LogisticTemplate template = logisticTemplateRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("LogisticTemplate not found"));
+				.orElseThrow(() -> LogisticTemplateException.notFound(id));
 		logisticTemplateRepository.delete(template);
 	}
 }

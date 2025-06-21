@@ -15,11 +15,11 @@ public class LocationConnectionDTO {
 	@Schema(description = "Location connection creation request")
 	public static class CreateReq {
 
-		@NotNull(message = "첫 번째 위치 ID는 필수입니다")
+		@NotNull(message = "첫 번째 장소 ID는 필수입니다")
 		@Schema(description = "First location ID", example = "1")
 		private Long locationId1;
 
-		@NotNull(message = "두 번째 위치 ID는 필수입니다")
+		@NotNull(message = "두 번째 장소 ID는 필수입니다")
 		@Schema(description = "Second location ID", example = "2")
 		private Long locationId2;
 

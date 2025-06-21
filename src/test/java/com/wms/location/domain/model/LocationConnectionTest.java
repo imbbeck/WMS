@@ -2,6 +2,8 @@ package com.wms.location.domain.model;
 
 import com.wms.applicationInfra.config.JpaAuditingConfig;
 import com.wms.applicationInfra.config.QuerydslConfig;
+import com.wms.location.domain.exception.LocationConnectException;
+import com.wms.location.domain.exception.LocationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ class LocationConnectionTest {
 
     private Location locationA;
     private Location locationB;
+    private Location locationC;
 
     @BeforeEach
     void setUp() {
@@ -35,6 +38,14 @@ class LocationConnectionTest {
 
         locationB = entityManager.persistAndFlush(Location.builder()
                 .name("Location B")
+                .type(LocationType.WAREHOUSE)
+                .capacity(200)
+                .coordinateX(100)
+                .coordinateY(100)
+                .build());
+
+        locationC = entityManager.persistAndFlush(Location.builder()
+                .name("Location C")
                 .type(LocationType.WAREHOUSE)
                 .capacity(200)
                 .coordinateX(100)
@@ -74,12 +85,12 @@ class LocationConnectionTest {
                     .locationId2(locationA.getId())
                     .trt(100)
                     .build();
-        }).isInstanceOf(IllegalArgumentException.class)
+        }).isInstanceOf(LocationConnectException.ValidationEx.class)
                 .hasMessage("출발지와 도착지가 같을 수 없습니다.");
     }
 
     @Test
-    @DisplayName("이동 시간을 0 이하의 값으로 수정하면 예외가 발생한다.")
+    @DisplayName("소요시간을 0 이하의 값으로 수정하면 예외가 발생한다.")
     void updateDuration_WithInvalidValue_ThrowsException() {
         // given
         LocationConnection connection = LocationConnection.builder()
@@ -90,12 +101,12 @@ class LocationConnectionTest {
 
         // when & then
         assertThatThrownBy(() -> connection.updateDuration(0))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이동 시간은 0보다 커야 합니다.");
+                .isInstanceOf(LocationConnectException.ValidationEx.class)
+                .hasMessage("소요시간은 0보다 커야 합니다.");
 
         assertThatThrownBy(() -> connection.updateDuration(-10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이동 시간은 0보다 커야 합니다.");
+                .isInstanceOf(LocationConnectException.ValidationEx.class)
+                .hasMessage("소요시간은 0보다 커야 합니다.");
     }
 
     @Test
@@ -115,5 +126,22 @@ class LocationConnectionTest {
         // then
         assertThat(otherIdFromA).isEqualTo(locationB.getId());
         assertThat(otherIdFromB).isEqualTo(locationA.getId());
+    }
+
+    @Test
+    @DisplayName("연결되지 않은 특정 Location ID가 주어졌을 때 null을 반환한다.")
+    void getOtherLocationId_Null_Success() {
+        // given
+        LocationConnection connection = LocationConnection.builder()
+                .locationId1(locationA.getId())
+                .locationId2(locationB.getId())
+                .trt(80)
+                .build();
+
+        // when
+        Long otherIdFromC = connection.getOtherLocationId(locationC.getId());
+
+        // then
+        assertThat(otherIdFromC).isNull();
     }
 }

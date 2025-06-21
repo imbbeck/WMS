@@ -1,6 +1,8 @@
 package com.wms.location.domain.model;
 
 import com.wms.applicationInfra.domain.BaseEntity;
+import com.wms.applicationInfra.domain.FieldEnum;
+import com.wms.location.domain.exception.LocationException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,13 +28,13 @@ public class Location extends BaseEntity {
 	private LocationType type;
 
 	@Column(name = "capacity")
-	private Integer capacity;  // WAREHOUSE 타입일 때만 유효;
+	private Integer capacity;  // 수용량. WAREHOUSE 타입일 때만 유효;
 
 	@Column(name = "coordinate_x", nullable = false)
-	private Integer coordinateX; // 장소 페이지 내 location 요소 위치 x좌표
+	private Integer coordinateX; // 장소 페이지 내 location 요소 장소 x좌표
 
 	@Column(name = "coordinate_y", nullable = false)
-	private Integer coordinateY; // 장소 페이지 내 location 요소 위치 x좌표
+	private Integer coordinateY; // 장소 페이지 내 location 요소 장소 x좌표
 
 	public Location(String name, LocationType type, Integer coordinateX, Integer coordinateY) {
 		this(name, type, null, coordinateX, coordinateY);
@@ -58,21 +60,21 @@ public class Location extends BaseEntity {
 
 	private static void validateLocationData(String name, LocationType type, Integer capacity) {
 		if (name == null || name.trim().isEmpty()) {
-			throw new IllegalArgumentException("위치 이름은 필수입니다.");
+			throw LocationException.validation(FieldEnum.NAME);
 		}
 
 		if (type == null) {
-			throw new IllegalArgumentException("위치 타입은 필수입니다.");
+			throw LocationException.validation(FieldEnum.TYPE);
 		}
 
 		if (type == LocationType.WAREHOUSE) {
 			if (capacity == null || capacity <= 0) {
-				throw new IllegalArgumentException("창고의 용량은 0보다 커야 합니다.");
+				throw LocationException.validation("수용량", "창고의 수용량은 0보다 커야 합니다.");
 			}
 		}
 		else {
 			if (capacity != null) {
-				throw new IllegalArgumentException("입고/출고처는 용량을 지정할 수 없습니다.");
+				throw LocationException.validation("입고/출고처는 수용량을 지정할 수 없습니다.");
 			}
 		}
 	}

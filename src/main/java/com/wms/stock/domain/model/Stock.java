@@ -3,9 +3,11 @@ package com.wms.stock.domain.model;
 import java.time.LocalDateTime;
 
 import com.wms.location.domain.model.Location;
+import com.wms.stock.domain.exception.StockExceptions;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,7 +31,7 @@ public class Stock {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
-    private Location location;  // 위치
+    private Location warehouse;  // 창고
 
     @Column(nullable = false)
     private Integer quantity;  // 수량
@@ -43,10 +45,17 @@ public class Stock {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Builder
+    public Stock(Ware ware, Location location, Integer quantity) {
+        this.ware = ware;
+        this.warehouse = location;
+        this.quantity = quantity;
+    }
+
     public static Stock create(Ware ware, Location location, Integer quantity) {
         Stock stock = new Stock();
         stock.ware = ware;
-        stock.location = location;
+        stock.warehouse = location;
         stock.quantity = quantity;
         return stock;
     }
@@ -57,17 +66,18 @@ public class Stock {
 
     public void addQuantity(Integer quantity) {
         if (quantity < 0) {
-            throw new IllegalArgumentException("추가할 수량은 0 이상이어야 합니다");
+            throw new StockExceptions.InvalidQuantityExceptions(quantity);
         }
         this.quantity += quantity;
     }
 
-    public void subtractQuantity(Integer quantity) {
+    public void removeQuantity(Integer quantity) {
         if (quantity < 0) {
-            throw new IllegalArgumentException("차감할 수량은 0 이상이어야 합니다");
+            throw new StockExceptions.InvalidQuantityExceptions(quantity);
         }
         if (this.quantity < quantity) {
-            throw new IllegalArgumentException("현재 수량보다 많은 수량을 차감할 수 없습니다");
+            throw new StockExceptions.InsufficientStockExceptions(
+                    this.ware.getId(), this.warehouse.getId(), quantity, this.quantity);
         }
         this.quantity -= quantity;
     }

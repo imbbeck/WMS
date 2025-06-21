@@ -1,7 +1,9 @@
 package com.wms.logisticTemplate.domain.model;
 
 import com.wms.applicationInfra.domain.BaseEntity;
+import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.location.domain.model.Location;
+import com.wms.logisticTemplate.domain.exception.LogisticTemplateException;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -58,15 +60,15 @@ public class LogisticTemplate extends BaseEntity {
 
 	private static void validateData(String name, LogisticType type, Integer standardQuantity) {
 		if (name == null || name.trim().isEmpty()) {
-			throw new IllegalArgumentException("물류이동 템플릿 이름은 필수입니다.");
+			throw LogisticTemplateException.validation(FieldEnum.NAME);
 		}
 
 		if (type == null) {
-			throw new IllegalArgumentException("물류이동 템플릿 타입은 필수입니다.");
+			throw LogisticTemplateException.validation(FieldEnum.TYPE);
 		}
 
-		if (standardQuantity == null || standardQuantity <= 0) {
-			throw new IllegalArgumentException("표준 수량은 0보다 커야 합니다.");
+		if (standardQuantity == null  || standardQuantity <= 0) {
+			throw LogisticTemplateException.validation("표준수량", "표준수량은 0보다 커야 합니다.");
 		}
 	}
 }

@@ -31,13 +31,13 @@ public class WareController {
     @GetMapping("/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     public WareDTO.Res getWare(@PathVariable Long id) {
-        return new WareDTO.Res(wareService.getWare(id));
+        return new WareDTO.Res(wareService.getWareById(id));
     }
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
     public List<WareDTO.Res> getWares() {
-        return wareService.getWares().stream()
+        return wareService.getAllWares().stream()
                 .map(WareDTO.Res::new)
                 .toList();
     }

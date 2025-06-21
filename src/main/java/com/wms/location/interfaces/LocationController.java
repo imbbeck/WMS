@@ -50,7 +50,7 @@ public class LocationController {
 	@Operation(summary = "Get all locations", description = "Retrieves a list of all locations")
 	@ApiResponse(responseCode = "200", description = "Successfully retrieved locations")
 	public List<LocationDTO.Res> getLocations() {
-		return locationService.getLocations().stream()
+		return locationService.getAllLocations().stream()
 				.map(LocationDTO.Res::new)
 				.toList();
 	}

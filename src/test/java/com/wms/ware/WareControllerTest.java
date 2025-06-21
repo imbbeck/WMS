@@ -85,7 +85,7 @@ class WareControllerTest {
         var mockWare1 = Ware.builder().name("A").type("부품").paletteUnit(1).build();
         var mockWare2 = Ware.builder().name("B").type("전자제품").paletteUnit(2).build();
         var wareList = List.of(mockWare1, mockWare2);
-        given(wareService.getWares()).willReturn(wareList);
+        given(wareService.getAllWares()).willReturn(wareList);
 
         // when & then
         mockMvc.perform(get("/wares"))
@@ -115,12 +115,12 @@ class WareControllerTest {
     void getWare_Success() throws Exception {
         // given
         var mockWare = Ware.builder().name("A").type("부품").paletteUnit(1).build();
-        given(wareService.getWare(1L)).willReturn(mockWare);
+        given(wareService.getWareById(1L)).willReturn(mockWare);
 
         // when & then
         mockMvc.perform(get("/wares/{id}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".name").value("A"));
+                .andExpect(jsonPath("$.name").value("A"));
     }
 
     @Test
@@ -144,8 +144,8 @@ class WareControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".name").value("수정된 물품"))
-                .andExpect(jsonPath(".paletteUnit").value(20));
+                .andExpect(jsonPath("$.name").value("수정된 물품"))
+                .andExpect(jsonPath("$.paletteUnit").value(20));
     }
 
     @Test

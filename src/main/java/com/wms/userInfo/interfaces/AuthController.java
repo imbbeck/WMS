@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -56,10 +57,11 @@ public class AuthController {
 		return new UserInfoDTO.Res(user);
 	}
 
-	@DeleteMapping("/withdraw/{id}")
+	@PreAuthorize("isAuthenticated()")
+	@DeleteMapping("/withdraw")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void withdraw(@PathVariable Long id, @AuthenticationPrincipal UserInfo currentUser) {
-		userInfoService.withdraw(id, currentUser);
+	public void withdraw(@AuthenticationPrincipal UserInfo currentUser) {
+		userInfoService.withdraw(currentUser);
 	}
 }
 

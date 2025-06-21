@@ -1,5 +1,6 @@
 package com.wms.userInfo.domain.model;
 
+import com.wms.userInfo.domain.exception.UserInfoException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -29,7 +30,7 @@ public class Password {
 
 	public Password changePassword(final String newPassword, final String oldPassword) {
 		if (!isMatched(oldPassword)) {
-			throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
+			throw UserInfoException.wrongPasswordException();
 		}
 		// 내부 상태 변경 없이 새 객체 반환
 		return new Password(newPassword);

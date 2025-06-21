@@ -48,7 +48,7 @@ class LocationControllerTest {
 	private DomainCacheManager<Long, String> domainCacheManager;
 
 	@Test
-	@DisplayName("POST /locations - 위치 생성 요청을 성공하고 201 Created를 반환한다.")
+	@DisplayName("POST /locations - 장소 생성 요청을 성공하고 201 Created를 반환한다.")
 	void createLocation_Success() throws Exception {
 		// given
 		var requestDto = LocationDTO.CreateReq.builder()
@@ -80,7 +80,7 @@ class LocationControllerTest {
 	@DisplayName("POST /locations - 유효성 검증 실패 시 400 Bad Request를 반환한다.")
 	void createLocation_WithInvalidInput_ReturnsBadRequest() throws Exception {
 		// given
-		var invalidRequestDto = new LocationDTO.CreateReq("", null, null, null, null); // Name, Type이 비어있음
+		var invalidRequestDto = new LocationDTO.CreateReq("", null, null, null, null); // 이름, 타입이 비어있음
 
 		// when & then
 		mockMvc.perform(post("/locations")
@@ -90,7 +90,7 @@ class LocationControllerTest {
 	}
 
 	@Test
-	@DisplayName("GET /locations - 모든 위치 목록을 조회하고 200 OK를 반환한다.")
+	@DisplayName("GET /locations - 모든 장소 목록을 조회하고 200 OK를 반환한다.")
 	void getLocations_Success() throws Exception {
 		// given
 		var mockLocation1 = Location.builder()
@@ -108,7 +108,7 @@ class LocationControllerTest {
 				.build();
 
 		var locationList = List.of(mockLocation1, mockLocation2);
-		given(locationService.getLocations()).willReturn(locationList);
+		given(locationService.getAllLocations()).willReturn(locationList);
 
 		// when & then
 		mockMvc.perform(get("/locations"))
@@ -121,7 +121,7 @@ class LocationControllerTest {
 	}
 
 	@Test
-	@DisplayName("GET /locations/type/{type} - 특정 타입의 위치 목록을 조회하고 200 OK를 반환한다.")
+	@DisplayName("GET /locations/type/{type} - 특정 타입의 장소 목록을 조회하고 200 OK를 반환한다.")
 	void getLocationsByType_Success() throws Exception {
 		// Given
 		LocationType type = LocationType.WAREHOUSE;
@@ -154,9 +154,9 @@ class LocationControllerTest {
 	}
 
 	@Test
-	@DisplayName("GET /locations/{id} - 특정 위치와 연결 정보를 조회하고 200 OK를 반환한다.")
+	@DisplayName("GET /locations/{id} - 특정 장소와 연결 정보를 조회하고 200 OK를 반환한다.")
 	void getLocation_Success() throws Exception {
-// given
+		// given
 		Location locA = Location.builder()
 				.name("창고A")
 				.type(LocationType.WAREHOUSE)
@@ -180,7 +180,7 @@ class LocationControllerTest {
 				.build();
 
 		LocationConnectionDTO.Res locationConnectionAandB = LocationConnectionDTO.Res.builder()
-				.locationAId(1L) // Location 객체.getId() 는 Entity가 영속화되지 않았기 때문에 null일 수 있으므로 직접 ID 값 사용 `locA.getId()`
+				.locationAId(1L)
 				.locationBId(2L)
 				.trt(50)
 				.build();
@@ -214,11 +214,11 @@ class LocationControllerTest {
 
 
 	@Test
-	@DisplayName("GET /locations/{id} - 존재하지 않는 위치 ID로 조회 시 404 Not Found를 반환해야 한다.")
+	@DisplayName("GET /locations/{id} - 존재하지 않는 장소 ID로 조회 시 404 Not Found를 반환해야 한다.")
 	void getLocation_NotFound_ShouldReturnNotFound() throws Exception {
 		// given
 		// ControllerAdvice가 예외를 처리하여 404를 반환한다고 가정
-		given(locationService.getLocationWithConnections(99L)).willThrow(new LocationException.NotFoundException(99L));
+		given(locationService.getLocationWithConnections(99L)).willThrow(LocationException.notFound(99L));
 
 		// when & then
 		mockMvc.perform(get("/locations/{id}", 99L))
@@ -226,7 +226,7 @@ class LocationControllerTest {
 	}
 
 	@Test
-	@DisplayName("PUT /locations/{id} - 위치 정보를 수정하고 200 OK를 반환한다.")
+	@DisplayName("PUT /locations/{id} - 장소 정보를 수정하고 200 OK를 반환한다.")
 	void updateLocation_Success() throws Exception {
 		// given
 		var requestDto = LocationDTO.UpdateReq.builder()
@@ -257,7 +257,7 @@ class LocationControllerTest {
 	}
 
 	@Test
-	@DisplayName("DELETE /locations/{id} - 위치를 삭제하고 204 No Content를 반환한다.")
+	@DisplayName("DELETE /locations/{id} - 장소를 삭제하고 204 No Content를 반환한다.")
 	void deleteLocation_Success() throws Exception {
 		// given
 		doNothing().when(locationService).deleteLocation(1L);

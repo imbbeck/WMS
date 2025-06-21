@@ -1,6 +1,8 @@
 package com.wms.location.application;
 
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.location.domain.exception.LocationConnectException;
+import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.model.LocationType;
@@ -40,7 +42,7 @@ class LocationConnectionServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		// 테스트에 필요한 위치 정보 미리 생성
+		// 테스트에 필요한 장소 정보 미리 생성
 		locationRepository.deleteAll(); // 이전 테스트 데이터 클리어
 		locationA = locationRepository.save(Location.builder().name("테스트A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());
 		locationB = locationRepository.save(Location.builder().name("테스트B").type(LocationType.WAREHOUSE).capacity(200).coordinateX(100).coordinateY(100).build());
@@ -48,7 +50,7 @@ class LocationConnectionServiceTest {
 	}
 
 	@Test
-	@DisplayName("두 위치 간의 연결을 성공적으로 생성한다.")
+	@DisplayName("두 장소 간의 연결을 성공적으로 생성한다.")
 	void createConnection_Success() {
 		// given
 		var request = LocationConnectionDTO.CreateReq.builder()
@@ -68,7 +70,7 @@ class LocationConnectionServiceTest {
 	}
 
 	@Test
-	@DisplayName("이미 연결된 위치에 다시 연결을 생성하면 예외가 발생한다.")
+	@DisplayName("이미 연결된 장소에 다시 연결을 생성하면 예외가 발생한다. 무방향 연결인지 테스트도 포함")
 	void createConnection_WithExistingConnection_ThrowsException() {
 		// given
 		var request1 = LocationConnectionDTO.CreateReq.builder()
@@ -85,13 +87,16 @@ class LocationConnectionServiceTest {
 				.build();
 
 		// when & then
+		assertThatThrownBy(() -> connectionService.createConnection(request1))
+				.isInstanceOf(LocationConnectException.ConflictEx.class)
+				.hasMessage(String.format("이미 존재하는 장소간 연결 입니다: 1 - 2"));
 		assertThatThrownBy(() -> connectionService.createConnection(request2))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessage("이미 연결된 위치입니다.");
+				.isInstanceOf(LocationConnectException.ConflictEx.class)
+				.hasMessage(String.format("이미 존재하는 장소간 연결 입니다: 1 - 2"));
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 위치 ID로 연결을 생성하면 예외가 발생한다.")
+	@DisplayName("존재하지 않는 장소 ID로 연결을 생성하면 예외가 발생한다.")
 	void createConnection_WithNonexistentLocation_ThrowsException() {
 		// given
 		long nonExistentId = 9999L;
@@ -103,8 +108,8 @@ class LocationConnectionServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> connectionService.createConnection(request))
-				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("존재하지 않는 위치입니다: " + nonExistentId);
+				.isInstanceOf(LocationException.NotFoundEx.class)
+				.hasMessageContaining("존재하지 않는 데이터입니다: " + nonExistentId);
 	}
 
 	@Test

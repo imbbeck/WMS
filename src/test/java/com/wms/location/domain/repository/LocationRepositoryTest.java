@@ -26,11 +26,9 @@ class LocationRepositoryTest {
 	@Autowired
 	private LocationRepository locationRepository;
 
-	@Autowired
-	private LocationConnectionRepository locationConnectionRepository;
 
 	@Test
-	@DisplayName("findLocationWithConnections는 위치와 모든 연결 정보를 함께 조회한다.")
+	@DisplayName("findLocationWithConnections는 장소와 모든 연결 정보를 함께 조회한다.")
 	void findLocationWithConnections_Success() {
 		// given
 		Location locA = entityManager.persist(Location.builder().name("A").type(LocationType.WAREHOUSE).capacity(100).coordinateX(100).coordinateY(100).build());

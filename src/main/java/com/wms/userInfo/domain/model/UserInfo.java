@@ -3,6 +3,7 @@ package com.wms.userInfo.domain.model;
 import java.util.regex.Pattern;
 
 import com.wms.applicationInfra.domain.BaseEntity;
+import com.wms.userInfo.domain.exception.UserInfoException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -50,7 +51,7 @@ public class UserInfo extends BaseEntity {
 
 	public void validateUsername() {
 		if (username == null || !USERNAME_PATTERN.matcher(username).matches()) {
-			throw new IllegalArgumentException("Username must contain only lowercase letters, numbers, and underscores.");
+			throw UserInfoException.validation(String.format("유효하지 않은 사용자명입니다: %s (소문자, 숫자, 언더스코어만 사용 가능)", username));
 		}
 	}
 

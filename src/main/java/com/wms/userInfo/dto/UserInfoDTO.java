@@ -23,25 +23,25 @@ public class UserInfoDTO {
 	@Schema(description = "User creation request")
 	public static class CreateReq {
 
-		@NotBlank(message = "UserId is required")
-		@Pattern(regexp = "^[a-z0-9_]+$", message = "Username must contain only lowercase letters, numbers, and underscore")
-		@Size(min = 3, max = 20, message = "Username length must be between 3 and 20")
+		@NotBlank(message = "사용자 ID는 필수입니다")
+		@Pattern(regexp = "^[a-z0-9_]+$", message = "사용자 ID는 소문자, 숫자, 언더스코어만 사용할 수 있습니다")
+		@Size(min = 3, max = 20, message = "사용자 ID는 3~20자여야 합니다")
 		@Schema(description = "userId", example = "admin_1")
 		private String userId;
 
-		@NotBlank(message = "Name is required")
-		@Schema(description = "User's real name", example = "정도영")
+		@NotBlank(message = "이름은 필수입니다")
+		@Schema(description = "사용자 실명", example = "정도영")
 		private String name;
 
-		@NotBlank(message = "Email is required")
-		@Email(message = "Email format must be valid")
+		@NotBlank(message = "이메일은 필수입니다")
+		@Email(message = "이메일 형식이 올바르지 않습니다")
 		private String email;
 
-		@NotBlank(message = "Password is required")
-		@Size(min = PASSWORD_MIN_LENGTH, message = "Password must be at least " + PASSWORD_MIN_LENGTH + " characters")
+		@NotBlank(message = "비밀번호는 필수입니다")
+		@Size(min = PASSWORD_MIN_LENGTH, message = "비밀번호는 최소 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다")
 		private String password;
 
-		@NotNull(message = "User type is required")
+		@NotNull(message = "사용자 타입은 필수입니다")
 		@Schema(description = "User type", example = "ADMIN, WORKER")
 		private UserType type;
 
@@ -70,24 +70,23 @@ public class UserInfoDTO {
 	@Schema(description = "User join request")
 	public static class JoinReq {
 
-		@NotBlank(message = "UserId is required")
-		@Pattern(regexp = "^[a-z0-9_]+$", message = "Username must contain only lowercase letters, numbers, and underscore")
-		@Size(min = 3, max = 20, message = "Username length must be between 3 and 20")
+		@NotBlank(message = "사용자 ID는 필수입니다")
+		@Pattern(regexp = "^[a-z0-9_]+$", message = "사용자 ID는 소문자, 숫자, 언더스코어만 사용할 수 있습니다")
+		@Size(min = 3, max = 20, message = "사용자 ID는 3~20자여야 합니다")
 		@Schema(description = "userId", example = "admin_1")
 		private String userId;
 
-		@NotBlank(message = "Name is required")
-		@Schema(description = "User's real name", example = "정도영")
+		@NotBlank(message = "이름은 필수입니다")
+		@Schema(description = "사용자 실명", example = "정도영")
 		private String name;
 
-		@NotBlank(message = "Email is required")
-		@Email(message = "Email format must be valid")
+		@NotBlank(message = "이메일은 필수입니다")
+		@Email(message = "이메일 형식이 올바르지 않습니다")
 		private String email;
 
-		@NotBlank(message = "Password is required")
-		@Size(min = PASSWORD_MIN_LENGTH, message = "Password must be at least " + PASSWORD_MIN_LENGTH + " characters")
+		@NotBlank(message = "비밀번호는 필수입니다")
+		@Size(min = PASSWORD_MIN_LENGTH, message = "비밀번호는 최소 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다")
 		private String password;
-
 
 		@Builder
 		public JoinReq(String userId, String name, String email, String password) {
@@ -113,12 +112,12 @@ public class UserInfoDTO {
 	@Schema(description = "User update request")
 	public static class UpdateReq {
 
-		@NotBlank(message = "Name is required")
-		@Schema(description = "User's real name", example = "홍길동")
+		@NotBlank(message = "이름은 필수입니다")
+		@Schema(description = "사용자 실명", example = "홍길동")
 		private String name;
 
-		@NotBlank(message = "Email is required")
-		@Email(message = "Email format must be valid")
+		@NotBlank(message = "이메일은 필수입니다")
+		@Email(message = "이메일 형식이 올바르지 않습니다")
 		@Schema(description = "User email", example = "user01@example.com")
 		private String email;
 
@@ -134,11 +133,11 @@ public class UserInfoDTO {
 	@Schema(description = "Password change request")
 	public static class ChangePasswordReq {
 
-		@NotBlank(message = "Old password is required")
+		@NotBlank(message = "기존 비밀번호는 필수입니다")
 		private String oldPassword;
 
-		@NotBlank(message = "New password is required")
-		@Size(min = PASSWORD_MIN_LENGTH, message = "Password must be at least " + PASSWORD_MIN_LENGTH + " characters")
+		@NotBlank(message = "새 비밀번호는 필수입니다")
+		@Size(min = PASSWORD_MIN_LENGTH, message = "비밀번호는 최소 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다")
 		private String newPassword;
 
 		@Builder
@@ -159,7 +158,7 @@ public class UserInfoDTO {
 		@Schema(description = "user Id", example = "user01")
 		private String userId;
 
-		@Schema(description = "User's real name", example = "정도영")
+		@Schema(description = "사용자 실명", example = "정도영")
 		private String name;
 
 		@Schema(description = "User email", example = "user01@example.com")

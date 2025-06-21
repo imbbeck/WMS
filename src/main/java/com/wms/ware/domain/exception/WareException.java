@@ -1,21 +1,54 @@
 package com.wms.ware.domain.exception;
 
+import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
+import com.wms.applicationInfra.exception.DomainExceptionHelper;
+import com.wms.location.domain.exception.LocationException;
 
-public class WareException extends BusinessException {
-    public WareException(String message) {
-        super(message);
-    }
+public class WareException {
 
-    public static class NotFoundException extends WareException {
-        public NotFoundException(Long wareId) {
-            super(String.format("존재하지 않는 물품입니다: %d", wareId));
+    private WareException() {}
+
+    // 도메인별 예외 클래스들
+    public static class ValidationEx extends BusinessException.ValidationException {
+        public ValidationEx(String message) {
+            super(message);
         }
     }
 
-    public static class InvalidQuantityException extends WareException {
-        public InvalidQuantityException(Long wareId, int quantity) {
-            super(String.format("잘못된 물품 수량입니다: 물품(%d) 수량(%d)", wareId, quantity));
+    public static class NotFoundEx extends BusinessException.NotFoundException {
+        public NotFoundEx(String message) {
+            super(message);
         }
     }
+
+    public static class ConflictEx extends BusinessException.ConflictException {
+        public ConflictEx(String message) {
+            super(message);
+        }
+    }
+
+    // ValidationException 생성
+    public static ValidationEx validation(String field, String additionalMessage) {
+        return new ValidationEx(DomainExceptionHelper.validation(field, additionalMessage));
+    }
+
+    public static ValidationEx validation(FieldEnum fieldEnum) {
+        return new ValidationEx(DomainExceptionHelper.validation(fieldEnum));
+    }
+
+    public static ValidationEx validation(String message) {
+        return new ValidationEx(message);
+    }
+
+    // NotFoundException 생성
+    public static NotFoundEx notFound(Long locationId) {
+        return new NotFoundEx(DomainExceptionHelper.notFound(locationId));
+    }
+
+    // ConflictException 생성
+    public static ConflictEx duplicate(FieldEnum fieldEnum, String value) {
+        return new ConflictEx(DomainExceptionHelper.duplicate(fieldEnum, value));
+    }
+
 } 

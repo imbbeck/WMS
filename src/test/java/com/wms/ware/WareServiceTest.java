@@ -1,6 +1,7 @@
 package com.wms.ware;
 
 import com.wms.ware.application.WareService;
+import com.wms.ware.domain.exception.WareException;
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
 import com.wms.ware.dto.WareDTO;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -66,7 +66,7 @@ class WareServiceTest {
 
         // when & then
         assertThatThrownBy(() -> wareService.createWare(request2))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(WareException.ConflictEx.class);
     }
 
     @Test
@@ -123,7 +123,7 @@ class WareServiceTest {
         Long wareId = ware.getId();
 
         // when
-        Ware found = wareService.getWare(wareId);
+        Ware found = wareService.getWareById(wareId);
 
         // then
         assertThat(found.getId()).isEqualTo(wareId);
@@ -134,9 +134,9 @@ class WareServiceTest {
     @DisplayName("존재하지 않는 물품 ID로 조회 시 예외가 발생한다.")
     void getWare_NotFound_ThrowsException() {
         // when & then
-        assertThatThrownBy(() -> wareService.getWare(9999L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("존재하지 않는 물품입니다");
+        assertThatThrownBy(() -> wareService.getWareById(9999L))
+                .isInstanceOf(WareException.NotFoundEx.class)
+                .hasMessageContaining("존재하지 않는 데이터입니다: 9999");
     }
 
     @Test
@@ -147,7 +147,7 @@ class WareServiceTest {
         wareRepository.save(Ware.builder().name("B").type("전자제품").paletteUnit(2).build());
 
         // when
-        List<Ware> wares = wareService.getWares();
+        List<Ware> wares = wareService.getAllWares();
 
         // then
         assertThat(wares).hasSizeGreaterThanOrEqualTo(2);

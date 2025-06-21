@@ -1,12 +1,12 @@
-package com.wms.location.domain.exception;
+package com.wms.logisticTemplate.domain.exception;
 
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
 
-public final class LocationException {
+public final class LogisticTemplateException  {
 
-    private LocationException() {}
+    public LogisticTemplateException() {}
 
     // 도메인별 예외 클래스들
     public static class ValidationEx extends BusinessException.ValidationException {
@@ -49,4 +49,5 @@ public final class LocationException {
     public static ConflictEx duplicate(FieldEnum fieldEnum, String value) {
         return new ConflictEx(DomainExceptionHelper.duplicate(fieldEnum, value));
     }
-}
+
+} 

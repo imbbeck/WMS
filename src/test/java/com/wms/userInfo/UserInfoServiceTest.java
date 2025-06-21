@@ -1,9 +1,11 @@
 package com.wms.userInfo;
 
 import com.wms.userInfo.application.UserInfoService;
+import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
+import com.wms.userInfo.domain.exception.UserInfoException.*;
 import com.wms.userInfo.dto.UserInfoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -78,8 +80,8 @@ class UserInfoServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userInfoService.createUser(duplicateReq))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미 존재하는 userId입니다.");
+                .isInstanceOf(UserInfoException.ConflictEx.class)
+                .hasMessage("이미 존재하는 사용자ID 입니다.");
     }
 
     @Test

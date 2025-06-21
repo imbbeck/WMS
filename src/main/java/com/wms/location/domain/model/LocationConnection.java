@@ -1,6 +1,8 @@
 package com.wms.location.domain.model;
 
 import com.wms.applicationInfra.domain.BaseEntity;
+import com.wms.location.domain.exception.LocationConnectException;
+import com.wms.location.domain.exception.LocationException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -45,10 +47,10 @@ public class LocationConnection extends BaseEntity {
 	// TransferDuration과 동일한 검증 로직
 	private void validateLocationIds(Long locationId1, Long locationId2) {
 		if (locationId1 == null || locationId2 == null) {
-			throw new IllegalArgumentException("위치 ID는 필수입니다.");
+			throw LocationConnectException.validation("출발지ID, 도착지ID 는 필수입니다.");
 		}
 		if (locationId1.equals(locationId2)) {
-			throw new IllegalArgumentException("출발지와 도착지가 같을 수 없습니다.");
+			throw LocationConnectException.validation("출발지와 도착지가 같을 수 없습니다.");
 		}
 	}
 
@@ -64,14 +66,15 @@ public class LocationConnection extends BaseEntity {
 			return locationBId;
 		} else if (locationBId.equals(myLocationId)) {
 			return locationAId;
+		} else {
+			return null;
 		}
-		throw new IllegalArgumentException("Location not connected: " + myLocationId);
 	}
 
 	// 연결 정보 업데이트
 	public void updateDuration(Integer newDuration) {
 		if (newDuration == null || newDuration <= 0) {
-			throw new IllegalArgumentException("이동 시간은 0보다 커야 합니다.");
+			throw LocationConnectException.validation("소요시간은 0보다 커야 합니다.");
 		}
 		this.trt = newDuration;
 	}

@@ -14,14 +14,14 @@ public class WareDTO {
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class CreateReq {
-		@NotBlank(message = "물품 이름은 필수입니다")
+		@NotBlank(message = "물품명은 필수입니다")
 		private String name;
 
 		@NotBlank(message = "물품 타입은 필수입니다")
 		private String type;
 
-		@NotNull(message = "파레트 당 물품 개수는 필수입니다")
-		@Positive(message = "파레트 당 물품 개수는 0보다 커야 합니다")
+		@NotNull(message = "파레트당 물품 개수는 필수입니다")
+		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
 		private Integer paletteUnit;
 
 		@Builder
@@ -43,14 +43,14 @@ public class WareDTO {
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class UpdateReq {
-		@NotBlank(message = "물품 이름은 필수입니다")
+		@NotBlank(message = "물품명은 필수입니다")
 		private String name;
 
 		@NotBlank(message = "물품 타입은 필수입니다")
 		private String type;
 
-		@NotNull(message = "파레트 당 물품 개수는 필수입니다")
-		@Positive(message = "파레트 당 물품 개수는 0보다 커야 합니다")
+		@NotNull(message = "파레트당 물품 개수는 필수입니다")
+		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
 		private Integer paletteUnit;
 
 		@Builder

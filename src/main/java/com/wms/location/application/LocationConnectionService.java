@@ -2,7 +2,9 @@ package com.wms.location.application;
 
 import java.util.List;
 
+import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.location.domain.event.LocationDeletedEvent;
+import com.wms.location.domain.exception.LocationConnectException;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.LocationConnection;
 import com.wms.location.domain.repository.LocationConnectionRepository;
@@ -12,7 +14,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +27,18 @@ public class LocationConnectionService {
 	@Transactional
 	public LocationConnection createConnection(LocationConnectionDTO.CreateReq request) {
 		// Location 존재 여부 확인
-		validateLocationExists(request.getLocationId1());
-		validateLocationExists(request.getLocationId2());
+		Long locationId1 = request.getLocationId1();
+		Long locationId2 = request.getLocationId2();
+
+		validateLocationExists(locationId1);
+		validateLocationExists(locationId2);
+
+		Long smallestId = Math.min(locationId1, locationId2);
+		Long biggestId = Math.max(locationId1, locationId2);
 
 		// 이미 연결이 있는지 확인
-		if (connectionRepository.findByLocationIds(request.getLocationId1(), request.getLocationId2()).isPresent()) {
-			throw new IllegalArgumentException("이미 연결된 위치입니다.");
+		if (connectionRepository.findByLocationIds(smallestId, biggestId).isPresent()) {
+			throw LocationConnectException.duplicate(FieldEnum.LOCATION_CONNETCTION, smallestId + " - " + biggestId);
 		}
 
 		LocationConnection connection = request.toEntity();
@@ -70,13 +77,13 @@ public class LocationConnectionService {
 	}
 
 	// 두 Location 간 연결 조회
-	public LocationConnection getConnectionByLocations(Long locationId1, Long locationId2) {
+/*	public LocationConnection getConnectionByLocations(Long locationId1, Long locationId2) {
 		validateLocationExists(locationId1);
 		validateLocationExists(locationId2);
 
 		return connectionRepository.findByLocationIds(locationId1, locationId2)
-				.orElseThrow(() -> new IllegalArgumentException("두 위치 간 연결이 존재하지 않습니다."));
-	}
+				.orElseThrow(() -> new IllegalArgumentException("두 장소 간 연결이 존재하지 않습니다."));
+	}*/
 
 	// 특정 Location의 연결 개수 조회
 	public long getConnectionCount(Long locationId) {
@@ -98,12 +105,12 @@ public class LocationConnectionService {
 
 	private LocationConnection getConnectionEntity(Long connectionId) {
 		return connectionRepository.findById(connectionId)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 연결입니다: " + connectionId));
+				.orElseThrow(() -> LocationConnectException.notFound(connectionId));
 	}
 
 	private void validateLocationExists(Long locationId) {
 		if (!locationRepository.existsById(locationId)) {
-			throw new LocationException.NotFoundException(locationId);
+			throw LocationException.notFound(locationId);
 		}
 	}
 
