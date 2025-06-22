@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -17,20 +18,31 @@ public class DynamicStockPartitioner implements Partitioner {
 
 	private final StockRepository stockRepository;
 
-	private static final int TARGET_SIZE = 2;
-	private static final int MAX_PARTITION_SIZE = 50;
+	@Value("${batch.stock-partition.target-size:1000}")
+	private int targetSize;
+
+	@Value("${batch.stock-partition.max-partition-size:50}")
+	private int maxPartitionSize;
 
 	/**
-	 * TARGET_SIZE 에 맞춰서 partitions 늘리다가 MAX_PARTITION_SIZE 에 다다르면 로깅하고 partitions 를 MAX_PARTITION_SIZE 에 고정.
+	 * targetSize 에 맞춰서 partitions 늘리다가 maxPartitionSize 에 다다르면 로깅하고 partitions 를 maxPartitionSize 에 고정.
 	 */
 	@Override
 	public Map<String, ExecutionContext> partition(int gridSize) {
 		long totalCount = stockRepository.count();
-		int calculatedPartitions = (int) ((totalCount / TARGET_SIZE) + 1);
-		int partitions = Math.min(calculatedPartitions, MAX_PARTITION_SIZE);
 
-		if (calculatedPartitions > MAX_PARTITION_SIZE) {
-			log.warn("[DynamicStockPartitioner] 파티션 개수 제한 초과: 계산된 파티션 수 = {}, 최대 = {}", calculatedPartitions, MAX_PARTITION_SIZE);
+		// 데이터가 없는 경우 조기 반환
+		if (totalCount == 0) {
+			log.info("[DynamicStockPartitioner] 처리할 데이터가 없습니다. 빈 파티션 반환");
+			return new HashMap<>();
+		}
+
+		int calculatedPartitions = (int) ((totalCount / targetSize) + 1);
+		int partitions = Math.min(calculatedPartitions, maxPartitionSize);
+
+		if (calculatedPartitions > maxPartitionSize) {
+			log.warn("[DynamicStockPartitioner] 파티션 개수 제한 초과: 계산된 파티션 수 = {}, 최대 = {}",
+					calculatedPartitions, maxPartitionSize);
 		}
 
 		Long minId = stockRepository.findMinId();
@@ -38,7 +50,23 @@ public class DynamicStockPartitioner implements Partitioner {
 
 		Map<String, ExecutionContext> result = new HashMap<>();
 
-		if (minId == null || maxId == null) return result;
+		// ID가 null인 경우 체크
+		if (minId == null || maxId == null) {
+			log.warn("[DynamicStockPartitioner] minId 또는 maxId가 null입니다. minId: {}, maxId: {}", minId, maxId);
+			return result;
+		}
+
+		log.info("[DynamicStockPartitioner] 파티션 설정 - 총 데이터: {}, 목표 크기: {}, 파티션 수: {}",
+				totalCount, targetSize, partitions);
+
+		// 파티션이 1개인 경우 처리
+		if (partitions == 1) {
+			ExecutionContext context = new ExecutionContext();
+			context.putLong("minId", minId);
+			context.putLong("maxId", maxId);
+			result.put("partition0", context);
+			return result;
+		}
 
 		long range = (maxId - minId) / partitions + 1;
 		long start = minId;
@@ -53,6 +81,7 @@ public class DynamicStockPartitioner implements Partitioner {
 			start += range;
 			end += range;
 		}
+
 		return result;
 	}
 }

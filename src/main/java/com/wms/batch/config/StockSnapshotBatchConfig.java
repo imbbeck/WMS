@@ -16,6 +16,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.SimpleStepBuilder;
 import org.springframework.batch.core.step.builder.StepBuilderHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -34,23 +35,36 @@ public class StockSnapshotBatchConfig {
 	private final StockSnapshotProcessor stockSnapshotProcessor;
 	private final StockSnapshotWriter stockSnapshotWriter;
 
+	@Value("${batch.chunk-size:500}")
+	private int chunkSize;
+
+	@Value("${batch.retry-limit:3}")
+	private int retryLimit;
+
+	@Value("${batch.skip-limit:10}")
+	private int skipLimit;
+
+
 	@Bean
 	public Step slaveStep() {
 		StepBuilder stepBuilder = new StepBuilder("slaveStep", jobRepository);
 
 		SimpleStepBuilder<Stock, StockDailySnapshot> step = stepBuilder
-				.<Stock, StockDailySnapshot>chunk(1000, transactionManager)
+				.<Stock, StockDailySnapshot>chunk(chunkSize, transactionManager)
 				.reader(stockSnapshotReader)
 				.processor(stockSnapshotProcessor)
 				.writer(stockSnapshotWriter)
 				.faultTolerant()
-				.retryLimit(3)
+				.retryLimit(retryLimit)
 				.retry(Exception.class)
-				.skipLimit(10)
+				.skipLimit(skipLimit)
 				.skip(Exception.class);
 
 		return step.build();
 	}
+
+	@Value("${batch.grid-size:10}")
+	private int gridSize;
 
 	@Bean
 	public Step masterStep() {
@@ -58,7 +72,7 @@ public class StockSnapshotBatchConfig {
 
 		return stepBuilder.partitioner("slaveStep", partitioner)
 				.step(slaveStep())
-				.gridSize(10)
+				.gridSize(gridSize)
 				.taskExecutor(taskExecutor())
 				.build();
 	}
@@ -73,12 +87,21 @@ public class StockSnapshotBatchConfig {
 				.build();
 	}
 
+	@Value("${batch.thread-pool.core-size:5}")
+	private int corePoolSize;
+
+	@Value("${batch.thread-pool.max-size:10}")
+	private int maxPoolSize;
+
+	@Value("${batch.thread-pool.queue-capacity:100}")
+	private int queueCapacity;
+
 	@Bean
 	public TaskExecutor taskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(10);
-		executor.setMaxPoolSize(20);
-		executor.setQueueCapacity(25);
+		executor.setCorePoolSize(corePoolSize);
+		executor.setMaxPoolSize(maxPoolSize);
+		executor.setQueueCapacity(queueCapacity);
 		executor.setThreadNamePrefix("stock-partition-thread-");
 		executor.initialize();
 		return executor;

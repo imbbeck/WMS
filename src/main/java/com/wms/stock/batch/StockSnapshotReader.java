@@ -4,36 +4,51 @@ import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.data.RepositoryItemReader;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
 
 @StepScope
 @Component("stockSnapshotReader")
 @RequiredArgsConstructor
-public class StockSnapshotReader extends RepositoryItemReader<Stock> {
+public class StockSnapshotReader implements ItemReader<Stock> {
 
-	public StockSnapshotReader(
-			StockRepository stockRepository,
-			@Value("#{stepExecutionContext['minId']}") Long minId,
-			@Value("#{stepExecutionContext['maxId']}") Long maxId) {
+	private final StockRepository stockRepository;
 
-		this.setRepository(stockRepository);
-		this.setMethodName("findByIdBetween");
+	@Value("#{stepExecutionContext['minId']}")
+	private Long minId;
 
-		// 파라미터를 List로 설정 (순서대로)
-		this.setArguments(List.of(minId, maxId));
+	@Value("#{stepExecutionContext['maxId']}")
+	private Long maxId;
 
-		// 정렬 설정
-		Map<String, Sort.Direction> sorts = new HashMap<>();
-		sorts.put("id", Sort.Direction.ASC);
-		this.setSort(sorts);
+	private Iterator<Stock> stockIterator;
+	private boolean initialized = false;
 
-		this.setPageSize(1000);
+	@Override
+	public Stock read() throws Exception {
+		if (!initialized) {
+			initialize();
+			initialized = true;
+		}
+
+		if (stockIterator != null && stockIterator.hasNext()) {
+			return stockIterator.next();
+		}
+
+		return null;
+	}
+
+	private void initialize() {
+		if (minId != null && maxId != null) {
+			Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by("id").ascending());
+			Page<Stock> stockPage = stockRepository.findByIdBetween(minId, maxId, pageable);
+			stockIterator = stockPage.getContent().iterator();
+		}
 	}
 }

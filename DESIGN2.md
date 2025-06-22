@@ -299,3 +299,11 @@ retry++;
 		throw new ConflictException("다른 사용자가 먼저 작업을 완료했습니다. 다시 시도해주세요.");
 
 ```
+
+#### stockDailySnapshot에 매일 자정 결산후 스냅샷 입력하는 배치프로세스
+- StockSnapshotReader	Stock 엔티티를 ID 범위 기반으로 페이징 조회
+- StockSnapshotProcessor	어제 대비 수량 증감 계산 후 StockDailySnapshot 생성
+- StockSnapshotWriter	스냅샷 엔티티 DB에 저장
+- DynamicStockPartitioner	id 기반 파티셔닝 (병렬 처리 지원)
+- StockSnapshotBatchConfig	전체 배치 작업(Job, Step, 병렬 처리 등) 설정
+- StockSnapshotScheduler	매일 자정 등 특정 시간에 배치 잡 실행

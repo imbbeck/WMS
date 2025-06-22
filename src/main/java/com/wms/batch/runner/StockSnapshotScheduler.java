@@ -17,7 +17,7 @@ public class StockSnapshotScheduler {
 	private final JobLauncher jobLauncher;
 	private final Job stockSnapshotJob;
 
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "${batch.schedule.stock-snapshot:0 0 0 * * *}")
 	public void runSnapshotJob() {
 		try {
 			log.info(">>> [BATCH] 재고 스냅샷 배치 실행 시작 at {}", LocalDateTime.now());

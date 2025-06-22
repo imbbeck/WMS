@@ -3,15 +3,18 @@ package com.wms.stock.batch;
 import com.wms.stock.domain.model.StockDailySnapshot;
 import com.wms.stock.domain.repository.StockDailySnapshotRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.item.data.RepositoryItemWriter;
+import org.springframework.batch.item.Chunk;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class StockSnapshotWriter extends RepositoryItemWriter<StockDailySnapshot> {
+public class StockSnapshotWriter implements ItemWriter<StockDailySnapshot> {
 
-	public StockSnapshotWriter(StockDailySnapshotRepository snapshotRepository) {
-		this.setRepository(snapshotRepository);
-		this.setMethodName("save");
+	private final StockDailySnapshotRepository snapshotRepository;
+
+	@Override
+	public void write(Chunk<? extends StockDailySnapshot> chunk) throws Exception {
+		snapshotRepository.saveAll(chunk.getItems());
 	}
 }

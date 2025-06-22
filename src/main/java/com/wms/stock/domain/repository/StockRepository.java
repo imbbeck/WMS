@@ -1,6 +1,7 @@
 package com.wms.stock.domain.repository;
 
 import com.wms.stock.domain.model.Stock;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -71,7 +72,7 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 	@Query("SELECT COUNT(s) FROM Stock s")
 	long count();
 
-	List<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
+	Page<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
 
 //    @Query("SELECT s FROM Stock s WHERE s.ware.id = :wareId AND s.warehouse.id = :locationId")
 //    Optional<Stock> findByWareIdAndLocationId(@Param("wareId") Long wareId, @Param("locationId") Long locationId);
