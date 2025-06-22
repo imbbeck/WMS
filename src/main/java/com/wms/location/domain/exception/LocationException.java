@@ -49,4 +49,16 @@ public final class LocationException {
     public static ConflictEx duplicate(FieldEnum fieldEnum, String value) {
         return new ConflictEx(DomainExceptionHelper.duplicate(fieldEnum, value));
     }
+
+    // WarehouseCapacityExceededEx
+    public static class WarehouseCapacityExceededEx extends BusinessException.ConflictException {
+        public WarehouseCapacityExceededEx(String message) {
+            super(message);
+        }
+    }
+
+    public static WarehouseCapacityExceededEx warehouseCapacityExceeded(long warehouseId, int capacity, int currentPalletCount, int addedQuantity) {
+        return new WarehouseCapacityExceededEx(String.format("창고 용량 초과: 위치(%d) 최대 수용량(%d) 요청 수량(%d) 현재 용량(%d)",
+                warehouseId, capacity, currentPalletCount, addedQuantity));
+    }
 }

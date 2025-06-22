@@ -49,7 +49,7 @@ public class UserInfoService {
     public UserInfo join(UserInfoDTO.JoinReq request) {
         UserInfo userInfo = saveUserWithValidation(request.getUserId(), request.getEmail(),request.toEntity());
 
-         return userInfo;
+        return userInfo;
     }
 
     @Transactional

@@ -1,84 +1,62 @@
 package com.wms.stock.domain.model;
 
-import java.time.LocalDateTime;
-
-import com.wms.location.domain.model.Location;
-import com.wms.stock.domain.exception.StockExceptions;
-import com.wms.ware.domain.model.Ware;
-import jakarta.persistence.*;
+import com.wms.applicationInfra.domain.BaseEntity;
+import com.wms.location.domain.exception.LocationException;
+import com.wms.stock.domain.exception.StockException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "stocks")
+@Table(name = "stocks",
+		uniqueConstraints = @UniqueConstraint(columnNames = {"ware_id", "location_id"}))
 @Getter
-@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Stock {
+public class Stock extends BaseEntity {
+	// 매핑 걷어냄. Stock은 단순한 n:n 매핑 테이블이 아니라 상태(수량)를 가지며, 자체 비즈니스 로직도 가질 수 있는 주체적 Aggregate
+	// 재고는 자신의 상태 중심으로 동작하며, 연관 정보는 클라이언트 조회 시에만 필요하므로, 매핑은 오히려 손해
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Column(name = "ware_id", nullable = false)
+	private Long wareId;  // 물품
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ware_id", nullable = false)
-    private Ware ware;  // 물품
+	@Column(name = "location_id", nullable = false)
+	private Long warehouseId;  // 창고
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id", nullable = false)
-    private Location warehouse;  // 창고
+	@Column(name = "quantity", nullable = false)
+	private Integer quantity;  // 수량
 
-    @Column(nullable = false)
-    private Integer quantity;  // 수량
+	@Version
+	private Long version;
 
-    @Version
-    private Long version;
+	@Builder
+	public Stock(Long wareId, Long warehouseId, Integer quantity) {
+		this.wareId = wareId;
+		this.warehouseId = warehouseId;
+		this.quantity = quantity;
+	}
 
-    @CreatedDate
-    private LocalDateTime createdAt;
+	public void updateQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+	public void addQuantityWithCapacityCheck(int warehouseCapacity, int currentPalletCount, int addedQuantity) {
+		if (currentPalletCount + addedQuantity > warehouseCapacity) {
+			throw LocationException.warehouseCapacityExceeded(this.warehouseId, warehouseCapacity, currentPalletCount, addedQuantity);
+		}
+		this.quantity += addedQuantity;
+	}
 
-    @Builder
-    public Stock(Ware ware, Location location, Integer quantity) {
-        this.ware = ware;
-        this.warehouse = location;
-        this.quantity = quantity;
-    }
-
-    public static Stock create(Ware ware, Location location, Integer quantity) {
-        Stock stock = new Stock();
-        stock.ware = ware;
-        stock.warehouse = location;
-        stock.quantity = quantity;
-        return stock;
-    }
-
-    public void updateQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public void addQuantity(Integer quantity) {
-        if (quantity < 0) {
-            throw new StockExceptions.InvalidQuantityExceptions(quantity);
-        }
-        this.quantity += quantity;
-    }
-
-    public void removeQuantity(Integer quantity) {
-        if (quantity < 0) {
-            throw new StockExceptions.InvalidQuantityExceptions(quantity);
-        }
-        if (this.quantity < quantity) {
-            throw new StockExceptions.InsufficientStockExceptions(
-                    this.ware.getId(), this.warehouse.getId(), quantity, this.quantity);
-        }
-        this.quantity -= quantity;
-    }
-} 
+	public void removeQuantityWithStockCheck(int currentStock, int removeQuantity) {
+		if (currentStock < removeQuantity) {
+			throw StockException.insufficientStock(this.warehouseId, this.wareId, currentStock, removeQuantity
+			);
+		}
+		this.quantity -= removeQuantity;
+	}
+}

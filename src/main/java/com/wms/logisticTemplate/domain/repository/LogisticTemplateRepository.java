@@ -22,6 +22,7 @@ public interface LogisticTemplateRepository extends JpaRepository<LogisticTempla
 	@EntityGraph(attributePaths = {"ware", "fromLocation", "toLocation"})
 	Page<LogisticTemplate> findAllByType(LogisticType type, Pageable pageable);
 
+	//TODO: @EntityGraph + 쿼리 메서드 조합 변경. 단순한 조건일 때는 무난하지만, join 대상이 쿼리 조건에도 쓰이면 중복 join 발생 가능성 있음.
 	@EntityGraph(attributePaths = {"ware", "fromLocation", "toLocation"})
 	Page<LogisticTemplate> findAllByWareId(Long wareId, Pageable pageable);
 }

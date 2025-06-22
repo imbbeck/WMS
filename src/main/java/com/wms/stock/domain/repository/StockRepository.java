@@ -1,8 +1,7 @@
 package com.wms.stock.domain.repository;
 
 import com.wms.stock.domain.model.Stock;
-import com.wms.ware.domain.model.Ware;
-import com.wms.location.domain.model.Location;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,20 +12,80 @@ import java.util.Optional;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
-    
-    @Query("SELECT s FROM Stock s WHERE s.ware.id = :wareId AND s.location.id = :locationId")
-    Optional<Stock> findByWareIdAndLocationId(@Param("wareId") Long wareId, @Param("locationId") Long locationId);
-    
-    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
-    Integer getTotalQuantityByWareId(@Param("wareId") Long wareId);
 
-    List<Stock> findByWareId(Long wareId);
-    List<Stock> findByLocationId(Long locationId);
-    boolean existsByWareAndLocation(Ware ware, Location location);
+	/**
+	 * 특정 창고의 특정 물품 재고 조회
+	 */
+	Optional<Stock> findByWarehouseIdAndWareId(Long warehouseId, Long wareId);
 
-    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
-    Integer sumQuantityByWareId(@Param("wareId") Long wareId);
+	/**
+	 * 특정 창고의 모든 재고 조회
+	 */
+	List<Stock> findAllByWarehouseId(Long warehouseId);
 
-    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.location.id = :locationId")
-    Integer sumQuantityByLocationId(@Param("locationId") Long locationId);
-} 
+	/**
+	 * 특정 물품의 모든 창고별 재고 조회
+	 */
+	List<Stock> findAllByWareId(Long wareId);
+
+	/**
+	 * 재고가 있는 창고들의 특정 물품 재고 조회
+	 */
+	List<Stock> findAllByWareIdAndQuantityGreaterThan(Long wareId, int quantity);
+
+
+	/**
+	 * 재고 부족 상태인 항목 조회 (threshold 이하)
+	 */
+	@Query("SELECT s FROM Stock s WHERE s.quantity <= :threshold")
+	List<Stock> findAllByQuantityLessThanEqual(@Param("threshold") Integer threshold);
+
+	/**
+	 * 특정 창고의 총 재고 수량 조회
+	 */
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	Long getTotalQuantityByWarehouse(@Param("warehouseId") Long warehouseId);
+
+	/**
+	 * 특정 물품의 전체 재고 수량 조회
+	 */
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.wareId = :wareId")
+	Long getTotalQuantityByWare(@Param("wareId") Long wareId);
+
+	/**
+	 * 전체 재고가 0인 항목들 조회
+	 */
+	List<Stock> findAllByQuantity(int quantity);
+
+	/**
+	 * 특정 창고의 재고가 0인 항목들 조회
+	 */
+	List<Stock> findAllByWarehouseIdAndQuantity(Long warehouseId, int quantity);
+
+	@Query("SELECT MIN(s.id) FROM Stock s")
+	Long findMinId();
+
+	@Query("SELECT MAX(s.id) FROM Stock s")
+	Long findMaxId();
+
+	@Query("SELECT COUNT(s) FROM Stock s")
+	long count();
+
+	List<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
+
+//    @Query("SELECT s FROM Stock s WHERE s.ware.id = :wareId AND s.warehouse.id = :locationId")
+//    Optional<Stock> findByWareIdAndLocationId(@Param("wareId") Long wareId, @Param("locationId") Long locationId);
+//
+//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
+//    Integer getTotalQuantityByWareId(@Param("wareId") Long wareId);
+//
+//    List<Stock> findByWareId(Long wareId);
+//    List<Stock> findByWarehouseId(Long locationId);
+//    boolean existsByWareAndWarehouse(Ware ware, Location location);
+//
+//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
+//    Integer sumQuantityByWareId(@Param("wareId") Long wareId);
+//
+//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.warehouse.id = :locationId")
+//    Integer sumQuantityByWarehouseId(@Param("locationId") Long locationId);
+}

@@ -48,10 +48,11 @@ public class LogisticTemplateService {
 		return template;
 	}
 
+
 	@Transactional(readOnly = true)
 	public LogisticTemplate findById(Long id) {
 		return logisticTemplateRepository.findWithEntityGraphById(id)
-				.orElseThrow(() -> LogisticTemplateException.notFound(id));
+				.orElseThrow(() -> LogisticTemplateException.notFound(id)); // 상세조회용 findWithEntityGraphById
 	}
 
 	// 전체 페이징 조회
