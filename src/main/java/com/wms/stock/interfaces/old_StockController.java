@@ -1,6 +1,6 @@
 //package com.wms.stock.interfaces;
 //
-//import com.wms.stock.application.StockService;
+//import com.wms.stock.application.StockCtrlService;
 //import com.wms.stock.dto.StockRequest;
 //import com.wms.stock.dto.StockResponse;
 //import com.wms.stock.mapper.StockMapper;
@@ -16,7 +16,7 @@
 //@RequiredArgsConstructor
 //public class StockController {
 //
-//    private final StockService stockService;
+//    private final StockCtrlService stockService;
 //
 //
 //    @GetMapping("/{id}")

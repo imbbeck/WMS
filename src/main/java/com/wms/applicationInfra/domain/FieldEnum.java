@@ -13,6 +13,7 @@ public enum FieldEnum {
 
 	LOCATION("장소"),
 	LOCATION_CONNETCTION("장소간 연결"),
+	WARE_WAREHOUSE_PAIR("물품_창고_쌍"),
 
 
 

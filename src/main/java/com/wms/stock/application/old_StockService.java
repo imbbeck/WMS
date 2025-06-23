@@ -26,7 +26,7 @@
 //@Service
 //@RequiredArgsConstructor
 //@Transactional(readOnly = true)
-//public class StockService {
+//public class StockCtrlService {
 //
 //	private static final String CACHE_KEY_PREFIX = "currentStock:";
 //	private static final String WAREHOUSE_STATUS_PREFIX = "warehouseStatus:";

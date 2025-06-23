@@ -3,7 +3,6 @@ package com.wms.batch.config;
 import com.wms.applicationInfra.config.QuerydslConfig;
 import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.model.StockDailySnapshot;
-import com.wms.stock.domain.model.StockSnapshotKey;
 import com.wms.stock.domain.repository.StockDailySnapshotRepository;
 import com.wms.stock.domain.repository.StockRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,18 +26,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @SpringBatchTest
 @Import(QuerydslConfig.class)
-@TestPropertySource(properties = {
-		"spring.batch.job.enabled=false",
-		"spring.jpa.hibernate.ddl-auto=create-drop",
-		"spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE",
-		"spring.datasource.driver-class-name=org.h2.Driver",
-		"spring.datasource.username=sa",
-		"spring.datasource.password=",
-		"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-		"spring.cache.type=none",
-		"spring.data.redis.repositories.enabled=false"
-})
-class StockSnapshotBatchTest {
+//@TestPropertySource(properties = {
+//		"spring.batch.job.enabled=false",
+//		"spring.jpa.hibernate.ddl-auto=create-drop",
+//		"spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE",
+//		"spring.datasource.driver-class-name=org.h2.Driver",
+//		"spring.datasource.username=sa",
+//		"spring.datasource.password=",
+//		"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+//		"spring.cache.type=none",
+//		"spring.data.redis.repositories.enabled=false"
+//})
+class step4_StockSnapshotBatchTest {
 
 	@Autowired
 	private JobLauncherTestUtils jobLauncherTestUtils;
@@ -64,10 +62,11 @@ class StockSnapshotBatchTest {
 	private int chunkSize;
 
 	@BeforeEach
+	@Transactional
 	void setUp() {
 		jobRepositoryTestUtils.removeJobExecutions();
-		stockRepository.deleteAll();
-		snapshotRepository.deleteAll();
+		stockRepository.deleteAllInBatch();
+		snapshotRepository.deleteAllInBatch();
 	}
 
 	@Test

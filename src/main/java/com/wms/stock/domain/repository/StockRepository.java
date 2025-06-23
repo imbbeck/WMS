@@ -1,6 +1,7 @@
 package com.wms.stock.domain.repository;
 
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.dto.StockDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -63,6 +64,71 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 	 */
 	List<Stock> findAllByWarehouseIdAndQuantity(Long warehouseId, int quantity);
 
+	/**
+	 * 복합 조건 재고 조회 (JPQL 사용)
+	 */
+	@Query("SELECT s FROM Stock s " +
+			"WHERE (:wareId IS NULL OR s.wareId = :wareId) " +
+			"AND (:warehouseId IS NULL OR s.warehouseId = :warehouseId) " +
+			"AND (:minQuantity IS NULL OR s.quantity >= :minQuantity) " +
+			"AND (:maxQuantity IS NULL OR s.quantity <= :maxQuantity)")
+	Page<Stock> findBySearchCriteria(@Param("wareId") Long wareId,
+			@Param("warehouseId") Long warehouseId,
+			@Param("minQuantity") Integer minQuantity,
+			@Param("maxQuantity") Integer maxQuantity,
+			Pageable pageable);
+
+	/**
+	 * 창고별 재고 요약 정보 조회
+	 */
+	@Query("SELECT s.warehouseId as warehouseId, " +
+			"SUM(s.quantity) as totalQuantity, " +
+			"COUNT(DISTINCT s.wareId) as wareTypeCount " +
+			"FROM Stock s " +
+			"WHERE s.warehouseId = :warehouseId " +
+			"GROUP BY s.warehouseId")
+	Optional<WarehouseStockSummary> findWarehouseStockSummary(@Param("warehouseId") Long warehouseId);
+
+	/**
+	 * 모든 창고별 재고 요약 정보 조회
+	 */
+	@Query("SELECT s.warehouseId as warehouseId, " +
+			"SUM(s.quantity) as totalQuantity, " +
+			"COUNT(DISTINCT s.wareId) as wareTypeCount " +
+			"FROM Stock s " +
+			"GROUP BY s.warehouseId")
+	List<WarehouseStockSummary> findAllWarehouseStockSummaries();
+
+	/**
+	 * 물품별 재고 요약 정보 조회
+	 */
+	@Query("SELECT s.wareId as wareId, " +
+			"SUM(s.quantity) as totalQuantity, " +
+			"COUNT(DISTINCT s.warehouseId) as warehouseCount " +
+			"FROM Stock s " +
+			"WHERE s.wareId = :wareId " +
+			"GROUP BY s.wareId")
+	Optional<WareStockSummary> findWareStockSummary(@Param("wareId") Long wareId);
+
+	/**
+	 * 모든 물품별 재고 요약 정보 조회
+	 */
+	@Query("SELECT s.wareId as wareId, " +
+			"SUM(s.quantity) as totalQuantity, " +
+			"COUNT(DISTINCT s.warehouseId) as warehouseCount " +
+			"FROM Stock s " +
+			"GROUP BY s.wareId")
+	List<WareStockSummary> findAllWareStockSummaries();
+
+	/**
+	 * 특정 창고의 총 파레트 수량 조회
+	 */
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	Integer getTotalPaletteCountByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+	/**
+	 * 배치 파티셔닝 용 메소드
+	 */
 	@Query("SELECT MIN(s.id) FROM Stock s")
 	Long findMinId();
 
@@ -89,4 +155,22 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 //
 //    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.warehouse.id = :locationId")
 //    Integer sumQuantityByWarehouseId(@Param("locationId") Long locationId);
+
+	/**
+	 * 창고별 재고 요약을 위한 인터페이스
+	 */
+	interface WarehouseStockSummary {
+		Long getWarehouseId();
+		Long getTotalQuantity();
+		Long getWareTypeCount();
+	}
+
+	/**
+	 * 물품별 재고 요약을 위한 인터페이스
+	 */
+	interface WareStockSummary {
+		Long getWareId();
+		Long getTotalQuantity();
+		Long getWarehouseCount();
+	}
 }

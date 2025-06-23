@@ -71,7 +71,7 @@ jwt:
 # batch 설정
 batch:
   # 청크 처리 설정
-  chunk-size: 500
+  chunk-size: 10
   # 스레드 풀 설정
   thread-pool:
     core-size: 5
@@ -79,8 +79,8 @@ batch:
     queue-capacity: 100
   # 파티션 설정
   stock-partition:
-    target-size: 1000
-    max-partition-size: 50
+    target-size: 20
+    max-partition-size: 5
   # 오류 처리 설정
   retry-limit: 3
   skip-limit: 10

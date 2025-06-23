@@ -1,7 +1,0 @@
-- 프로젝트 초기 설정: TODO.md 설계에 따라 Spring Boot 프로젝트의 기본 구조와 도메인, 리포지토리 패키지 구성.
-- 도메인 모델링: Location, Ware, Inventory, MoveOrder 등 핵심 엔티티와 리포지토리를 구현, Setter 대신 의도를 드러내는 메서드를 추가.
-- 예측 재고 캐싱 구현: Redis를 연동하여 주문에 따른 예측 재고를 관리하는 VirtualInventoryService와, 애플리케이션 시작 시 재고를 초기화하는 InventoryInitializer를 구현.
-- 핵심 비즈니스 로직 및 API 개발: 예측 재고를 검증하여 이동 주문을 생성, 조회, 취소하는 MoveOrderService와 이를 외부로 노출하는 MoveOrderController 구현.
-- API 문서화: Swagger(Springdoc)를 연동하여 API 문서 자동화
-- test: MoveOrderService의 핵심 로직에 대한 통합 테스트 코드 작성.
-- 초기 데이터 생성: 개발 편의성을 위해 data.sql 파일에 기초 더미 데이터 추가.

@@ -3,6 +3,7 @@ package com.wms.stock.domain.exception;
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
+import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
 import com.wms.ware.domain.model.Ware;
 
@@ -37,6 +38,18 @@ public final class StockException {
 
 	public static NotFoundEx notFound(Long stockId) {
 		return new NotFoundEx(DomainExceptionHelper.notFound(stockId));
+	}
+
+	// DuplicateEx
+	// ConflictEx
+	public static class ConflictEx extends BusinessException.ConflictException {
+		public ConflictEx(String message) {
+			super(message);
+		}
+	}
+
+	public static LocationException.ConflictEx duplicate(FieldEnum fieldEnum) {
+		return new LocationException.ConflictEx(DomainExceptionHelper.duplicate(fieldEnum));
 	}
 
 	// InsufficientStockEx
