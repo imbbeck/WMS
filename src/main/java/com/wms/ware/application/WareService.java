@@ -4,6 +4,9 @@ import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.location.domain.event.LocationCreatedEvent;
 import com.wms.location.domain.event.LocationDeletedEvent;
 import com.wms.location.domain.event.LocationUpdatedEvent;
+import com.wms.ware.domain.event.WareCreatedEvent;
+import com.wms.ware.domain.event.WareDeletedEvent;
+import com.wms.ware.domain.event.WareUpdatedEvent;
 import com.wms.ware.domain.exception.WareException;
 import com.wms.ware.domain.model.Ware;
 import com.wms.ware.domain.repository.WareRepository;
@@ -33,7 +36,7 @@ public class WareService {
 
         // 생성 이벤트 발행
         // ReferenceDataCacheManager.handleLocationCreated에서 구독. 캐시 생성
-        eventPublisher.publishEvent(new LocationCreatedEvent(saved.getId(), saved.getName()));
+        eventPublisher.publishEvent(new WareCreatedEvent(saved.getId(), saved.getName()));
 
         return saved;
     }
@@ -58,7 +61,7 @@ public class WareService {
 
         // 수정 이벤트 발행
         // ReferenceDataCacheManager.handleLocationUpdated에서 구독. 캐시 갱신
-        eventPublisher.publishEvent(new LocationUpdatedEvent(ware.getId(), ware.getName()));
+        eventPublisher.publishEvent(new WareUpdatedEvent(ware.getId(), ware.getName()));
 
         return ware;
     }
@@ -70,7 +73,7 @@ public class WareService {
         // 삭제 이벤트 발행
         // LocationConnectionService.onLocationDeleted에서 구독. 연결된 Connection들 자동 삭제
         // ReferenceDataCacheManager.handleLocationDeleted에서 구독. 캐시 삭제
-        eventPublisher.publishEvent(new LocationDeletedEvent(id));
+        eventPublisher.publishEvent(new WareDeletedEvent(id));
 
         wareRepository.delete(ware);
     }

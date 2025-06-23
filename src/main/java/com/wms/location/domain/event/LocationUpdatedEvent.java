@@ -1,9 +1,17 @@
 package com.wms.location.domain.event;
 
 import com.wms.applicationInfra.idnameMapCashing.ReferenceEvent;
+import com.wms.location.domain.model.LocationType;
+import lombok.Getter;
 
+@Getter
 public class LocationUpdatedEvent extends ReferenceEvent {
-	public LocationUpdatedEvent(Long id, String name) {
+	private final Integer capacity;
+	private final LocationType locationType;
+
+	public LocationUpdatedEvent(Long id, String name, Integer capacity, LocationType locationType) {
 		super(id, name);
+		this.capacity = capacity;
+		this.locationType = locationType;
 	}
 }

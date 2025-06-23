@@ -1,5 +1,8 @@
 package com.wms.location.domain.exception;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
@@ -72,4 +75,50 @@ public final class LocationException {
         return new WarehouseCapacityExceededEx(String.format("창고 용량 초과: 위치(%d) 최대 수용량(%d) 요청 수량(%d) 현재 용량(%d)",
                 warehouseId, capacity, currentPalletCount, addedQuantity));
     }
+
+    // CannotDeleteWithStockEx
+    public static class CannotDeleteWithStockEx extends BusinessException.ConflictException {
+        public CannotDeleteWithStockEx(String message) {
+            super(message);
+        }
+    }
+
+    public static CannotDeleteWithStockEx cannotDeleteWithStock(long warehouseId, List<Long> relatedIdList) {
+        String relatedIds = relatedIdList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        return new CannotDeleteWithStockEx(String.format("창고 삭제 불가: 대상창고에 재고가 존재합니다. 위치(%d) 재고 목록(%s)",
+                warehouseId, relatedIds));
+    }
+
+    // cannotDeleteLocationWithTaskEx
+    public static class CannotDeleteLocationWithTaskEx extends BusinessException.ConflictException {
+        public CannotDeleteLocationWithTaskEx(String message) {
+            super(message);
+        }
+    }
+
+    public static CannotDeleteLocationWithTaskEx cannotDeleteLocationWithTasks(long warehouseId, List<Long> relatedIdList) {
+        String relatedIds = relatedIdList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        return new CannotDeleteLocationWithTaskEx(String.format("창고 삭제 불가: 대상창고을 시작/도착으로 계획된 물류작업이 존재합니다. 위치(%d) 계획된 물류작업 목록(%s)",
+                warehouseId, relatedIds));
+    }
+
+    // CannotDeleteLocationWithTemplateEx
+    public static class CannotDeleteLocationWithTemplateEx extends BusinessException.ConflictException {
+        public CannotDeleteLocationWithTemplateEx(String message) {
+            super(message);
+        }
+    }
+
+    public static CannotDeleteLocationWithTemplateEx cannotDeleteLocationWithTemplates(long warehouseId, List<Long> relatedIdList) {
+        String relatedIds = relatedIdList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        return new CannotDeleteLocationWithTemplateEx(String.format("창고 삭제 불가: 대상창고을 시작/도착으로 하는 물류템플릿이 존재합니다. 위치(%d) 물류템플릿 목록(%s)",
+                warehouseId, relatedIds));
+    }
+
 }

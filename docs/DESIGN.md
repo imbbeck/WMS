@@ -383,3 +383,7 @@ throw new ConflictException("다른 사용자가 먼저 작업을 완료했습�
 - BCrypt 기반 패스워드 암호화
 - 사용자명 패턴 검증 (소문자/숫자/언더스코어만)
 - 역할별 권한 검증 메서드 제공
+
+## 레디스 캐싱 전략
+- Invalidation: write-througt and event-driven 캐싱
+- ttl: Expiration 기능을 활용한 캐시 무효화

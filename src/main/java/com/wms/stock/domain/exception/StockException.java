@@ -40,6 +40,10 @@ public final class StockException {
 		return new NotFoundEx(DomainExceptionHelper.notFound(stockId));
 	}
 
+	public static NotFoundEx notFound(String identifier) {
+		return new NotFoundEx(DomainExceptionHelper.notFound(identifier));
+	}
+
 	// DuplicateEx
 	// ConflictEx
 	public static class ConflictEx extends BusinessException.ConflictException {
@@ -64,4 +68,14 @@ public final class StockException {
 				wareId, locationId, requested, available));
 	}
 
+	// CannotNegativeQuantityEx
+	public static class CannotNegativeQuantityEx extends BusinessException.BadRequestException {
+		public CannotNegativeQuantityEx(String message) {
+			super(message);
+		}
+	}
+
+	public static CannotNegativeQuantityEx cannotNegativeQuantityEx(int requestedQuantity) {
+		return new CannotNegativeQuantityEx(String.format("재고 수량은 음수일 수 없습니다. 요청 수량(%d) 확인 필요", requestedQuantity));
+	}
 } 

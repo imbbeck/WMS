@@ -8,8 +8,6 @@ import java.time.LocalDateTime;
 @Getter
 @RequiredArgsConstructor
 public abstract class StockEvent {
-	private final Long stockId;
 	private final Long wareId;
 	private final Long warehouseId;
-	private final LocalDateTime occurredAt = LocalDateTime.now();
 }

@@ -9,8 +9,10 @@ import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationType;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.repository.LocationRepository;
+import com.wms.location.domain.service.LocationDeletionValidator;
 import com.wms.location.dto.LocationDTO;
 import com.wms.location.dto.LocationWithConnectionsDTO;
+import com.wms.stock.application.StockCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class LocationService {
     private final LocationRepository locationRepository;
     private final DomainCacheManager<Long, String> locationCacheManager;
     private final ApplicationEventPublisher eventPublisher;
+    private final StockCacheService stockCacheService;
+    private final LocationDeletionValidator locationDeletionValidator;
 
     @Transactional
     public Location createLocation(LocationDTO.CreateReq request) {
@@ -40,7 +44,7 @@ public class LocationService {
 
         // 생성 이벤트 발행
         // ReferenceDataCacheManager.handleLocationCreated에서 구독. 캐시 생성
-        eventPublisher.publishEvent(new LocationCreatedEvent(saved.getId(), saved.getName()));
+        eventPublisher.publishEvent(new LocationCreatedEvent(saved.getId(), saved.getName(), saved.getCapacity(), location.getType()));
 
         return saved;
     }
@@ -65,6 +69,12 @@ public class LocationService {
         return locationRepository.findByType(type);
     }
 
+    public Integer getCapacityByWarehouseId(Long warehouseId) {
+        return locationRepository.findById(warehouseId)
+                .map(Location::getCapacity)
+                .orElse(null);
+    }
+
     @Transactional
     public Location updateLocation(Long id, LocationDTO.UpdateReq request) {
         Location location = getLocation(id);
@@ -72,7 +82,7 @@ public class LocationService {
 
         // 수정 이벤트 발행
         // ReferenceDataCacheManager.handleLocationUpdated에서 구독. 캐시 갱신
-        eventPublisher.publishEvent(new LocationUpdatedEvent(location.getId(), location.getName()));
+        eventPublisher.publishEvent(new LocationUpdatedEvent(location.getId(), location.getName(), location.getCapacity(), location.getType()));
 
         return location;
     }
@@ -80,11 +90,12 @@ public class LocationService {
     @Transactional
     public void deleteLocation(Long id) {
         Location location = getLocation(id);
+        locationDeletionValidator.validateDeletionPossible(id);
 
         // 삭제 이벤트 발행
         // LocationConnectionService.onLocationDeleted에서 구독. 연결된 Connection들 자동 삭제
         // ReferenceDataCacheManager.handleLocationDeleted에서 구독. 캐시 삭제
-        eventPublisher.publishEvent(new LocationDeletedEvent(id));
+        eventPublisher.publishEvent(new LocationDeletedEvent(id, location.getType()));
 
         locationRepository.delete(location);
     }

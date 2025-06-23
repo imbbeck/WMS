@@ -46,7 +46,7 @@ class StockTest {
 		int currentPalletCount = 50;
 		int addedQuantity = 20;
 
-		stock.addQuantityWithCapacityCheck(warehouse.getCapacity(), currentPalletCount, addedQuantity);
+		stock.plusQuantityWithCapacityCheck(warehouse.getCapacity(), currentPalletCount, addedQuantity);
 
 		assertThat(stock.getQuantity()).isEqualTo(30);
 	}
@@ -67,7 +67,7 @@ class StockTest {
 		int addedQuantity = 20;
 
 		assertThatThrownBy(() -> {
-			stock.addQuantityWithCapacityCheck(warehouse.getCapacity(), currentPalletCount, addedQuantity);
+			stock.plusQuantityWithCapacityCheck(warehouse.getCapacity(), currentPalletCount, addedQuantity);
 		}).isInstanceOf(LocationException.WarehouseCapacityExceededEx.class)
 				.hasMessageContaining("용량 초과");
 	}
@@ -87,7 +87,7 @@ class StockTest {
 		int currentStock = 50;
 		int removeQuantity = 30;
 
-		stock.removeQuantityWithStockCheck(currentStock, removeQuantity);
+		stock.minusQuantityWithStockCheck(currentStock, removeQuantity);
 
 		assertThat(stock.getQuantity()).isEqualTo(20);
 	}
@@ -108,7 +108,7 @@ class StockTest {
 		int removeQuantity = 20;
 
 		assertThatThrownBy(() -> {
-			stock.removeQuantityWithStockCheck(currentStock, removeQuantity);
+			stock.minusQuantityWithStockCheck(currentStock, removeQuantity);
 		}).isInstanceOf(StockException.InsufficientStockEx.class)
 				.hasMessageContaining("재고 부족");
 	}

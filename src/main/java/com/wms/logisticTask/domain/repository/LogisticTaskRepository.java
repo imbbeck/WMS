@@ -140,4 +140,8 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			"WHERE lt.templateIdSnapshot = :templateId " +
 			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
 	List<LogisticTask> findByTemplateIdSnapshot(@Param("templateId") Integer templateId);
+
+	boolean existsByFromLocationIdOrToLocationId(Long locationId, Long locationId1);
+
+	List<LogisticTask> findAllByFromLocationIdOrToLocationId(Long fromLocationId, Long fromLocationId1);
 }

@@ -41,22 +41,44 @@ public class Stock extends BaseEntity {
 		this.quantity = quantity;
 	}
 
-	public void updateQuantity(Integer quantity) {
-		this.quantity = quantity;
+	/**
+	 * 재고 수량 업데이트 - 0이면 삭제 마킹
+	 * @return true: 삭제 필요, false: 업데이트만
+	 */
+	public boolean updateQuantityAndCheckDeletion(Integer newQuantity) {
+		if (newQuantity < 0) {
+			throw StockException.cannotNegativeQuantityEx(newQuantity);
+		}
+
+		this.quantity = newQuantity;
+
+		// 0이면 삭제 필요함을 반환
+		return newQuantity == 0;
 	}
 
-	public void addQuantityWithCapacityCheck(int warehouseCapacity, int currentPalletCount, int addedQuantity) {
-		if (currentPalletCount + addedQuantity > warehouseCapacity) {
-			throw LocationException.warehouseCapacityExceeded(this.warehouseId, warehouseCapacity, currentPalletCount, addedQuantity);
+	/**
+	 * 재고 증가
+	 * 재고 증가 시에는 재고 수량 이 음수로 내려갈 수 없으므로 void. addedQuantity는 DTO에서 @Positive 로 검증됨.
+	 */
+	public void plusQuantityWithCapacityCheck(int warehouseCapacity, int currentSum , int addedQuantity) {
+		if (currentSum  + addedQuantity > warehouseCapacity) {
+			throw LocationException.warehouseCapacityExceeded(this.warehouseId, warehouseCapacity, currentSum , addedQuantity);
 		}
 		this.quantity += addedQuantity;
 	}
 
-	public void removeQuantityWithStockCheck(int currentStock, int removeQuantity) {
-		if (currentStock < removeQuantity) {
-			throw StockException.insufficientStock(this.warehouseId, this.wareId, currentStock, removeQuantity
+	/**
+	 * 재고 감소
+	 * @return true: 삭제 필요, false: 업데이트만
+	 */
+	public boolean minusQuantityWithStockCheck(int oldQuantity, int removeQuantity) {
+		if (oldQuantity < removeQuantity) {
+			throw StockException.insufficientStock(this.warehouseId, this.wareId, oldQuantity, removeQuantity
 			);
 		}
 		this.quantity -= removeQuantity;
+
+		return updateQuantityAndCheckDeletion(this.quantity);
+
 	}
 }

@@ -140,6 +140,8 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
 	Page<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
 
+	boolean existsByWarehouseId(Long locationId);
+
 //    @Query("SELECT s FROM Stock s WHERE s.ware.id = :wareId AND s.warehouse.id = :locationId")
 //    Optional<Stock> findByWareIdAndLocationId(@Param("wareId") Long wareId, @Param("locationId") Long locationId);
 //

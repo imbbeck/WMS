@@ -4,10 +4,10 @@ import com.wms.stock.domain.model.Stock;
 import lombok.Getter;
 
 @Getter
-public class StockCreatedEvent extends StockEvent {
+public class StockIncreasedEvent extends StockEvent {
 	private final Integer quantity;
 
-	public StockCreatedEvent(Stock stock) {
+	public StockIncreasedEvent(Stock stock) {
 		super( stock.getWareId(), stock.getWarehouseId());
 		this.quantity = stock.getQuantity();
 	}

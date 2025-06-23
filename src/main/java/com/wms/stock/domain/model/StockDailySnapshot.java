@@ -35,13 +35,10 @@ public class StockDailySnapshot {
 
 	@Builder
 	public StockDailySnapshot(StockSnapshotKey key, Integer quantity, Integer changeFromYesterday) {
-		validateData(key, quantity, changeFromYesterday);
 		this.key = key;
 		this.quantity = quantity;
 		this.changeFromYesterday = changeFromYesterday;
 	}
 
-	private void validateData(StockSnapshotKey key, Integer quantity, Integer changeFromYesterday) {
-	}
 }
 
