@@ -52,8 +52,8 @@ public final class StockException {
 		}
 	}
 
-	public static LocationException.ConflictEx duplicate(FieldEnum fieldEnum) {
-		return new LocationException.ConflictEx(DomainExceptionHelper.duplicate(fieldEnum));
+	public static StockException.ConflictEx duplicate(FieldEnum fieldEnum) {
+		return new StockException.ConflictEx(DomainExceptionHelper.duplicate(fieldEnum));
 	}
 
 	// InsufficientStockEx

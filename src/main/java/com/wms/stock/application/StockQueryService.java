@@ -489,7 +489,7 @@ public class StockQueryService {
 	 * Redis SCAN으로 특정 창고의 모든 재고 조회
 	 * 키 패턴: current_stock:warehouseId:wareId
 	 */
-	private Map<Long, Integer> scanWarehouseStocksFromCache(Long warehouseId) {
+	Map<Long, Integer> scanWarehouseStocksFromCache(Long warehouseId) {
 		return scanStocksFromCache(String.format("current_stock:%d:*", warehouseId), 2);
 	}
 
