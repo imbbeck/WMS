@@ -40,46 +40,40 @@ class LogisticTemplateTest {
     @Test
     @DisplayName("템플릿 이름이 null이면 예외가 발생한다")
     void testTemplateNameNull() {
-        assertThatThrownBy(() -> {
-            LogisticTemplate.builder()
-                    .name(null)
-                    .type(LogisticType.INBOUND)
-                    .ware(testWare)
-                    .fromLocation(fromLocation)
-                    .toLocation(toLocation)
-                    .standardQuantity(100)
-                    .build();
-        }).isInstanceOf(LogisticTemplateException.ValidationEx.class);
+        assertThatThrownBy(() -> LogisticTemplate.builder()
+                .name(null)
+                .type(LogisticType.INBOUND)
+                .ware(testWare)
+                .fromLocation(fromLocation)
+                .toLocation(toLocation)
+                .standardQuantity(100)
+                .build()).isInstanceOf(LogisticTemplateException.ValidationEx.class);
     }
 
     @Test
     @DisplayName("템플릿 타입이 null이면 예외가 발생한다")
     void testTemplateTypeNull() {
-        assertThatThrownBy(() -> {
-            LogisticTemplate.builder()
-                    .name("테스트 템플릿")
-                    .type(null)
-                    .ware(testWare)
-                    .fromLocation(fromLocation)
-                    .toLocation(toLocation)
-                    .standardQuantity(100)
-                    .build();
-        }).isInstanceOf(LogisticTemplateException.ValidationEx.class);
+        assertThatThrownBy(() -> LogisticTemplate.builder()
+                .name("테스트 템플릿")
+                .type(null)
+                .ware(testWare)
+                .fromLocation(fromLocation)
+                .toLocation(toLocation)
+                .standardQuantity(100)
+                .build()).isInstanceOf(LogisticTemplateException.ValidationEx.class);
     }
 
     @Test
     @DisplayName("표준 수량이 0이하면 예외가 발생한다")
     void testStandardQuantityInvalid() {
-        assertThatThrownBy(() -> {
-            LogisticTemplate.builder()
-                    .name("테스트 템플릿")
-                    .type(LogisticType.INBOUND)
-                    .ware(testWare)
-                    .fromLocation(fromLocation)
-                    .toLocation(toLocation)
-                    .standardQuantity(0)
-                    .build();
-        }).isInstanceOf(LogisticTemplateException.ValidationEx.class);
+        assertThatThrownBy(() -> LogisticTemplate.builder()
+                .name("테스트 템플릿")
+                .type(LogisticType.INBOUND)
+                .ware(testWare)
+                .fromLocation(fromLocation)
+                .toLocation(toLocation)
+                .standardQuantity(0)
+                .build()).isInstanceOf(LogisticTemplateException.ValidationEx.class);
     }
 
     @Test

@@ -3,9 +3,6 @@ package com.wms.stock.domain.exception;
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
-import com.wms.location.domain.exception.LocationException;
-import com.wms.location.domain.model.Location;
-import com.wms.ware.domain.model.Ware;
 
 public final class StockException {
 	private StockException() {}

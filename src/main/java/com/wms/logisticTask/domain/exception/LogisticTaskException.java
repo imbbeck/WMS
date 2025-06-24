@@ -3,7 +3,6 @@ package com.wms.logisticTask.domain.exception;
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
-import com.wms.location.domain.exception.LocationException;
 
 public final class LogisticTaskException {
 	public LogisticTaskException() {}

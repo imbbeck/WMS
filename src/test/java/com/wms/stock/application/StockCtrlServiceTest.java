@@ -1,6 +1,5 @@
 package com.wms.stock.application;
 
-import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.location.application.LocationCacheService;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
@@ -27,7 +26,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)

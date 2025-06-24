@@ -3,7 +3,6 @@ package com.wms.location.domain.model;
 import com.wms.applicationInfra.config.JpaAuditingConfig;
 import com.wms.applicationInfra.config.QuerydslConfig;
 import com.wms.location.domain.exception.LocationConnectException;
-import com.wms.location.domain.exception.LocationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,13 +78,11 @@ class LocationConnectionTest {
     @DisplayName("동일한 Location ID로 Connection을 생성하면 예외가 발생한다.")
     void createConnection_WithSameLocationIds_ThrowsException() {
         // when & then
-        assertThatThrownBy(() -> {
-            LocationConnection.builder()
-                    .locationId1(locationA.getId())
-                    .locationId2(locationA.getId())
-                    .trt(100)
-                    .build();
-        }).isInstanceOf(LocationConnectException.ValidationEx.class)
+        assertThatThrownBy(() -> LocationConnection.builder()
+                .locationId1(locationA.getId())
+                .locationId2(locationA.getId())
+                .trt(100)
+                .build()).isInstanceOf(LocationConnectException.ValidationEx.class)
                 .hasMessage("출발지와 도착지가 같을 수 없습니다.");
     }
 

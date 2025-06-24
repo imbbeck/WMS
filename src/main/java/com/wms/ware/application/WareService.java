@@ -1,9 +1,6 @@
 package com.wms.ware.application;
 
 import com.wms.applicationInfra.domain.FieldEnum;
-import com.wms.location.domain.event.LocationCreatedEvent;
-import com.wms.location.domain.event.LocationDeletedEvent;
-import com.wms.location.domain.event.LocationUpdatedEvent;
 import com.wms.ware.domain.event.WareCreatedEvent;
 import com.wms.ware.domain.event.WareDeletedEvent;
 import com.wms.ware.domain.event.WareUpdatedEvent;

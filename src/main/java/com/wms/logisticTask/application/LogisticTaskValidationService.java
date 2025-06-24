@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +159,7 @@ public class LogisticTaskValidationService {
 
 		// 새 작업을 적절한 위치에 삽입
 		existingTasks.add(newTask);
-		existingTasks.sort((t1, t2) -> t1.getEtd().compareTo(t2.getEtd()));
+		existingTasks.sort(Comparator.comparing(LogisticTask::getEtd));
 
 		validateTaskSequence(existingTasks, initialStockMap);
 	}

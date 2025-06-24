@@ -3,7 +3,6 @@ package com.wms.userInfo;
 import com.wms.userInfo.application.AuthService;
 import com.wms.userInfo.application.JwtProvider;
 import com.wms.userInfo.domain.exception.AuthException;
-import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.Password;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;

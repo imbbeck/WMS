@@ -551,13 +551,13 @@ ORDER BY task_count DESC;
 -- 날짜별 작업 완료율 분석
 SELECT
 	scheduled_date,
-	COUNT(*) as total_tasks,
-	SUM(CASE WHEN final_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed,
-	SUM(CASE WHEN final_status = 'COMPLETE_DELAYED' THEN 1 ELSE 0 END) as `delayed`,
-    SUM(CASE WHEN final_status = 'FAILED' THEN 1 ELSE 0 END) as failed,
-    SUM(CASE WHEN final_status = 'CANCELLED' THEN 1 ELSE 0 END) as cancelled,
-    SUM(CASE WHEN final_status = 'EXPIRED' THEN 1 ELSE 0 END) as expired,
-    ROUND((SUM(CASE WHEN final_status IN ('COMPLETED', 'COMPLETE_DELAYED') THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) as success_rate
+	COUNT(*)                                                                                      as total_tasks,
+	SUM(IF(final_status = 'COMPLETED', 1, 0))                                                     as completed,
+	SUM(IF(final_status = 'COMPLETE_DELAYED', 1, 0))                                              as `delayed`,
+    SUM(IF(final_status = 'FAILED', 1, 0))                                                        as failed,
+    SUM(IF(final_status = 'CANCELLED', 1, 0))                                                     as cancelled,
+    SUM(IF(final_status = 'EXPIRED', 1, 0))                                                       as expired,
+    ROUND((SUM(IF(final_status IN ('COMPLETED', 'COMPLETE_DELAYED'), 1, 0)) / COUNT(*)) * 100, 1) as success_rate
 FROM logistic_task_history
 GROUP BY scheduled_date
 ORDER BY scheduled_date DESC;
@@ -565,17 +565,13 @@ ORDER BY scheduled_date DESC;
 -- 작업자별 성과 분석 (최근 7일)
 SELECT
 	worker_name,
-	COUNT(*) as total_tasks,
-	SUM(CASE WHEN final_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed,
-	SUM(CASE WHEN final_status = 'COMPLETE_DELAYED' THEN 1 ELSE 0 END) as `delayed`,
-    SUM(CASE WHEN final_status = 'FAILED' THEN 1 ELSE 0 END) as failed,
-    SUM(CASE WHEN final_status = 'EXPIRED' THEN 1 ELSE 0 END) as expired,
-    ROUND((SUM(CASE WHEN final_status IN ('COMPLETED', 'COMPLETE_DELAYED') THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) as success_rate,
-    ROUND(AVG(CASE
-        WHEN atd IS NOT NULL AND etd IS NOT NULL
-        THEN TIMESTAMPDIFF(MINUTE, etd, atd)
-        ELSE NULL
-    END), 2) as avg_start_delay_minutes
+	COUNT(*)                                                                                      as total_tasks,
+	SUM(IF(final_status = 'COMPLETED', 1, 0))                                                     as completed,
+	SUM(IF(final_status = 'COMPLETE_DELAYED', 1, 0))                                              as `delayed`,
+    SUM(IF(final_status = 'FAILED', 1, 0))                                                        as failed,
+    SUM(IF(final_status = 'EXPIRED', 1, 0))                                                       as expired,
+    ROUND((SUM(IF(final_status IN ('COMPLETED', 'COMPLETE_DELAYED'), 1, 0)) / COUNT(*)) * 100, 1) as success_rate,
+    ROUND(AVG(IF(atd IS NOT NULL AND etd IS NOT NULL, TIMESTAMPDIFF(MINUTE, etd, atd), NULL)), 2) as avg_start_delay_minutes
 FROM logistic_task_history
 WHERE scheduled_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 GROUP BY worker_id, worker_name
@@ -585,11 +581,11 @@ ORDER BY success_rate DESC, total_tasks DESC;
 SELECT
 	ware_name,
 	type,
-	COUNT(*) as total_movements,
-	SUM(quantity) as total_quantity,
-	AVG(quantity) as avg_quantity,
-	SUM(CASE WHEN final_status IN ('COMPLETED', 'COMPLETE_DELAYED') THEN 1 ELSE 0 END) as successful_movements,
-	ROUND((SUM(CASE WHEN final_status IN ('COMPLETED', 'COMPLETE_DELAYED') THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) as success_rate
+	COUNT(*)                                                                                      as total_movements,
+	SUM(quantity)                                                                                 as total_quantity,
+	AVG(quantity)                                                                                 as avg_quantity,
+	SUM(IF(final_status IN ('COMPLETED', 'COMPLETE_DELAYED'), 1, 0))                              as successful_movements,
+	ROUND((SUM(IF(final_status IN ('COMPLETED', 'COMPLETE_DELAYED'), 1, 0)) / COUNT(*)) * 100, 1) as success_rate
 FROM logistic_task_history
 WHERE scheduled_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 GROUP BY ware_id, ware_name, type

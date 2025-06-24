@@ -16,15 +16,13 @@ class UserInfoTest {
     @Test
     @DisplayName("유효하지 않은 사용자명이면 예외가 발생한다")
     void testInvalidUsername() {
-        assertThatThrownBy(() -> {
-            UserInfo.builder()
-                    .username("Invalid-Username")
-                    .name("테스트 사용자")
-                    .email("test@example.com")
-                    .password(Password.builder().value("password123").build())
-                    .type(UserType.WORKER)
-                    .build();
-        }).isInstanceOf(UserInfoException.ValidationEx.class);
+        assertThatThrownBy(() -> UserInfo.builder()
+                .username("Invalid-Username")
+                .name("테스트 사용자")
+                .email("test@example.com")
+                .password(Password.builder().value("password123").build())
+                .type(UserType.WORKER)
+                .build()).isInstanceOf(UserInfoException.ValidationEx.class);
     }
 
     @Test
@@ -87,8 +85,6 @@ class UserInfoTest {
                 .type(UserType.WORKER)
                 .build();
 
-        assertThatThrownBy(() -> {
-            user.getPassword().changePassword("newpassword123", "wrongpassword");
-        }).isInstanceOf(UserInfoException.WrongPasswordException.class);
+        assertThatThrownBy(() -> user.getPassword().changePassword("newpassword123", "wrongpassword")).isInstanceOf(UserInfoException.WrongPasswordException.class);
     }
 } 

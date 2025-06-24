@@ -1,7 +1,6 @@
 package com.wms.userInfo.application;
 
 import com.wms.userInfo.domain.exception.AuthException;
-import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
 import com.wms.userInfo.dto.AuthDTO;

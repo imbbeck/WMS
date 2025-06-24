@@ -14,49 +14,41 @@ class WareTest {
     @Test
     @DisplayName("물품명이 null이면 예외가 발생한다")
     void testWareNameNull() {
-        assertThatThrownBy(() -> {
-            Ware.builder()
-                    .name(null)
-                    .type("가전제품")
-                    .paletteUnit(10)
-                    .build();
-        }).isInstanceOf(WareException.ValidationEx.class);
+        assertThatThrownBy(() -> Ware.builder()
+                .name(null)
+                .type("가전제품")
+                .paletteUnit(10)
+                .build()).isInstanceOf(WareException.ValidationEx.class);
     }
 
     @Test
     @DisplayName("물품명이 빈 문자열이면 예외가 발생한다")
     void testWareNameEmpty() {
-        assertThatThrownBy(() -> {
-            Ware.builder()
-                    .name("")
-                    .type("가전제품")
-                    .paletteUnit(10)
-                    .build();
-        }).isInstanceOf(WareException.ValidationEx.class);
+        assertThatThrownBy(() -> Ware.builder()
+                .name("")
+                .type("가전제품")
+                .paletteUnit(10)
+                .build()).isInstanceOf(WareException.ValidationEx.class);
     }
 
     @Test
     @DisplayName("물품 타입이 null이면 예외가 발생한다")
     void testWareTypeNull() {
-        assertThatThrownBy(() -> {
-            Ware.builder()
-                    .name("테스트 물품")
-                    .type(null)
-                    .paletteUnit(10)
-                    .build();
-        }).isInstanceOf(WareException.ValidationEx.class);
+        assertThatThrownBy(() -> Ware.builder()
+                .name("테스트 물품")
+                .type(null)
+                .paletteUnit(10)
+                .build()).isInstanceOf(WareException.ValidationEx.class);
     }
 
     @Test
     @DisplayName("파레트당 물품 개수가 0이하면 예외가 발생한다")
     void testWarePaletteUnitInvalid() {
-        assertThatThrownBy(() -> {
-            Ware.builder()
-                    .name("테스트 물품")
-                    .type("가전제품")
-                    .paletteUnit(0)
-                    .build();
-        }).isInstanceOf(WareException.ValidationEx.class);
+        assertThatThrownBy(() -> Ware.builder()
+                .name("테스트 물품")
+                .type("가전제품")
+                .paletteUnit(0)
+                .build()).isInstanceOf(WareException.ValidationEx.class);
     }
 
     @Test

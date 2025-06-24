@@ -2,7 +2,6 @@ package com.wms.location.domain.model;
 
 import com.wms.applicationInfra.domain.BaseEntity;
 import com.wms.location.domain.exception.LocationConnectException;
-import com.wms.location.domain.exception.LocationException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

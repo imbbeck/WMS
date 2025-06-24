@@ -171,12 +171,10 @@ class step4_StockSnapshotBatchTest {
 		// 각 파티션의 commit count 확인
 		jobExecution.getStepExecutions().stream()
 				.filter(step -> step.getStepName().startsWith("slaveStep:partition"))
-				.forEach(step -> {
-					System.out.println("Step: " + step.getStepName() +
-							", ReadCount: " + step.getReadCount() +
-							", CommitCount: " + step.getCommitCount() +
-							", 예상 CommitCount: " + Math.ceil((double)step.getReadCount() / chunkSize));
-				});
+				.forEach(step -> System.out.println("Step: " + step.getStepName() +
+						", ReadCount: " + step.getReadCount() +
+						", CommitCount: " + step.getCommitCount() +
+						", 예상 CommitCount: " + Math.ceil((double)step.getReadCount() / chunkSize)));
 
 		List<StockDailySnapshot> snapshots = snapshotRepository.findAll();
 		assertThat(snapshots).hasSize(testDataSize);

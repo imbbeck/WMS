@@ -27,25 +27,22 @@ class UserInfoRepositoryTest {
     @Autowired
     private UserInfoRepository userInfoRepository;
 
-    private UserInfo admin;
-    private UserInfo worker;
-
-    @BeforeEach
+	@BeforeEach
     void setUp() {
-        admin = UserInfo.builder()
-                .username("admin_user")
-                .name("admin")
-                .email("admin@test.com")
-                .password(new Password("password"))
-                .type(UserType.ADMIN)
-                .build();
-        worker = UserInfo.builder()
-                .username("worker_user")
-                .name("worker")
-                .email("worker@test.com")
-                .password(new Password("password"))
-                .type(UserType.WORKER)
-                .build();
+	    UserInfo admin = UserInfo.builder()
+			    .username("admin_user")
+			    .name("admin")
+			    .email("admin@test.com")
+			    .password(new Password("password"))
+			    .type(UserType.ADMIN)
+			    .build();
+		UserInfo worker = UserInfo.builder()
+				.username("worker_user")
+				.name("worker")
+				.email("worker@test.com")
+				.password(new Password("password"))
+				.type(UserType.WORKER)
+				.build();
         entityManager.persist(admin);
         entityManager.persist(worker);
         entityManager.flush();

@@ -3,7 +3,6 @@ package com.wms.ware.domain.exception;
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
-import com.wms.location.domain.exception.LocationException;
 
 public class WareException {
 

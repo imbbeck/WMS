@@ -5,7 +5,6 @@ import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
-import com.wms.userInfo.domain.exception.UserInfoException.*;
 import com.wms.userInfo.dto.UserInfoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

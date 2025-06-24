@@ -2,7 +2,6 @@ package com.wms.stock.dto;
 
 import java.util.List;
 
-import com.wms.stock.domain.model.Stock;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;

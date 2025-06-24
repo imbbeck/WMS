@@ -47,9 +47,7 @@ class StockTest {
 		int addedQuantity = 20; // 50 + 20 = 70 > 60 (용량 초과)
 
 		// When & Then
-		assertThatThrownBy(() -> {
-			stock.plusQuantityWithCapacityCheck(warehouseCapacity, currentPalletCount, addedQuantity);
-		}).isInstanceOf(LocationException.WarehouseCapacityExceededEx.class)
+		assertThatThrownBy(() -> stock.plusQuantityWithCapacityCheck(warehouseCapacity, currentPalletCount, addedQuantity)).isInstanceOf(LocationException.WarehouseCapacityExceededEx.class)
 				.hasMessageContaining("용량 초과");
 	}
 
@@ -111,9 +109,7 @@ class StockTest {
 		int removeQuantity = 20; // 재고보다 많이 제거 시도
 
 		// When & Then
-		assertThatThrownBy(() -> {
-			stock.minusQuantityWithStockCheck(oldQuantity, removeQuantity);
-		}).isInstanceOf(StockException.InsufficientStockEx.class)
+		assertThatThrownBy(() -> stock.minusQuantityWithStockCheck(oldQuantity, removeQuantity)).isInstanceOf(StockException.InsufficientStockEx.class)
 				.hasMessageContaining("재고 부족");
 	}
 
@@ -185,9 +181,7 @@ class StockTest {
 				.build();
 
 		// When & Then
-		assertThatThrownBy(() -> {
-			stock.updateQuantityAndCheckDeletion(-10);
-		}).isInstanceOf(StockException.CannotNegativeQuantityEx.class)
+		assertThatThrownBy(() -> stock.updateQuantityAndCheckDeletion(-10)).isInstanceOf(StockException.CannotNegativeQuantityEx.class)
 				.hasMessageContaining("음수");
 	}
 
