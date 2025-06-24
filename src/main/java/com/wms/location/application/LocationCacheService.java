@@ -22,7 +22,8 @@ public class LocationCacheService {
 	/**
 	 * 창고 용량 조회 (캐시 조회 후 miss 시 DB 조회)
 	 */
-	@Cacheable(value = "warehouseCapacity", keyGenerator = "locationCacheKeyGenerator", unless = "#result == null")
+//	@Cacheable(value = "warehouseCapacity", keyGenerator = "locationCacheKeyGenerator", unless = "#result == null")
+	@Cacheable(value = "warehouseCapacity", keyGenerator = "locationCacheKeyGenerator") // RedisConfig 에서 .disableCachingNullValues() 설정으로 null 값 캐싱 방지
 	public Integer getWarehouseCapacity(Long warehouseId) {
 		log.debug("Cache miss - querying DB for warehouseId: {}", warehouseId);
 		return locationService.getCapacityByWarehouseId(warehouseId);

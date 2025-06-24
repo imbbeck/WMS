@@ -1,7 +1,6 @@
 package com.wms.stock.domain.repository;
 
 import com.wms.stock.domain.model.Stock;
-import com.wms.stock.dto.StockDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,7 +33,6 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 	 * 재고가 있는 창고들의 특정 물품 재고 조회
 	 */
 	List<Stock> findAllByWareIdAndQuantityGreaterThan(Long wareId, int quantity);
-
 
 	/**
 	 * 재고 부족 상태인 항목 조회 (threshold 이하)
@@ -72,11 +70,12 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 			"AND (:warehouseId IS NULL OR s.warehouseId = :warehouseId) " +
 			"AND (:minQuantity IS NULL OR s.quantity >= :minQuantity) " +
 			"AND (:maxQuantity IS NULL OR s.quantity <= :maxQuantity)")
-	Page<Stock> findBySearchCriteria(@Param("wareId") Long wareId,
+	List<Stock> findBySearchCriteria(
+			@Param("wareId") Long wareId,
 			@Param("warehouseId") Long warehouseId,
 			@Param("minQuantity") Integer minQuantity,
-			@Param("maxQuantity") Integer maxQuantity,
-			Pageable pageable);
+			@Param("maxQuantity") Integer maxQuantity
+	);
 
 	/**
 	 * 창고별 재고 요약 정보 조회
@@ -127,38 +126,6 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 	Integer getTotalPaletteCountByWarehouseId(@Param("warehouseId") Long warehouseId);
 
 	/**
-	 * 배치 파티셔닝 용 메소드
-	 */
-	@Query("SELECT MIN(s.id) FROM Stock s")
-	Long findMinId();
-
-	@Query("SELECT MAX(s.id) FROM Stock s")
-	Long findMaxId();
-
-	@Query("SELECT COUNT(s) FROM Stock s")
-	long count();
-
-	Page<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
-
-	boolean existsByWarehouseId(Long locationId);
-
-//    @Query("SELECT s FROM Stock s WHERE s.ware.id = :wareId AND s.warehouse.id = :locationId")
-//    Optional<Stock> findByWareIdAndLocationId(@Param("wareId") Long wareId, @Param("locationId") Long locationId);
-//
-//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
-//    Integer getTotalQuantityByWareId(@Param("wareId") Long wareId);
-//
-//    List<Stock> findByWareId(Long wareId);
-//    List<Stock> findByWarehouseId(Long locationId);
-//    boolean existsByWareAndWarehouse(Ware ware, Location location);
-//
-//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.ware.id = :wareId")
-//    Integer sumQuantityByWareId(@Param("wareId") Long wareId);
-//
-//    @Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.warehouse.id = :locationId")
-//    Integer sumQuantityByWarehouseId(@Param("locationId") Long locationId);
-
-	/**
 	 * 창고별 재고 요약을 위한 인터페이스
 	 */
 	interface WarehouseStockSummary {
@@ -175,4 +142,24 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 		Long getTotalQuantity();
 		Long getWarehouseCount();
 	}
+
+	/**
+	 * 배치 파티셔닝 용 메소드
+	 */
+	@Query("SELECT MIN(s.id) FROM Stock s")
+	Long findMinId();
+
+	@Query("SELECT MAX(s.id) FROM Stock s")
+	Long findMaxId();
+
+	@Query("SELECT COUNT(s) FROM Stock s")
+	long count();
+
+	Page<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
+
+	boolean existsByWarehouseId(Long locationId);
+
+	/// ////
+
+
 }

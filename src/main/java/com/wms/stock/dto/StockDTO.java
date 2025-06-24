@@ -4,7 +4,6 @@ import com.wms.stock.domain.model.Stock;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -64,7 +63,7 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock response")
+	@Schema(description = "Stock ctrl response")
 	public static class Res {
 
 		@Schema(description = "Stock ID", example = "1")
@@ -79,12 +78,16 @@ public class StockDTO {
 		@Schema(description = "Quantity (palette unit)", example = "10")
 		private Integer quantity;
 
+		@Schema(description = "Version for optimistic locking", example = "1")
+		private Long version;
+
 		@Builder
-		public Res(Long id, Long wareId, Long warehouseId, Integer quantity) {
+		public Res(Long id, Long wareId, Long warehouseId, Integer quantity, Long version) {
 			this.id = id;
 			this.wareId = wareId;
 			this.warehouseId = warehouseId;
 			this.quantity = quantity;
+			this.version = version;
 		}
 
 		public static Res from(Stock stock) {
@@ -93,69 +96,8 @@ public class StockDTO {
 					.wareId(stock.getWareId())
 					.warehouseId(stock.getWarehouseId())
 					.quantity(stock.getQuantity())
+					.version(stock.getVersion())
 					.build();
-		}
-	}
-
-	@Getter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock search criteria")
-	public static class SearchReq {
-
-		@Schema(description = "Ware ID filter", example = "1")
-		private Long wareId;
-
-		@Schema(description = "Warehouse ID filter", example = "1")
-		private Long warehouseId;
-
-		@Schema(description = "Minimum quantity filter", example = "5")
-		private Integer minQuantity;
-
-		@Schema(description = "Maximum quantity filter", example = "100")
-		private Integer maxQuantity;
-
-		@Builder
-		public SearchReq(Long wareId, Long warehouseId, Integer minQuantity, Integer maxQuantity) {
-			this.wareId = wareId;
-			this.warehouseId = warehouseId;
-			this.minQuantity = minQuantity;
-			this.maxQuantity = maxQuantity;
-		}
-	}
-
-	@Getter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Warehouse stock summary")
-	public static class WarehouseSummaryRes {
-
-		@Schema(description = "Warehouse ID", example = "1")
-		private Long warehouseId;
-
-		@Schema(description = "Warehouse name", example = "중앙창고")
-		private String warehouseName;
-
-		@Schema(description = "Total palette count", example = "50")
-		private Integer totalPaletteCount;
-
-		@Schema(description = "Warehouse capacity", example = "100")
-		private Integer capacity;
-
-		@Schema(description = "Utilization rate", example = "50.0")
-		private Double utilizationRate;
-
-		@Schema(description = "Number of different ware types", example = "5")
-		private Integer wareTypeCount;
-
-		@Builder
-		public WarehouseSummaryRes(Long warehouseId, String warehouseName,
-				Integer totalPaletteCount, Integer capacity,
-				Double utilizationRate, Integer wareTypeCount) {
-			this.warehouseId = warehouseId;
-			this.warehouseName = warehouseName;
-			this.totalPaletteCount = totalPaletteCount;
-			this.capacity = capacity;
-			this.utilizationRate = utilizationRate;
-			this.wareTypeCount = wareTypeCount;
 		}
 	}
 }

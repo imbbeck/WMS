@@ -1,7 +1,5 @@
 package com.wms.stock.application;
 
-import javax.sound.midi.VoiceStatus;
-
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.location.application.LocationCacheService;
 import com.wms.location.domain.exception.LocationException;
@@ -20,7 +18,6 @@ import com.wms.ware.domain.repository.WareRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,9 +74,11 @@ public class StockCtrlService {
 	}
 
 	@Transactional
-	public Stock update(Long id, StockDTO.UpdateReq req) {
-		Stock stock = stockRepository.findById(id)
-				.orElseThrow(() -> StockException.notFound(id));
+	public Stock update(Long wareId, Long warehouseId, StockDTO.UpdateReq req) {
+		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
+				.orElseThrow(() -> StockException.notFound(
+						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
+				));
 
 		int oldQuantity = stock.getQuantity();
 
@@ -112,9 +111,11 @@ public class StockCtrlService {
 	}
 
 	@Transactional
-	public void delete(Long id) {
-		Stock stock = stockRepository.findById(id)
-				.orElseThrow(() -> StockException.notFound(id));
+	public void delete(Long wareId, Long warehouseId) {
+		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
+				.orElseThrow(() -> StockException.notFound(
+						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
+				));
 
 		// 삭제 이벤트 발행
 		eventPublisher.publishEvent(new StockDeletedEvent(stock));

@@ -20,10 +20,11 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10)) // 캐시 유효 시간 10분
+//                .entryTtl(Duration.ofMinutes(10)) // 캐시 유효 시간 10분 - 프로퍼티에서 설정
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                .disableCachingNullValues();
+                .disableCachingNullValues() // null 값 캐싱 비활성화
+                .disableKeyPrefix(); // cacheName:: prefix 제거
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
@@ -47,4 +48,4 @@ public class RedisConfig {
         return template;
     }
 
-} 
+}
