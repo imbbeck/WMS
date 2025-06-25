@@ -140,6 +140,50 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
 	List<LogisticTask> findByTemplateIdSnapshot(@Param("templateId") Integer templateId);
 
+	/**
+	 * 특정 날짜의 물류작업을 여러 상태 제외하고 조회
+	 */
+	@Query("SELECT lt FROM LogisticTask lt " +
+			"WHERE lt.scheduledDate = :scheduledDate " +
+			"AND lt.status NOT IN :excludeStatuses " +
+			"ORDER BY lt.etd ASC")
+	List<LogisticTask> findByScheduledDateAndStatusNotIn(
+			@Param("scheduledDate") LocalDate scheduledDate,
+			@Param("excludeStatuses") List<LogisticTaskStatus> excludeStatuses);
+
+	/**
+	 * 특정 날짜의 모든 활성 물류작업 조회 (취소, 실패 제외)
+	 */
+	@Query("SELECT lt FROM LogisticTask lt " +
+			"WHERE lt.scheduledDate = :scheduledDate " +
+			"AND lt.status NOT IN ('CANCELLED', 'FAILED') " +
+			"ORDER BY lt.etd ASC")
+	List<LogisticTask> findActiveTasksByScheduledDate(@Param("scheduledDate") LocalDate scheduledDate);
+
+	/**
+	 * 특정 날짜 범위의 완료된 작업들 조회 (재고 히스토리 추적용)
+	 */
+	@Query("SELECT lt FROM LogisticTask lt " +
+			"WHERE lt.scheduledDate BETWEEN :startDate AND :endDate " +
+			"AND lt.status = 'COMPLETED' " +
+			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
+	List<LogisticTask> findCompletedTasksByDateRange(
+			@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate);
+
+	/**
+	 * 특정 창고의 총 재고량 조회 (캐시 fallback용)
+	 */
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	Integer getTotalQuantityByWarehouse(@Param("warehouseId") Long warehouseId);
+
+	/**
+	 * 특정 창고의 파레트 총 개수 조회 (캐시 fallback용)
+	 */
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	Integer getTotalPaletteCountByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+
 	boolean existsByFromLocationIdOrToLocationId(Long locationId, Long locationId1);
 
 	List<LogisticTask> findAllByFromLocationIdOrToLocationId(Long fromLocationId, Long fromLocationId1);

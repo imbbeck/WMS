@@ -1,6 +1,6 @@
 # 물류 시스템 구조 설계
 
--   try to make best practice for OOP(DDD), clean architecture
+-   try to make the best practice for OOP(DDD), clean architecture, event-driven architecture, etc.
 
 ---
 
@@ -177,10 +177,15 @@
 -   **비즈니스 규칙**:
     -   PENDING/INITIATE_DELAYED 상태일 때만 수정/취소 가능
     -   INITIATED 상태일 때만 실패 처리 가능
-    -   INITIATED로 상태변경 시 LogisticTaskInitiated 이벤트 발행
-        -   이벤트 구독자가 재고 변경을 수행 (비동기 처리)
+    ~~-   INITIATED로 상태변경 시 LogisticTaskInitiated 이벤트 발행
+      -   이벤트 구독자가 재고 변경을 수행 (비동기 처리)
     -   COMPLETED로 상태변경 시 LogisticTaskCompleted 이벤트 발행
-        -   이벤트 구독자가 재고 변경을 수행 (비동기 처리)
+      -   이벤트 구독자가 재고 변경을 수행 (비동기 처리)~~
+    - INITIATED/COMPLETED로 상태변경 시 재고 변경 메소드 호출(동기처리)
+      -   재고 데이터의 동시성 이슈를 피하기 위해 적용한 낙관적 락 + 지수적 백오프 재시도 전략과 event-driven 전략이 상충되어(백오프 limit 초과 시 사용자 재시도 유도하는 throw의 전파 불가) 동기 처리로 변경
+    ~~-   물류이동 작업은 자기자신 상태변화에 대해서만 리턴, 재고변화는 redis stream 기반으로 하고, status를 따로 sse로 발행. 마지막 방어선을 위해 낙관적 락 + 지수적 백오프 재시도 전략을 적용할 예정
+      -   여기서만 redis stream을 사용하고, 기존 spring event로 처리되는 다른 이벤트는 그대로 유지하고 향후 redis stream으로 변경 예정
+      -   비동기처리의 근본적인 문제. 재고엔티티에서 재고없을때 물류작업시작 불가/창고여유없을때 물류작업완료 불가 처리를 위해 예외발생시키는데 이는 물류작업상태변경api에서도 알아야될 사항이지만 전파가 안됨 ~~
 
 #### 상태 전환 규칙:
 - `PENDING` → `INITIATED` (작업 시작)

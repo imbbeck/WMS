@@ -26,6 +26,18 @@ public final class LogisticTaskException {
 		return new ValidationEx(message);
 	}
 
+	public static ValidationEx simulationFailedEx(String message) {
+		return new ValidationEx("시뮬레이션 검증 실패: " + message);
+	}
+
+	public static ValidationEx stockValidationFailedEx(String message) {
+		return new ValidationEx("재고 검증 실패: " + message);
+	}
+
+	public static ValidationEx capacityValidationFailedEx(String message) {
+		return new ValidationEx("창고 용량 검증 실패: " + message);
+	}
+
 	// NotFoundEx
 	public static class NotFoundEx extends BusinessException.NotFoundException {
 		public NotFoundEx(String message) {

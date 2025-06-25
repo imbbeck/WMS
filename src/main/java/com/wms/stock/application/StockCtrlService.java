@@ -130,7 +130,7 @@ public class StockCtrlService {
 	 * @param wareId 물품 ID
 	 * @param quantity 감소할 수량
 	 */
-	private void decreaseStock(Long warehouseId, Long wareId, Integer quantity) {
+	public void decreaseStock(Long warehouseId, Long wareId, Integer quantity) {
 		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
 				.orElseThrow(() -> StockException.notFound(
 						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
@@ -156,7 +156,7 @@ public class StockCtrlService {
 	 * @param wareId 물품 ID
 	 * @param quantity 증가할 수량
 	 */
-	private void increaseStock(Long warehouseId, Long wareId, Integer quantity) {
+	public void increaseStock(Long warehouseId, Long wareId, Integer quantity) {
 		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
 				.orElseThrow(() -> StockException.notFound(
 						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)

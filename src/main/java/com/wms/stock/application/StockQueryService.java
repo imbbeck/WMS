@@ -559,4 +559,5 @@ public class StockQueryService {
 			Long warehouseId,
 			Integer quantity
 	) {}
+
 }
