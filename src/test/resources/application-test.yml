@@ -1,37 +1,94 @@
+
+# 테스트용 설정 파일
 spring:
+  # 테스트용 인메모리 DB 설정
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  
+  # JPA 설정
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: update
+#    show-sql: true
+#    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
-  sql:
-    init:
-      mode: never
+
+  # 캐시 설정
   cache:
-    type: redis
+    type: none
     redis:
-      time-to-live: 600000
+      time-to-live: 86400000  # 1일 (밀리초 단위)
       cache-null-values: false
   data:
     redis:
       host: localhost
       port: 6379
-      database: 1  # 테스트용 DB
+      database: 0
 
+  # Batch 설정
+  batch:
+    job:
+      enabled: false  # 테스트 시 자동 실행 방지
+    jdbc:
+      initialize-schema: always
+  
+  # SQL 초기화 설정
+  sql:
+    init:
+      mode: never
+
+  # H2 Console 비활성화 (디버깅용)
+  h2:
+    console:
+      enabled: false
+
+# 로깅 설정
 logging:
   level:
     root: WARN
-    com.wms: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.wms.batch: DEBUG
+    com.wms.stock: DEBUG
+    org.springframework.batch: DEBUG
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-# JWT
+# JWT (테스트에서는 무시됨)
 jwt:
-  secret: your-secret-key-hereyour-secret-key-hereyour-secret-key-hereyour-secret-key-here
+  secret: test-secret-key-for-testing-only-test-secret-key-for-testing-only
+
+# batch 설정
+batch:
+  # 청크 처리 설정
+  chunk-size: 10
+  # 스레드 풀 설정
+  thread-pool:
+    core-size: 5
+    max-size: 10
+    queue-capacity: 100
+  # 파티션 설정
+  stock-partition:
+    target-size: 20
+    max-partition-size: 5
+  # 오류 처리 설정
+  retry-limit: 3
+  skip-limit: 10
+  # 파티셔닝 설정
+  grid-size: 10
+  # 스케줄 설정
+  schedule:
+    stock-snapshot: "0 0 0 * * *"  # 매일 자정 (기본값)
+
+# redis stream 설정
+stock:
+  streams:
+    consumer-group: stock-processors
+    consumer-name: ${spring.application.name}-${random.uuid}
+    max-pending: 1000
+    batch-size: 10
+    poll-timeout: 2s

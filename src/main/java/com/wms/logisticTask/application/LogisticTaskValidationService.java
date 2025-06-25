@@ -1,4 +1,4 @@
-package com.wms.logisticTask.application.validation;
+package com.wms.logisticTask.application;
 
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTask.domain.model.EventType;

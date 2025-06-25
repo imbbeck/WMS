@@ -1,7 +1,5 @@
 package com.wms.logisticTask.domain.event;
 
-import java.time.LocalDateTime;
-
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,5 +10,4 @@ public class LogisticTaskCompletedEvent {
 	private Long wareId;
 	private Long toLocationId;
 	private Integer quantity;
-	private LocalDateTime initiatedAt;
 }

@@ -75,4 +75,21 @@ public final class StockException {
 	public static CannotNegativeQuantityEx cannotNegativeQuantityEx(int requestedQuantity) {
 		return new CannotNegativeQuantityEx(String.format("재고 수량은 음수일 수 없습니다. 요청 수량(%d) 확인 필요", requestedQuantity));
 	}
+
+	// OptimisticLockConflictEx
+	public static class OptimisticLockConflictEx extends BusinessException.ConflictException {
+		public OptimisticLockConflictEx(String message) {
+			super(message);
+		}
+	}
+
+	public static OptimisticLockConflictEx optimisticLockConflict() {
+		return new OptimisticLockConflictEx("다른 사용자가 사용중 잆.");
+	}
+
+	public static OptimisticLockConflictEx optimisticLockConflict(String operationName) {
+		return new OptimisticLockConflictEx(
+				String.format("%s 처리 중 다른 사용자가 먼저 작업을 완료했습니다. 화면을 새로고침한 후 다시 시도해주세요.", operationName)
+		);
+	}
 } 
