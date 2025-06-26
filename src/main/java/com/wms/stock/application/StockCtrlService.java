@@ -143,7 +143,12 @@ public class StockCtrlService {
 
 		if (shouldDelete) {
 			stockRepository.delete(stock);
-			eventPublisher.publishEvent(new StockDeletedEvent(stock));
+			// 원래 수량으로 삭제 이벤트 발행
+			Stock deletedStock = Stock.builder()
+					.key(stock.getKey())
+					.quantity(oldQuantity)
+					.build();
+			eventPublisher.publishEvent(new StockDeletedEvent(deletedStock));
 		} else {
 			eventPublisher.publishEvent(new StockUpdatedEvent(stock, oldQuantity));
 		}
