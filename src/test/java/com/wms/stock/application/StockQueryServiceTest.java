@@ -6,6 +6,7 @@ import com.wms.location.application.LocationCacheService;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.repository.LocationRepository;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockQueryDTO;
 import com.wms.ware.domain.exception.WareException;
@@ -83,9 +84,11 @@ class StockQueryServiceTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Integer expectedQuantity = 100;
 
-		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
+		given(stockCacheService.getInventoryQuantity(key))
 				.willReturn(expectedQuantity);
 
 		// When
@@ -93,7 +96,7 @@ class StockQueryServiceTest {
 
 		// Then
 		assertThat(result).isEqualTo(expectedQuantity);
-		verify(stockCacheService).getInventoryQuantity(wareId, warehouseId);
+		verify(stockCacheService).getInventoryQuantity(key);
 	}
 
 	@Test
@@ -102,8 +105,9 @@ class StockQueryServiceTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 
-		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
+		given(stockCacheService.getInventoryQuantity(key))
 				.willReturn(null);
 
 		// When
@@ -111,7 +115,7 @@ class StockQueryServiceTest {
 
 		// Then
 		assertThat(result).isNull();
-		verify(stockCacheService).getInventoryQuantity(wareId, warehouseId);
+		verify(stockCacheService).getInventoryQuantity(key);
 	}
 
 	@Test
@@ -120,27 +124,27 @@ class StockQueryServiceTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 		Integer quantity = 100;
 
-		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
+		given(stockCacheService.getInventoryQuantity(key))
 				.willReturn(quantity);
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
 
 		// When
-		Optional<StockQueryDTO.Res> result = stockQueryService
-				.getStockResByWarehouseAndWare(warehouseId, wareId);
+		StockQueryDTO.Res result = stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId);
 
 		// Then
-		assertThat(result).isPresent();
-		StockQueryDTO.Res stockRes = result.get();
-		assertThat(stockRes.getWareId()).isEqualTo(wareId);
-		assertThat(stockRes.getWarehouseId()).isEqualTo(warehouseId);
-		assertThat(stockRes.getQuantity()).isEqualTo(quantity);
-		assertThat(stockRes.getWareName()).isEqualTo("물품A");
-		assertThat(stockRes.getWarehouseName()).isEqualTo("창고1");
+		// 수정: null 체크 제거하고 직접 검증
+		assertThat(result).isNotNull();
+		assertThat(result.getWareId()).isEqualTo(wareId);
+		assertThat(result.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(result.getQuantity()).isEqualTo(quantity);
+		assertThat(result.getWareName()).isEqualTo("물품A");
+		assertThat(result.getWarehouseName()).isEqualTo("창고1");
 
-		verify(stockRepository, never()).findByWarehouseIdAndWareId(any(), any());
+		verify(stockRepository, never()).findByKey(any(StockKey.class));
 	}
 
 	@Test
@@ -149,28 +153,28 @@ class StockQueryServiceTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 
 		Stock dbStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(50)
 				.build();
 
-		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
+		given(stockCacheService.getInventoryQuantity(key))
 				.willReturn(0); // 캐시에서 0 반환
-		given(stockRepository.findByKey(StockKey.of(wareId, warehouseId)))
+		given(stockRepository.findByKey(key))
 				.willReturn(Optional.of(dbStock));
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
 
 		// When
-		Optional<StockQueryDTO.Res> result = stockQueryService
-				.getStockResByWarehouseAndWare(warehouseId, wareId);
+		StockQueryDTO.Res result = stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId);
 
 		// Then
-		assertThat(result).isPresent();
-		assertThat(result.get().getQuantity()).isEqualTo(50);
-		verify(stockRepository).findByKey(StockKey.of(wareId, warehouseId));
+		// 수정: null 체크 제거하고 직접 검증
+		assertThat(result).isNotNull();
+		assertThat(result.getQuantity()).isEqualTo(50);
+		verify(stockRepository).findByKey(key);
 	}
 
 	@Test
@@ -180,13 +184,13 @@ class StockQueryServiceTest {
 		Long warehouseId = 1L;
 
 		List<Stock> dbStocks = Arrays.asList(
-				Stock.builder().wareId(10L).warehouseId(warehouseId).quantity(100).build(),
-				Stock.builder().wareId(20L).warehouseId(warehouseId).quantity(50).build()
+				Stock.builder().key(StockKey.of(10L, warehouseId)).quantity(100).build(),
+				Stock.builder().key(StockKey.of(20L, warehouseId)).quantity(50).build()
 		);
 
 		given(locationRepository.existsById(warehouseId)).willReturn(true);
 		// Redis SCAN은 setUp()에서 빈 결과로 설정됨
-		given(stockRepository.findAllByKey_WarehouseId(warehouseId)).willReturn(dbStocks);
+		given(stockRepository.findAllByKeyWarehouseId(warehouseId)).willReturn(dbStocks);
 		given(wareCacheManager.getName(10L)).willReturn("물품A");
 		given(wareCacheManager.getName(20L)).willReturn("물품B");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
@@ -198,7 +202,7 @@ class StockQueryServiceTest {
 		assertThat(result).hasSize(2);
 		assertThat(result).extracting("wareId").containsExactlyInAnyOrder(10L, 20L);
 		assertThat(result).extracting("quantity").containsExactlyInAnyOrder(100, 50);
-		verify(stockRepository).findAllByKey_WarehouseId(warehouseId);
+		verify(stockRepository).findAllByKeyWarehouseId(warehouseId);
 	}
 
 	@Test
@@ -208,12 +212,12 @@ class StockQueryServiceTest {
 		Long wareId = 1L;
 
 		List<Stock> dbStocks = Arrays.asList(
-				Stock.builder().wareId(wareId).warehouseId(10L).quantity(100).build(),
-				Stock.builder().wareId(wareId).warehouseId(20L).quantity(30).build()
+				Stock.builder().key(StockKey.of(wareId, 10L)).quantity(100).build(),
+				Stock.builder().key(StockKey.of(wareId, 20L)).quantity(50).build()
 		);
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
-		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(dbStocks);
+		given(stockRepository.findAllByKeyWareId(wareId)).willReturn(dbStocks);
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(10L)).willReturn("창고1");
 		given(locationCacheManager.getName(20L)).willReturn("창고2");
@@ -224,8 +228,9 @@ class StockQueryServiceTest {
 		// Then
 		assertThat(result).hasSize(2);
 		assertThat(result).extracting("warehouseId").containsExactlyInAnyOrder(10L, 20L);
-		assertThat(result).extracting("quantity").containsExactlyInAnyOrder(100, 30);
-		verify(stockRepository).findAllByKey_WareId(wareId);
+		// 수정: quantity 기댓값을 100, 50으로 변경 (Mock 데이터와 일치)
+		assertThat(result).extracting("quantity").containsExactlyInAnyOrder(100, 50);
+		verify(stockRepository).findAllByKeyWareId(wareId);
 	}
 
 	// ========== 집계 조회 메서드 테스트 ==========
@@ -271,8 +276,8 @@ class StockQueryServiceTest {
 		given(mockSummary.getWareTypeCount()).willReturn(2L);
 
 		List<Stock> stocks = Arrays.asList(
-				Stock.builder().wareId(10L).warehouseId(warehouseId).quantity(200).build(),
-				Stock.builder().wareId(20L).warehouseId(warehouseId).quantity(100).build()
+				Stock.builder().key(StockKey.of(10L, warehouseId)).quantity(100).build(),
+				Stock.builder().key(StockKey.of(20L, warehouseId)).quantity(50).build()
 		);
 
 		given(locationRepository.existsById(warehouseId)).willReturn(true);
@@ -281,7 +286,7 @@ class StockQueryServiceTest {
 		given(stockCacheService.getWarehouseCurrentSum(warehouseId)).willReturn(totalQuantity);
 		// Redis SCAN은 빈 결과 (setUp에서 설정됨)
 		given(stockRepository.findWarehouseStockSummary(warehouseId)).willReturn(Optional.of(mockSummary));
-		given(stockRepository.findAllByKey_WarehouseId(warehouseId)).willReturn(stocks);
+		given(stockRepository.findAllByKeyWarehouseId(warehouseId)).willReturn(stocks);
 		given(wareCacheManager.getName(10L)).willReturn("물품A");
 		given(wareCacheManager.getName(20L)).willReturn("물품B");
 
@@ -310,15 +315,15 @@ class StockQueryServiceTest {
 		given(mockSummary.getWarehouseCount()).willReturn(3L);
 
 		List<Stock> stocks = Arrays.asList(
-				Stock.builder().wareId(wareId).warehouseId(10L).quantity(100).build(),
-				Stock.builder().wareId(wareId).warehouseId(20L).quantity(50).build(),
-				Stock.builder().wareId(wareId).warehouseId(30L).quantity(50).build()
+				Stock.builder().key(StockKey.of(wareId, 10L)).quantity(100).build(),
+				Stock.builder().key(StockKey.of(wareId, 20L)).quantity(50).build(),
+				Stock.builder().key(StockKey.of(wareId, 30L)).quantity(50).build()
 		);
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
 		given(wareCacheManager.getName(wareId)).willReturn(wareName);
 		given(stockRepository.findWareStockSummary(wareId)).willReturn(Optional.of(mockSummary));
-		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(stocks);
+		given(stockRepository.findAllByKeyWareId(wareId)).willReturn(stocks);
 		given(locationCacheManager.getName(10L)).willReturn("창고1");
 		given(locationCacheManager.getName(20L)).willReturn("창고2");
 		given(locationCacheManager.getName(30L)).willReturn("창고3");
@@ -360,13 +365,13 @@ class StockQueryServiceTest {
 		Long wareId = 1L;
 
 		List<Stock> stocks = Arrays.asList(
-				Stock.builder().wareId(wareId).warehouseId(10L).quantity(100).build(),
-				Stock.builder().wareId(wareId).warehouseId(20L).quantity(80).build(),
-				Stock.builder().wareId(wareId).warehouseId(30L).quantity(70).build()
+				Stock.builder().key(StockKey.of(wareId, 10L)).quantity(100).build(),
+				Stock.builder().key(StockKey.of(wareId, 20L)).quantity(80).build(),
+				Stock.builder().key(StockKey.of(wareId, 30L)).quantity(70).build()
 		);
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
-		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(stocks);
+		given(stockRepository.findAllByKeyWareId(wareId)).willReturn(stocks);
 
 		// When
 		Integer result = stockQueryService.getWareTotalQuantity(wareId);
@@ -511,23 +516,24 @@ class StockQueryServiceTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 		Integer cachedQuantity = 150;
 
-		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
+		given(stockCacheService.getInventoryQuantity(key))
 				.willReturn(cachedQuantity);
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
 
 		// When
-		Optional<StockQueryDTO.Res> result = stockQueryService
-				.getStockResByWarehouseAndWare(warehouseId, wareId);
+		StockQueryDTO.Res result = stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId);
 
 		// Then
-		assertThat(result).isPresent();
-		assertThat(result.get().getQuantity()).isEqualTo(cachedQuantity);
+		// 수정: null 체크 제거하고 직접 검증
+		assertThat(result).isNotNull();
+		assertThat(result.getQuantity()).isEqualTo(cachedQuantity);
 
-		verify(stockCacheService).getInventoryQuantity(wareId, warehouseId);
-		verify(stockRepository, never()).findByWarehouseIdAndWareId(any(), any());
+		verify(stockCacheService).getInventoryQuantity(key);
+		verify(stockRepository, never()).findByKey(any(StockKey.class));
 	}
 
 	@Test
@@ -537,7 +543,7 @@ class StockQueryServiceTest {
 		Long warehouseId = 1L;
 
 		given(locationRepository.existsById(warehouseId)).willReturn(true);
-		given(stockRepository.findAllByKey_WarehouseId(warehouseId))
+		given(stockRepository.findAllByKeyWarehouseId(warehouseId))
 				.willReturn(Collections.emptyList());
 
 		// When
@@ -546,7 +552,7 @@ class StockQueryServiceTest {
 		// Then - 호출 순서 검증
 		var inOrder = inOrder(locationRepository, stockRepository);
 		inOrder.verify(locationRepository).existsById(warehouseId);
-		inOrder.verify(stockRepository).findAllByKey_WarehouseId(warehouseId);
+		inOrder.verify(stockRepository).findAllByKeyWarehouseId(warehouseId);
 	}
 
 	@Test

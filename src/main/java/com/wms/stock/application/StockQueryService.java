@@ -81,7 +81,7 @@ public class StockQueryService {
 
 		// 캐시에 없으면 DB 조회
 		log.debug("캐시 없음 - DB에서 창고 재고 조회 - warehouseId: {}", warehouseId);
-		return stockRepository.findAllByKey_WarehouseId(warehouseId).stream()
+		return stockRepository.findAllByKeyWarehouseId(warehouseId).stream()
 				.map(this::convertStockToRes)
 				.collect(Collectors.toList());
 	}
@@ -94,7 +94,7 @@ public class StockQueryService {
 
 		// 물품별 조회는 키 패턴상 전체 스캔이 필요하므로 DB 조회가 더 효율적
 		log.debug("DB에서 물품 재고 조회 - wareId: {}", wareId);
-		return stockRepository.findAllByKey_WareId(wareId).stream()
+		return stockRepository.findAllByKeyWareId(wareId).stream()
 				.map(this::convertStockToRes)
 				.collect(Collectors.toList());
 	}
@@ -189,7 +189,7 @@ public class StockQueryService {
 
 		// 물품별 조회는 키 패턴상 전체 스캔이 필요하므로 DB 조회가 더 효율적
 		log.debug("DB에서 물품 전체 재고 합산 - wareId: {}", wareId);
-		return stockRepository.findAllByKey_WareId(wareId).stream()
+		return stockRepository.findAllByKeyWareId(wareId).stream()
 				.mapToInt(Stock::getQuantity)
 				.sum();
 	}
@@ -316,7 +316,7 @@ public class StockQueryService {
 			Long warehouseId, String warehouseName, Integer capacity, Integer totalQuantity) {
 
 		Optional<StockRepository.WarehouseStockSummary> summary = stockRepository.findWarehouseStockSummary(warehouseId);
-		List<Stock> stocks = stockRepository.findAllByKey_WarehouseId(warehouseId);
+		List<Stock> stocks = stockRepository.findAllByKeyWarehouseId(warehouseId);
 
 		List<StockQueryDTO.WareUnit> wareUnits = stocks.stream()
 				.map(stock -> StockQueryDTO.WareUnit.builder()
@@ -343,7 +343,7 @@ public class StockQueryService {
 	 */
 	private StockQueryDTO.WareAggregationRes createWareAggregationFromDB(Long wareId, String wareName) {
 		Optional<StockRepository.WareStockSummary> summary = stockRepository.findWareStockSummary(wareId);
-		List<Stock> stocks = stockRepository.findAllByKey_WareId(wareId);
+		List<Stock> stocks = stockRepository.findAllByKeyWareId(wareId);
 
 		Integer totalQuantity = summary.map(s -> s.getTotalQuantity().intValue()).orElse(0);
 		Integer warehouseCount = summary.map(s -> s.getWarehouseCount().intValue()).orElse(0);

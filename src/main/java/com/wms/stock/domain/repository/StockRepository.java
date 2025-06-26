@@ -23,17 +23,17 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 	/**
 	 * 특정 창고의 모든 재고 조회
 	 */
-	List<Stock> findAllByKey_WarehouseId(Long warehouseId);
+	List<Stock> findAllByKeyWarehouseId(Long warehouseId);
 
 	/**
 	 * 특정 물품의 모든 창고별 재고 조회
 	 */
-	List<Stock> findAllByKey_WareId(Long wareId);
+	List<Stock> findAllByKeyWareId(Long wareId);
 
 	/**
 	 * 재고가 있는 창고들의 특정 물품 재고 조회
 	 */
-	List<Stock> findAllByKey_WareIdAndQuantityGreaterThan(Long wareId, int quantity);
+	List<Stock> findAllByKeyWareIdAndQuantityGreaterThan(Long wareId, int quantity);
 
 	/**
 	 * 재고 부족 상태인 항목 조회 (threshold 이하)
@@ -158,7 +158,7 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
 	Page<Stock> findByIdBetween(Long minId, Long maxId, Pageable pageable);
 
-	boolean existsByKey_WarehouseId(Long locationId);
+	boolean existsByKeyWarehouseId(Long locationId);
 
 	/// ////
 

@@ -62,6 +62,7 @@ class StockCtrlServiceTest {
 		// Given
 		Long wareId = 1L;
 		Long warehouseId = 2L;
+
 		Integer quantity = 100;
 
 		StockDTO.CreateReq request = StockDTO.CreateReq.builder()
@@ -181,7 +182,7 @@ class StockCtrlServiceTest {
 
 		StockDTO.CreateReq request = StockDTO.CreateReq.builder()
 				.wareId(wareId)
-				.warehouseId(warehouseId)  // warehouseId가 2L
+				.warehouseId(warehouseId)// warehouseId가 2L
 				.quantity(100)
 				.build();
 
@@ -253,6 +254,8 @@ class StockCtrlServiceTest {
 		// Given
 		Long wareId = 1L;
 		Long warehouseId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+		
 		Integer newQuantity = 150;
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
@@ -260,8 +263,7 @@ class StockCtrlServiceTest {
 				.build();
 
 		Stock existingStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(100) // 기존 수량
 				.build();
 
@@ -273,7 +275,7 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
-		given(stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId))
+		given(stockRepository.findByKey(key))
 				.willReturn(Optional.of(existingStock));
 		given(locationRepository.findById(warehouseId)).willReturn(Optional.of(warehouse));
 		given(stockRepository.getTotalPaletteCountByWarehouseId(warehouseId)).willReturn(200);
@@ -290,8 +292,8 @@ class StockCtrlServiceTest {
 		StockUpdatedEvent capturedEvent = eventCaptor.getValue();
 
 		// StockUpdatedEvent의 실제 필드들로 검증
-		assertThat(capturedEvent.getWareId()).isEqualTo(wareId);
-		assertThat(capturedEvent.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(capturedEvent.getKey().getWareId()).isEqualTo(wareId);
+		assertThat(capturedEvent.getKey().getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(capturedEvent.getNewQuantity()).isEqualTo(newQuantity);
 		assertThat(capturedEvent.getOldQuantity()).isEqualTo(100);
 	}
@@ -302,14 +304,14 @@ class StockCtrlServiceTest {
 		// Given
 		Long wareId = 1L;
 		Long warehouseId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
 				.quantity(0) // 0으로 변경
 				.build();
 
 		Stock existingStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(100)
 				.build();
 
@@ -321,7 +323,7 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
-		given(stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId))
+		given(stockRepository.findByKey(key))
 				.willReturn(Optional.of(existingStock));
 		given(locationRepository.findById(warehouseId)).willReturn(Optional.of(warehouse));
 		given(stockRepository.getTotalPaletteCountByWarehouseId(warehouseId)).willReturn(100);
@@ -345,7 +347,7 @@ class StockCtrlServiceTest {
 				.quantity(150)
 				.build();
 
-		given(stockRepository.findByWarehouseIdAndWareId(1L, 2L))
+		given(stockRepository.findByKey( StockKey.of(1L, 2L)))
 				.willReturn(Optional.empty());
 
 		// When & Then
@@ -361,14 +363,14 @@ class StockCtrlServiceTest {
 		// Given
 		Long wareId = 1L;
 		Long warehouseId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
 				.quantity(400) // 초과 수량
 				.build();
 
 		Stock existingStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(100) // 기존 수량
 				.build();
 
@@ -380,7 +382,7 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
-		given(stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId))
+		given(stockRepository.findByKey(key))
 				.willReturn(Optional.of(existingStock));
 		given(locationRepository.findById(warehouseId)).willReturn(Optional.of(warehouse));
 		given(stockRepository.getTotalPaletteCountByWarehouseId(warehouseId)).willReturn(200);
@@ -401,14 +403,14 @@ class StockCtrlServiceTest {
 		// Given
 		Long wareId = 1L;
 		Long warehouseId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
 
 		Stock existingStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(100)
 				.build();
 
-		given(stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId))
+		given(stockRepository.findByKey(key))
 				.willReturn(Optional.of(existingStock));
 
 		// When
@@ -423,7 +425,7 @@ class StockCtrlServiceTest {
 	@DisplayName("재고 삭제 실패 - 재고 없음")
 	void deleteStock_NotFound() {
 		// Given
-		given(stockRepository.findByWarehouseIdAndWareId(1L, 2L))
+		given(stockRepository.findByKey(StockKey.of(1L, 2L)))
 				.willReturn(Optional.empty());
 
 		// When & Then
@@ -454,15 +456,16 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
+		StockKey key = StockKey.of(1L, 2L);
+
 		Stock savedStock = Stock.builder()
-				.wareId(1L)
-				.warehouseId(2L)
+				.key(key)
 				.quantity(100)
 				.build();
 
 		given(wareRepository.existsById(1L)).willReturn(true);
 		given(locationRepository.findById(2L)).willReturn(Optional.of(warehouse));
-		given(stockRepository.findByWarehouseIdAndWareId(1L, 2L)).willReturn(Optional.empty());
+		given(stockRepository.findByKey(key)).willReturn(Optional.empty());
 		given(stockRepository.getTotalPaletteCountByWarehouseId(2L)).willReturn(100);
 		given(stockRepository.save(any(Stock.class))).willReturn(savedStock);
 
@@ -475,8 +478,8 @@ class StockCtrlServiceTest {
 
 		StockCreatedEvent capturedEvent = eventCaptor.getValue();
 		// StockCreatedEvent의 실제 필드들로 검증
-		assertThat(capturedEvent.getWareId()).isEqualTo(1L);
-		assertThat(capturedEvent.getWarehouseId()).isEqualTo(2L);
+		assertThat(capturedEvent.getKey().getWareId()).isEqualTo(1L);
+		assertThat(capturedEvent.getKey().getWarehouseId()).isEqualTo(2L);
 		assertThat(capturedEvent.getQuantity()).isEqualTo(100);
 	}
 }

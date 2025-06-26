@@ -79,28 +79,31 @@ public class StockCtrlService {
 		Stock stock = stockRepository.findByKey(stockKey)
 				.orElseThrow(() -> StockException.notFound(stockKey));
 
-		int oldQuantity = stock.getQuantity();
+		Integer oldQuantity = stock.getQuantity(); // 원래 수량 보존
 
-		// 창고 용량 확인 (기존 수량 제외하고 새 수량으로 계산)
+		// 창고 용량 확인
 		Location warehouse = locationRepository.findById(stock.getKey().getWarehouseId())
 				.orElseThrow(() -> LocationException.notFound(stock.getKey().getWarehouseId()));
 
 		int currentPaletteCount = stockRepository.getTotalPaletteCountByWarehouseId(stock.getKey().getWarehouseId());
-		int adjustedCurrentCount = currentPaletteCount - stock.getQuantity(); // 기존 수량 제외
+		int adjustedCurrentCount = currentPaletteCount - stock.getQuantity();
 
 		if (adjustedCurrentCount + req.getQuantity() > warehouse.getCapacity()) {
 			throw LocationException.warehouseCapacityExceeded(
 					stock.getKey().getWarehouseId(), warehouse.getCapacity(), adjustedCurrentCount, req.getQuantity());
 		}
 
-		// 재고 수량 업데이트 및 삭제 여부(재고가 0인 경우) 확인
+		// 재고 수량 업데이트 및 삭제 여부 확인
 		boolean shouldDelete = stock.updateQuantityAndCheckDeletion(req.getQuantity());
 
 		if (shouldDelete) {
 			stockRepository.delete(stock);
-			// 삭제 이벤트 발행
-			eventPublisher.publishEvent(new StockDeletedEvent(stock)
-			);
+			// 삭제 이벤트 발행 - 원래 수량으로 생성
+			Stock deletedStock = Stock.builder()
+					.key(stock.getKey())
+					.quantity(oldQuantity) // 원래 수량 사용
+					.build();
+			eventPublisher.publishEvent(new StockDeletedEvent(deletedStock));
 		} else {
 			// 수정 이벤트 발행
 			eventPublisher.publishEvent(new StockUpdatedEvent(stock, oldQuantity));

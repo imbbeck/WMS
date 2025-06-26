@@ -4,6 +4,7 @@ import com.wms.applicationInfra.config.QuerydslConfig;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.model.LocationType;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.ware.domain.model.Ware;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,37 +102,31 @@ class StockRepositoryTest {
 	private void createTestStocks() {
 		// warehouse1: 전자제품A(100), 가구B(50), 의류C(30) = 총 180
 		em.persist(Stock.builder()
-				.warehouseId(warehouse1.getId())
-				.wareId(wareA.getId())
+				.key(StockKey.of(wareA.getId(), warehouse1.getId()))
 				.quantity(100)
 				.build());
 		em.persist(Stock.builder()
-				.warehouseId(warehouse1.getId())
-				.wareId(wareB.getId())
+				.key(StockKey.of(wareB.getId(), warehouse1.getId()))
 				.quantity(50)
 				.build());
 		em.persist(Stock.builder()
-				.warehouseId(warehouse1.getId())
-				.wareId(wareC.getId())
+				.key(StockKey.of(wareC.getId(), warehouse1.getId()))
 				.quantity(30)
 				.build());
 
 		// warehouse2: 전자제품A(20), 가구B(80) = 총 100
 		em.persist(Stock.builder()
-				.warehouseId(warehouse2.getId())
-				.wareId(wareA.getId())
+				.key(StockKey.of(wareA.getId(), warehouse2.getId()))
 				.quantity(20)
 				.build());
 		em.persist(Stock.builder()
-				.warehouseId(warehouse2.getId())
-				.wareId(wareB.getId())
+				.key(StockKey.of(wareB.getId(), warehouse2.getId()))
 				.quantity(80)
 				.build());
 
 		// warehouse3: 의류C(60) = 총 60 (wareA, wareB는 없음)
 		em.persist(Stock.builder()
-				.warehouseId(warehouse3.getId())
-				.wareId(wareC.getId())
+				.key(StockKey.of(wareC.getId(), warehouse3.getId()))
 				.quantity(60)
 				.build());
 	}
@@ -142,13 +137,13 @@ class StockRepositoryTest {
 	@DisplayName("findByWarehouseIdAndWareId: 특정 창고-물품 재고 조회")
 	void testFindByWarehouseIdAndWareId() {
 		// Given & When
-		Optional<Stock> result = stockRepository.findByWarehouseIdAndWareId(wareA.getId(), warehouse1.getId());
+		Optional<Stock> result = stockRepository.findByKey(StockKey.of(wareA.getId(), warehouse1.getId()));
 
 		// Then
 		assertThat(result).isPresent();
 		assertThat(result.get().getQuantity()).isEqualTo(100);
-		assertThat(result.get().getWareId()).isEqualTo(wareA.getId());
-		assertThat(result.get().getWarehouseId()).isEqualTo(warehouse1.getId());
+		assertThat(result.get().getKey().getWareId()).isEqualTo(wareA.getId());
+		assertThat(result.get().getKey().getWarehouseId()).isEqualTo(warehouse1.getId());
 	}
 
 	@Test
@@ -156,7 +151,7 @@ class StockRepositoryTest {
 	void testFindByWarehouseIdAndWareId_NotFound() {
 		// Given & When
 		// wareB는 warehouse3에 없으므로 빈 결과 반환되어야 함
-		Optional<Stock> result = stockRepository.findByWarehouseIdAndWareId(wareB.getId(), warehouse3.getId());
+		Optional<Stock> result = stockRepository.findByKey(StockKey.of(wareB.getId(), warehouse3.getId()));
 
 		// Then
 		assertThat(result).isEmpty();
@@ -167,7 +162,7 @@ class StockRepositoryTest {
 	void testFindByWarehouseIdAndWareId_AnotherNotFound() {
 		// Given & When
 		// wareA는 warehouse3에 없으므로 빈 결과 반환되어야 함
-		Optional<Stock> result = stockRepository.findByWarehouseIdAndWareId(wareA.getId(), warehouse3.getId());
+		Optional<Stock> result = stockRepository.findByKey(StockKey.of(wareA.getId(), warehouse3.getId()));
 
 		// Then
 		assertThat(result).isEmpty();
@@ -177,7 +172,7 @@ class StockRepositoryTest {
 	@DisplayName("findByWarehouseIdAndWareId: 존재하지 않는 창고 ID")
 	void testFindByWarehouseIdAndWareId_NonexistentWarehouse() {
 		// Given & When
-		Optional<Stock> result = stockRepository.findByWarehouseIdAndWareId(wareA.getId(), 99999L);
+		Optional<Stock> result = stockRepository.findByKey(StockKey.of(wareA.getId(), 99999L));
 
 		// Then
 		assertThat(result).isEmpty();
@@ -187,7 +182,7 @@ class StockRepositoryTest {
 	@DisplayName("findByWarehouseIdAndWareId: 존재하지 않는 물품 ID")
 	void testFindByWarehouseIdAndWareId_NonexistentWare() {
 		// Given & When
-		Optional<Stock> result = stockRepository.findByWarehouseIdAndWareId(99999L, warehouse1.getId());
+		Optional<Stock> result = stockRepository.findByKey(StockKey.of(99999L, warehouse1.getId()));
 
 		// Then
 		assertThat(result).isEmpty();
@@ -197,15 +192,15 @@ class StockRepositoryTest {
 	@DisplayName("findAllByWarehouseId: 특정 창고의 모든 재고 조회")
 	void testFindAllByKeyWarehouseId() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByKey_WarehouseId(warehouse1.getId());
+		List<Stock> stocks = stockRepository.findAllByKeyWarehouseId(warehouse1.getId());
 
 		// Then
 		assertThat(stocks).hasSize(3);
-		assertThat(stocks).extracting("warehouseId")
+		assertThat(stocks).extracting(stock -> stock.getKey().getWarehouseId())
 				.containsOnly(warehouse1.getId());
-		assertThat(stocks).extracting("wareId")
+		assertThat(stocks).extracting(stock -> stock.getKey().getWareId())
 				.containsExactlyInAnyOrder(wareA.getId(), wareB.getId(), wareC.getId());
-		assertThat(stocks).extracting("quantity")
+		assertThat(stocks).extracting(Stock::getQuantity)
 				.containsExactlyInAnyOrder(100, 50, 30);
 	}
 
@@ -213,13 +208,13 @@ class StockRepositoryTest {
 	@DisplayName("findAllByWareId: 특정 물품의 모든 창고 재고 조회")
 	void testFindAllByKeyWareId() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByKey_WareId(wareA.getId());
+		List<Stock> stocks = stockRepository.findAllByKeyWareId(wareA.getId());
 
 		// Then
 		assertThat(stocks).hasSize(2); // warehouse1, warehouse2
-		assertThat(stocks).extracting("wareId")
+		assertThat(stocks).extracting("key.wareId")      // 수정: key.wareId로 접근
 				.containsOnly(wareA.getId());
-		assertThat(stocks).extracting("warehouseId")
+		assertThat(stocks).extracting("key.warehouseId") // 수정: key.warehouseId로 접근
 				.containsExactlyInAnyOrder(warehouse1.getId(), warehouse2.getId());
 		assertThat(stocks).extracting("quantity")
 				.containsExactlyInAnyOrder(100, 20);
@@ -229,12 +224,12 @@ class StockRepositoryTest {
 	@DisplayName("findAllByWareIdAndQuantityGreaterThan: 특정 물품의 수량 조건 재고 조회")
 	void testFindAllByKeyWareIdAndQuantityGreaterThan() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByKey_WareIdAndQuantityGreaterThan(wareA.getId(), 50);
+		List<Stock> stocks = stockRepository.findAllByKeyWareIdAndQuantityGreaterThan(wareA.getId(), 50);
 
 		// Then
 		assertThat(stocks).hasSize(1);
 		assertThat(stocks.get(0).getQuantity()).isEqualTo(100);
-		assertThat(stocks.get(0).getWarehouseId()).isEqualTo(warehouse1.getId());
+		assertThat(stocks.get(0).getKey().getWarehouseId()).isEqualTo(warehouse1.getId());
 	}
 
 	// ========== 집계 쿼리 테스트 ==========
@@ -435,12 +430,12 @@ class StockRepositoryTest {
 	@DisplayName("existsByWarehouseId: 창고 재고 존재 여부 확인")
 	void testExistsByKeyWarehouseId() {
 		// Given & When & Then
-		assertThat(stockRepository.existsByKey_WarehouseId(warehouse1.getId())).isTrue();
-		assertThat(stockRepository.existsByKey_WarehouseId(warehouse2.getId())).isTrue();
-		assertThat(stockRepository.existsByKey_WarehouseId(warehouse3.getId())).isTrue();
+		assertThat(stockRepository.existsByKeyWarehouseId(warehouse1.getId())).isTrue();
+		assertThat(stockRepository.existsByKeyWarehouseId(warehouse2.getId())).isTrue();
+		assertThat(stockRepository.existsByKeyWarehouseId(warehouse3.getId())).isTrue();
 
 		// 존재하지 않는 창고 ID
-		assertThat(stockRepository.existsByKey_WarehouseId(99999L)).isFalse();
+		assertThat(stockRepository.existsByKeyWarehouseId(99999L)).isFalse();
 	}
 
 	// ========== 유니크 제약조건 테스트 ==========
@@ -450,8 +445,7 @@ class StockRepositoryTest {
 	void testUniqueConstraint() {
 		// Given: 이미 존재하는 조합과 동일한 재고 생성
 		Stock duplicateStock = Stock.builder()
-				.wareId(wareA.getId())
-				.warehouseId(warehouse1.getId())
+				.key(StockKey.of(wareA.getId(), warehouse1.getId())) // 이미 존재하는 조합
 				.quantity(999)
 				.build();
 
@@ -468,7 +462,7 @@ class StockRepositoryTest {
 	@DisplayName("낙관적 락: 버전 충돌 시나리오")
 	void testOptimisticLock() {
 		// Given: 기존 재고 조회
-		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareA.getId(), warehouse1.getId())
+		Stock stock = stockRepository.findByKey( StockKey.of(wareA.getId(), warehouse1.getId()))
 				.orElseThrow();
 		Long originalVersion = stock.getVersion();
 
@@ -479,8 +473,7 @@ class StockRepositoryTest {
 
 		// 기존 버전으로 다시 조회한 것처럼 시뮬레이션
 		Stock staleStock = Stock.builder()
-				.wareId(wareA.getId())
-				.warehouseId(warehouse1.getId())
+				.key(StockKey.of(wareA.getId(), warehouse1.getId()))
 				.quantity(300)
 				.build();
 		// 기존 ID와 버전 설정 (리플렉션 또는 테스트용 setter 필요)
@@ -488,7 +481,7 @@ class StockRepositoryTest {
 		// When & Then: 두 번째 수정 시도 시 버전 충돌
 		// 실제 프로덕션에서는 OptimisticLockingFailureException 발생
 		// 여기서는 버전 필드가 증가했는지 확인
-		Stock updatedStock = stockRepository.findByWarehouseIdAndWareId(wareA.getId(), warehouse1.getId())
+		Stock updatedStock = stockRepository.findByKey( StockKey.of(wareA.getId(), warehouse1.getId()))
 				.orElseThrow();
 		assertThat(updatedStock.getVersion()).isGreaterThan(originalVersion);
 	}
@@ -559,15 +552,15 @@ class StockRepositoryTest {
 		long startTime = System.currentTimeMillis();
 
 		// 창고별 조회
-		List<Stock> warehouse1Stocks = stockRepository.findAllByKey_WarehouseId(warehouse1.getId());
-		List<Stock> warehouse2Stocks = stockRepository.findAllByKey_WarehouseId(warehouse2.getId());
+		List<Stock> warehouse1Stocks = stockRepository.findAllByKeyWarehouseId(warehouse1.getId());
+		List<Stock> warehouse2Stocks = stockRepository.findAllByKeyWarehouseId(warehouse2.getId());
 
 		// 물품별 조회
-		List<Stock> wareAStocks = stockRepository.findAllByKey_WareId(wareA.getId());
-		List<Stock> wareBStocks = stockRepository.findAllByKey_WareId(wareB.getId());
+		List<Stock> wareAStocks = stockRepository.findAllByKeyWareId(wareA.getId());
+		List<Stock> wareBStocks = stockRepository.findAllByKeyWareId(wareB.getId());
 
 		// 조건부 조회
-		List<Stock> highQuantityStocks = stockRepository.findAllByKey_WareIdAndQuantityGreaterThan(wareA.getId(), 50);
+		List<Stock> highQuantityStocks = stockRepository.findAllByKeyWareIdAndQuantityGreaterThan(wareA.getId(), 50);
 
 		long endTime = System.currentTimeMillis();
 

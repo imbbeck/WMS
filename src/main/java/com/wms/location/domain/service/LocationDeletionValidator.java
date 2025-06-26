@@ -23,7 +23,7 @@ public class LocationDeletionValidator {
 	public void validateDeletionPossible(Long locationId) {
 		List<Long> relatedWareList = new ArrayList<>();
 
-		stockRepository.findAllByKey_WarehouseId(locationId).forEach(stock -> relatedWareList.add(stock.getKey().getWareId()));
+		stockRepository.findAllByKeyWarehouseId(locationId).forEach(stock -> relatedWareList.add(stock.getKey().getWareId()));
 
 		if (!relatedWareList.isEmpty()) { // 재고수량 0인 경우는 더이상 없으므로(stock 상태 변화 후 재고수량이 0이 되면 삭제됨) relatedWareList 비어있지 않으면 삭제 불가
 			throw LocationException.cannotDeleteWithStock(locationId, relatedWareList);

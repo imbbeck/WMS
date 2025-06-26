@@ -5,6 +5,7 @@ import com.wms.applicationInfra.config.TestSecurityConfig;
 import com.wms.stock.application.StockCtrlService;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.dto.StockDTO;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.ware.domain.exception.WareException;
@@ -50,8 +51,7 @@ class StockControllerTest {
 				.build();
 
 		Stock createdStock = Stock.builder()
-				.wareId(1L)
-				.warehouseId(2L)
+				.key(StockKey.of(1L, 2L)) // Mock ID 사용
 				.quantity(100)
 				.build();
 
@@ -175,14 +175,14 @@ class StockControllerTest {
 		// Given
 		Long warehouseId = 2L;
 		Long wareId = 1L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
 				.quantity(150)
 				.build();
 
 		Stock updatedStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(150)
 				.build();
 
@@ -195,8 +195,8 @@ class StockControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.wareId").value(updatedstock.getKey().getWareId()))
-				.andExpect(jsonPath("$.warehouseId").value(updatedstock.getKey().getWarehouseId()))
+				.andExpect(jsonPath("$.wareId").value(updatedStock.getKey().getWareId()))
+				.andExpect(jsonPath("$.warehouseId").value(updatedStock.getKey().getWarehouseId()))
 				.andExpect(jsonPath("$.quantity").value(updatedStock.getQuantity()));
 
 		// 여기서도 matcher를 모두 사용
@@ -209,13 +209,14 @@ class StockControllerTest {
 		// Given
 		Long warehouseId = 2L;
 		Long wareId = 999L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
 				.quantity(150)
 				.build();
 
 		given(stockCtrlService.update(eq(wareId), eq(warehouseId), any(StockDTO.UpdateReq.class)))
-				.willThrow(StockException.notFound("재고를 찾을 수 없습니다"));
+				.willThrow(StockException.notFound(key));
 
 		// When & Then
 		mockMvc.perform(put("/stocks/{warehouseId}/{wareId}", warehouseId, wareId)
@@ -231,14 +232,14 @@ class StockControllerTest {
 		// Given
 		Long warehouseId = 2L;
 		Long wareId = 1L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
 
 		StockDTO.UpdateReq request = StockDTO.UpdateReq.builder()
 				.quantity(0)
 				.build();
 
 		Stock updatedStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(0)
 				.build();
 
@@ -298,8 +299,9 @@ class StockControllerTest {
 		// Given
 		Long warehouseId = 2L;
 		Long wareId = 999L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
 
-		willThrow(StockException.notFound("재고를 찾을 수 없습니다"))
+		willThrow(StockException.notFound(key))
 				.given(stockCtrlService).delete(wareId, warehouseId);
 
 		// When & Then
@@ -320,8 +322,7 @@ class StockControllerTest {
 				.build();
 
 		Stock createdStock = Stock.builder()
-				.wareId(1L)
-				.warehouseId(2L)
+				.key(StockKey.of(1L, 2L)) // Mock ID 사용
 				.quantity(100)
 				.build();
 
@@ -423,9 +424,9 @@ class StockControllerTest {
 	 * 테스트용 Stock 객체 생성 (리플렉션으로 BaseEntity 필드 설정)
 	 */
 	private Stock createStockWithId(Long wareId, Long warehouseId, Integer quantity, Long id, Long version) {
+		StockKey key = StockKey.of(wareId, warehouseId);
 		Stock stock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(quantity)
 				.build();
 

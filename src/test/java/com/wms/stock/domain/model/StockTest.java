@@ -14,9 +14,10 @@ class StockTest {
 	@DisplayName("재고 수량 정상 추가")
 	void testAddQuantitySuccess() {
 		// Given
+		StockKey key = StockKey.of(1L, 100L); // Mock ID 사용
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L) // Mock ID 사용
-				.wareId(100L)   // Mock ID 사용
+				.key(key)   // Mock ID 사용
 				.quantity(10)
 				.build();
 
@@ -36,9 +37,11 @@ class StockTest {
 	void testAddQuantityCapacityExceeded() {
 		// Given
 		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
+
 		Stock stock = Stock.builder()
-				.warehouseId(warehouseId)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(10)
 				.build();
 
@@ -55,9 +58,12 @@ class StockTest {
 	@DisplayName("재고 추가 시 정확히 용량에 맞는 경우 성공")
 	void testAddQuantityExactCapacity() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(10)
 				.build();
 
@@ -76,9 +82,12 @@ class StockTest {
 	@DisplayName("재고 정상 제거")
 	void testRemoveQuantitySuccess() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId); // Mock ID 사용
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50) // 초기 재고
 				.build();
 
@@ -99,9 +108,10 @@ class StockTest {
 		// Given
 		Long warehouseId = 1L;
 		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(warehouseId)
-				.wareId(wareId)
+				.key(key) // Mock ID 사용
 				.quantity(10)
 				.build();
 
@@ -117,9 +127,12 @@ class StockTest {
 	@DisplayName("재고 제거 후 수량이 0이 되면 삭제 마킹")
 	void testRemoveQuantityToZero() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(30)
 				.build();
 
@@ -138,9 +151,12 @@ class StockTest {
 	@DisplayName("재고 수량 직접 업데이트 - 정상")
 	void testUpdateQuantitySuccess() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 
@@ -156,9 +172,12 @@ class StockTest {
 	@DisplayName("재고 수량 직접 업데이트 - 0으로 설정 시 삭제 마킹")
 	void testUpdateQuantityToZero() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 
@@ -174,9 +193,12 @@ class StockTest {
 	@DisplayName("재고 수량 직접 업데이트 - 음수 설정 시 예외")
 	void testUpdateQuantityNegative() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 
@@ -189,9 +211,12 @@ class StockTest {
 	@DisplayName("Stock 빌더 패턴 검증")
 	void testStockBuilderPattern() {
 		// Given & When
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 
@@ -206,10 +231,13 @@ class StockTest {
 	@DisplayName("경계값 테스트 - 최소 재고량")
 	void testMinimumQuantity() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
-				.quantity(1) // 최소 재고
+				.key(key) // Mock ID 사용
+				.quantity(1) // 최소 재고량
 				.build();
 
 		// When
@@ -224,10 +252,13 @@ class StockTest {
 	@DisplayName("경계값 테스트 - 용량 한계")
 	void testCapacityLimit() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
-				.quantity(90)
+				.key(key) // Mock ID 사용
+				.quantity(90) // 현재 재고
 				.build();
 
 		int warehouseCapacity = 100;
@@ -245,9 +276,12 @@ class StockTest {
 	@DisplayName("복합 시나리오 - 연속적인 재고 변화")
 	void testComplexScenario() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 
@@ -271,9 +305,12 @@ class StockTest {
 	@DisplayName("동일한 값으로 재고 변경 시에도 정상 동작")
 	void testSameQuantityUpdate() {
 		// Given
+		Long warehouseId = 1L;
+		Long wareId = 100L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock stock = Stock.builder()
-				.warehouseId(1L)
-				.wareId(100L)
+				.key(key) // Mock ID 사용
 				.quantity(50)
 				.build();
 

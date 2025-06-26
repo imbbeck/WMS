@@ -49,13 +49,13 @@ class StockQueryServiceRedisIntegrationTest {
 	private void cleanupTestKeys() {
 		// 테스트용 키들 정리
 		Set<String> keys = redisTemplate.keys("current_stock:*");
-		if (keys != null && !keys.isEmpty()) {
+		if (!keys.isEmpty()) {
 			redisTemplate.delete(keys);
 		}
 
 		// 추가 테스트 키들도 정리
 		Set<String> testKeys = redisTemplate.keys(TEST_KEY_PREFIX + "*");
-		if (testKeys != null && !testKeys.isEmpty()) {
+		if (!testKeys.isEmpty()) {
 			redisTemplate.delete(testKeys);
 		}
 	}

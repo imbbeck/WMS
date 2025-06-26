@@ -3,6 +3,8 @@ package com.wms.stock.interfaces;
 import com.wms.applicationInfra.config.TestSecurityConfig;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.stock.application.StockQueryService;
+import com.wms.stock.domain.exception.StockException;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.dto.StockQueryDTO;
 import com.wms.ware.domain.exception.WareException;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.BDDMockito.*;
@@ -52,7 +53,7 @@ class StockQueryControllerTest {
 				.build();
 
 		given(stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId))
-				.willReturn(Optional.of(stockRes));
+				.willReturn(stockRes);
 
 		// When & Then
 		mockMvc.perform(get("/stock-queries/by-warehouse-ware")
@@ -74,7 +75,7 @@ class StockQueryControllerTest {
 		Long wareId = 999L;
 
 		given(stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId))
-				.willReturn(Optional.empty());
+				.willThrow(StockException.notFound(StockKey.of(wareId, warehouseId)));
 
 		// When & Then
 		mockMvc.perform(get("/stock-queries/by-warehouse-ware")

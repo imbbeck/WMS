@@ -3,6 +3,7 @@ package com.wms.applicationInfra.config;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import com.wms.stock.domain.model.StockKey;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,10 +31,10 @@ public class CacheKeyConfig {
 	public KeyGenerator stockCacheKeyGenerator() {
 		return (target, method, params) -> {
 
-			if (method.getName().contains("Inventory") && params.length >= 2) {
-				Long wareId = (Long) params[0];
-				Long warehouseId = (Long) params[1];
-				return String.format("current_stock:%d:%d", warehouseId, wareId);
+			if (method.getName().contains("Inventory") && params.length >= 1) {
+				// 첫 번째 파라미터는 항상 StockKey
+				StockKey stockKey = (StockKey) params[0];
+				return stockKey.toCacheKey(); // "current_stock:warehouseId:wareId"
 			}
 
 			if (method.getName().contains("WarehouseCurrentSum") && params.length > 0) {

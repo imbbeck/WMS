@@ -105,8 +105,9 @@
 ### 재고 (Stock) - 장소:물품 연결 테이블
 
 -   `id`: Long, PK (자동생성)
--   `wareId`: FK → 물품
--   `warehouseId`: FK → 장소 (창고)
+-   **Embedded Key (StockKey)**:
+    -   `wareId`: 물품
+    -   `warehouseId`: 장소 (창고)
 -   `quantity`: 정수 (파레트 단위)
 -   `version`: Long (낙관적 락용)
 -   `createdAt`: 생성일시 (LocalDateTime, 자동생성)
@@ -126,8 +127,7 @@
 
 -   `id`: Long, PK (자동생성)
 -   **Embedded Key (StockSnapshotKey)**:
-    -   `wareId`: FK → 물품
-    -   `warehouseId`: FK → 장소 (창고)
+    -   `StockKey` (재고 엔티티의 Embedded Key)
     -   `snapshotDate`: 스냅샷 날짜 (LocalDate)
 -   `quantity`: 해당 날짜의 재고 수량 (Integer)
 -   `changeFromYesterday`: 전일 대비 변화량 (Integer)

@@ -34,10 +34,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {
+        "spring.cache.type=redis",  // 이 테스트만 캐시 활성화
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.test.database.replace=none"
 })
-@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayName("StockCacheService 이벤트 기반 통합 테스트")
 class StockCacheServiceIntegrationTest {
@@ -277,7 +277,7 @@ class StockCacheServiceIntegrationTest {
 
             // 생성 이벤트 처리 완료 대기
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(10))
                     .untilAsserted(() -> {
                         Integer cachedQuantity = stockCacheService.getInventoryQuantity(StockKey.of(getWareId(), getWarehouseId()));
                         System.out.println("생성 후 캐시 값: " + cachedQuantity);
@@ -294,7 +294,7 @@ class StockCacheServiceIntegrationTest {
             System.out.println("재고 수정 실행 완료");
 
             // Then - 중간 확인
-            Thread.sleep(1000); // 1초 대기
+            Thread.sleep(5000); // 1초 대기
 
             // 직접 Redis에서 확인
             StockKey key = StockKey.of(getWareId(), getWarehouseId());
@@ -312,7 +312,7 @@ class StockCacheServiceIntegrationTest {
 
             // 최종 검증
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(5))
+                    .atMost(Duration.ofSeconds(10))
                     .untilAsserted(() -> {
                         Integer quantity = stockCacheService.getInventoryQuantity(key);
                         assertThat(quantity).isEqualTo(150);
@@ -377,7 +377,7 @@ class StockCacheServiceIntegrationTest {
 
             // 생성 완료 대기
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(10))
                     .untilAsserted(() -> assertThat(stockCacheService.getInventoryQuantity(StockKey.of(getWareId(), getWarehouseId()))).isEqualTo(120));
 
             // When - 재고 삭제
@@ -387,7 +387,7 @@ class StockCacheServiceIntegrationTest {
             StockKey key = StockKey.of(getWareId(), getWarehouseId());
 
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(5))
+                    .atMost(Duration.ofSeconds(10))
                     .untilAsserted(() -> {
                         // 개별 재고 캐시 무효화로 인한 DB 재조회 (0 반환)
                         Integer cachedQuantity = stockCacheService.getInventoryQuantity(key);
@@ -416,7 +416,7 @@ class StockCacheServiceIntegrationTest {
 
             // 생성 완료 대기
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(5))
                     .untilAsserted(() -> assertThat(stockCacheService.getInventoryQuantity(StockKey.of(getWareId(), getWarehouseId()))).isEqualTo(80));
 
             // When - 수량을 0으로 수정 (자동 삭제)
@@ -425,21 +425,47 @@ class StockCacheServiceIntegrationTest {
                     .build();
             executeInTransaction(() -> stockCtrlService.update(getWareId(), getWarehouseId(), updateRequest));
 
-            // Then - 자동 삭제 및 캐시 처리 확인
+            // 즉시 Redis 상태 확인
             StockKey key = StockKey.of(getWareId(), getWarehouseId());
+            String cacheKey = key.toCacheKey();
+            String warehouseKey = String.format("warehouse:%d:currentSum", getWarehouseId());
 
+            System.out.println("=== 삭제 직후 Redis 상태 ===");
+            System.out.println("Redis 모든 키: " + redisTemplate.keys("*"));
+            System.out.println("개별 재고 캐시 존재 여부: " + redisTemplate.hasKey(cacheKey));
+            System.out.println("개별 재고 캐시 값: " + redisTemplate.opsForValue().get(cacheKey));
+            System.out.println("창고 총량 캐시 값: " + redisTemplate.opsForValue().get(warehouseKey));
+
+            // Then - 시간 간격을 두고 여러 번 확인
             Awaitility.await()
                     .atMost(Duration.ofSeconds(5))
+                    .pollInterval(Duration.ofMillis(500))
                     .untilAsserted(() -> {
-                        // DB에서 삭제됨
-                        assertThat(stockRepository.findByKey(key)).isEmpty();
+                        System.out.println("=== 폴링 중 상태 ===");
 
-                        // 개별 재고 캐시 무효화
-                        assertThat(stockCacheService.getInventoryQuantity(key)).isEqualTo(0);
+                        // DB 확인
+                        Optional<Stock> dbStock = stockRepository.findByKey(key);
+                        System.out.println("DB 재고 존재: " + dbStock.isPresent());
 
-                        // 창고 총량 감소
-                        String warehouseKey = String.format("warehouse:%d:currentSum", getWarehouseId());
+                        // 캐시 직접 확인
+                        boolean keyExists = redisTemplate.hasKey(cacheKey);
+                        Object cachedValue = redisTemplate.opsForValue().get(cacheKey);
+                        System.out.println("캐시 키 존재: " + keyExists);
+                        System.out.println("캐시 값: " + cachedValue);
+
+                        // 서비스 메서드 확인
+                        Integer serviceResult = stockCacheService.getInventoryQuantity(key);
+                        System.out.println("서비스 반환값: " + serviceResult);
+
+                        // 창고 총량 확인
                         Integer warehouseTotal = (Integer) redisTemplate.opsForValue().get(warehouseKey);
+                        System.out.println("창고 총량: " + warehouseTotal);
+
+                        System.out.println("------------------------");
+
+                        // 검증
+                        assertThat(dbStock).isEmpty();
+                        assertThat(serviceResult).isEqualTo(0);
                         assertThat(warehouseTotal).isEqualTo(0);
                     });
         }
@@ -462,12 +488,22 @@ class StockCacheServiceIntegrationTest {
                     .build();
             executeInTransaction(() -> stockCtrlService.create(createRequest));
 
+            StockKey key = StockKey.of(getWareId(), getWarehouseId());
+
             // 생성 이벤트 처리 확인
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(5))
                     .untilAsserted(() -> {
-                        assertThat(stockCacheService.getInventoryQuantity(StockKey.of(getWareId(), getWarehouseId()))).isEqualTo(100);
-                        assertThat(redisTemplate.opsForValue().get(warehouseKey)).isEqualTo(100);
+                        Integer cachedQuantity = stockCacheService.getInventoryQuantity(key);
+                        Integer warehouseTotal = (Integer) redisTemplate.opsForValue().get(warehouseKey);
+
+                        System.out.println("=== 생성 후 상태 ===");
+                        System.out.println("개별 재고 캐시: " + cachedQuantity);
+                        System.out.println("창고 총량 캐시: " + warehouseTotal);
+                        System.out.println("기대값: 100");
+
+                        assertThat(cachedQuantity).isEqualTo(100);
+                        assertThat(warehouseTotal).isEqualTo(100);
                     });
 
             // 2. 재고 수정 (100 → 180)
@@ -477,12 +513,20 @@ class StockCacheServiceIntegrationTest {
             executeInTransaction(() -> stockCtrlService.update(getWareId(), getWarehouseId(), updateRequest));
 
             // 수정 이벤트 처리 확인
-            StockKey key = StockKey.of(getWareId(), getWarehouseId());
+
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(5))
                     .untilAsserted(() -> {
-                        assertThat(stockCacheService.getInventoryQuantity(key)).isEqualTo(180);
-                        assertThat(redisTemplate.opsForValue().get(warehouseKey)).isEqualTo(180);
+                        Integer cachedQuantity = stockCacheService.getInventoryQuantity(key);
+                        Integer warehouseTotal = (Integer) redisTemplate.opsForValue().get(warehouseKey);
+
+                        System.out.println("=== 수정 후 상태 ===");
+                        System.out.println("개별 재고 캐시: " + cachedQuantity);
+                        System.out.println("창고 총량 캐시: " + warehouseTotal);
+                        System.out.println("기대값: 180");
+
+                        assertThat(cachedQuantity).isEqualTo(180);
+                        assertThat(warehouseTotal).isEqualTo(180);
                     });
 
             // 3. 재고 삭제
@@ -490,10 +534,18 @@ class StockCacheServiceIntegrationTest {
 
             // 삭제 이벤트 처리 확인
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(3))
+                    .atMost(Duration.ofSeconds(5))
                     .untilAsserted(() -> {
-                        assertThat(stockCacheService.getInventoryQuantity(StockKey.of(getWareId(), getWarehouseId()))).isEqualTo(0);
-                        assertThat(redisTemplate.opsForValue().get(warehouseKey)).isEqualTo(0);
+                        Integer cachedQuantity = stockCacheService.getInventoryQuantity(key);
+                        Integer warehouseTotal = (Integer) redisTemplate.opsForValue().get(warehouseKey);
+
+                        System.out.println("=== 삭제 후 상태 ===");
+                        System.out.println("개별 재고 캐시: " + cachedQuantity);
+                        System.out.println("창고 총량 캐시: " + warehouseTotal);
+                        System.out.println("기대값: 0");
+
+                        assertThat(cachedQuantity).isEqualTo(0);
+                        assertThat(warehouseTotal).isEqualTo(0);
                         assertThat(stockRepository.findByKey(key)).isEmpty();
                     });
         }

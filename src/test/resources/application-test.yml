@@ -16,12 +16,12 @@ spring:
 #    defer-datasource-initialization: true
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.H2Dialect
 
   # 캐시 설정
   cache:
-    type: none
+    type: none  # 테스트에서는 캐시 사용 안함
     redis:
       time-to-live: 86400000  # 1일 (밀리초 단위)
       cache-null-values: false
