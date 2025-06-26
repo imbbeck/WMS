@@ -3,6 +3,7 @@ package com.wms.stock.domain.exception;
 import com.wms.applicationInfra.domain.FieldEnum;
 import com.wms.applicationInfra.exception.BusinessException;
 import com.wms.applicationInfra.exception.DomainExceptionHelper;
+import com.wms.stock.domain.model.StockKey;
 
 public final class StockException {
 	private StockException() {}
@@ -37,8 +38,8 @@ public final class StockException {
 		return new NotFoundEx(DomainExceptionHelper.notFound(stockId));
 	}
 
-	public static NotFoundEx notFound(String identifier) {
-		return new NotFoundEx(DomainExceptionHelper.notFound(identifier));
+	public static NotFoundEx notFound(StockKey key) {
+		return new NotFoundEx(DomainExceptionHelper.notFound(key.toString()));
 	}
 
 	// DuplicateEx

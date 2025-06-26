@@ -158,7 +158,7 @@ class StockQueryServiceTest {
 
 		given(stockCacheService.getInventoryQuantity(wareId, warehouseId))
 				.willReturn(0); // 캐시에서 0 반환
-		given(stockRepository.findByWarehouseIdAndWareId(warehouseId, wareId))
+		given(stockRepository.findByKey(StockKey.of(wareId, warehouseId)))
 				.willReturn(Optional.of(dbStock));
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
@@ -170,7 +170,7 @@ class StockQueryServiceTest {
 		// Then
 		assertThat(result).isPresent();
 		assertThat(result.get().getQuantity()).isEqualTo(50);
-		verify(stockRepository).findByWarehouseIdAndWareId(warehouseId, wareId);
+		verify(stockRepository).findByKey(StockKey.of(wareId, warehouseId));
 	}
 
 	@Test
@@ -186,7 +186,7 @@ class StockQueryServiceTest {
 
 		given(locationRepository.existsById(warehouseId)).willReturn(true);
 		// Redis SCAN은 setUp()에서 빈 결과로 설정됨
-		given(stockRepository.findAllByWarehouseId(warehouseId)).willReturn(dbStocks);
+		given(stockRepository.findAllByKey_WarehouseId(warehouseId)).willReturn(dbStocks);
 		given(wareCacheManager.getName(10L)).willReturn("물품A");
 		given(wareCacheManager.getName(20L)).willReturn("물품B");
 		given(locationCacheManager.getName(warehouseId)).willReturn("창고1");
@@ -198,7 +198,7 @@ class StockQueryServiceTest {
 		assertThat(result).hasSize(2);
 		assertThat(result).extracting("wareId").containsExactlyInAnyOrder(10L, 20L);
 		assertThat(result).extracting("quantity").containsExactlyInAnyOrder(100, 50);
-		verify(stockRepository).findAllByWarehouseId(warehouseId);
+		verify(stockRepository).findAllByKey_WarehouseId(warehouseId);
 	}
 
 	@Test
@@ -213,7 +213,7 @@ class StockQueryServiceTest {
 		);
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
-		given(stockRepository.findAllByWareId(wareId)).willReturn(dbStocks);
+		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(dbStocks);
 		given(wareCacheManager.getName(wareId)).willReturn("물품A");
 		given(locationCacheManager.getName(10L)).willReturn("창고1");
 		given(locationCacheManager.getName(20L)).willReturn("창고2");
@@ -225,7 +225,7 @@ class StockQueryServiceTest {
 		assertThat(result).hasSize(2);
 		assertThat(result).extracting("warehouseId").containsExactlyInAnyOrder(10L, 20L);
 		assertThat(result).extracting("quantity").containsExactlyInAnyOrder(100, 30);
-		verify(stockRepository).findAllByWareId(wareId);
+		verify(stockRepository).findAllByKey_WareId(wareId);
 	}
 
 	// ========== 집계 조회 메서드 테스트 ==========
@@ -281,7 +281,7 @@ class StockQueryServiceTest {
 		given(stockCacheService.getWarehouseCurrentSum(warehouseId)).willReturn(totalQuantity);
 		// Redis SCAN은 빈 결과 (setUp에서 설정됨)
 		given(stockRepository.findWarehouseStockSummary(warehouseId)).willReturn(Optional.of(mockSummary));
-		given(stockRepository.findAllByWarehouseId(warehouseId)).willReturn(stocks);
+		given(stockRepository.findAllByKey_WarehouseId(warehouseId)).willReturn(stocks);
 		given(wareCacheManager.getName(10L)).willReturn("물품A");
 		given(wareCacheManager.getName(20L)).willReturn("물품B");
 
@@ -318,7 +318,7 @@ class StockQueryServiceTest {
 		given(wareRepository.existsById(wareId)).willReturn(true);
 		given(wareCacheManager.getName(wareId)).willReturn(wareName);
 		given(stockRepository.findWareStockSummary(wareId)).willReturn(Optional.of(mockSummary));
-		given(stockRepository.findAllByWareId(wareId)).willReturn(stocks);
+		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(stocks);
 		given(locationCacheManager.getName(10L)).willReturn("창고1");
 		given(locationCacheManager.getName(20L)).willReturn("창고2");
 		given(locationCacheManager.getName(30L)).willReturn("창고3");
@@ -366,7 +366,7 @@ class StockQueryServiceTest {
 		);
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
-		given(stockRepository.findAllByWareId(wareId)).willReturn(stocks);
+		given(stockRepository.findAllByKey_WareId(wareId)).willReturn(stocks);
 
 		// When
 		Integer result = stockQueryService.getWareTotalQuantity(wareId);
@@ -537,7 +537,7 @@ class StockQueryServiceTest {
 		Long warehouseId = 1L;
 
 		given(locationRepository.existsById(warehouseId)).willReturn(true);
-		given(stockRepository.findAllByWarehouseId(warehouseId))
+		given(stockRepository.findAllByKey_WarehouseId(warehouseId))
 				.willReturn(Collections.emptyList());
 
 		// When
@@ -546,7 +546,7 @@ class StockQueryServiceTest {
 		// Then - 호출 순서 검증
 		var inOrder = inOrder(locationRepository, stockRepository);
 		inOrder.verify(locationRepository).existsById(warehouseId);
-		inOrder.verify(stockRepository).findAllByWarehouseId(warehouseId);
+		inOrder.verify(stockRepository).findAllByKey_WarehouseId(warehouseId);
 	}
 
 	@Test

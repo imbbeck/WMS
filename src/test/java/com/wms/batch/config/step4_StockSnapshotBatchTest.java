@@ -3,6 +3,7 @@ package com.wms.batch.config;
 import com.wms.applicationInfra.config.QuerydslConfig;
 import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.model.StockDailySnapshot;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockDailySnapshotRepository;
 import com.wms.stock.domain.repository.StockRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -216,9 +217,9 @@ class step4_StockSnapshotBatchTest {
 
 	private void createTestStockData(int count) {
 		for (int i = 1; i <= count; i++) {
+			StockKey key = StockKey.of((long) i, (long) (i % 3 + 1));  // 3개의 창고로 분배
 			Stock stock = Stock.builder()
-					.wareId((long) i)
-					.warehouseId((long) (i % 3 + 1))
+					.key(key)
 					.quantity(i * 10)
 					.build();
 			stockRepository.save(stock);

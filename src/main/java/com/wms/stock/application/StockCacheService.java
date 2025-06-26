@@ -5,6 +5,7 @@ import com.wms.stock.domain.event.StockCreatedEvent;
 import com.wms.stock.domain.event.StockDeletedEvent;
 import com.wms.stock.domain.event.StockUpdatedEvent;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +28,9 @@ public class StockCacheService {
 	 * 개별 재고 조회 (캐시 조회 후 miss 시 DB 조회)
 	 */
 	@Cacheable(value = "stockInventory", keyGenerator = "stockCacheKeyGenerator", unless = "#result == 0") // 0은 캐싱 안함
-	public Integer getInventoryQuantity(Long wareId, Long warehouseId) {
-		log.debug("Cache miss - querying DB for wareId: {}, warehouseId: {}", wareId, warehouseId);
-		return stockRepository.findByWarehouseIdAndWareId(warehouseId, wareId)
+	public Integer getInventoryQuantity(StockKey stockKey) {
+		log.debug("Cache miss - querying DB for {}", stockKey.toString());
+		return stockRepository.findByKey(stockKey)
 				.map(Stock::getQuantity)
 				.orElse(0);
 	}
@@ -38,37 +39,34 @@ public class StockCacheService {
 	 * 개별 재고 갱신
 	 */
 	@CachePut(value = "stockInventory", keyGenerator = "stockCacheKeyGenerator")
-	public Integer updateInventoryQuantity(Long wareId, Long warehouseId, Integer quantity) {
-		log.debug("Updated inventory cache - wareId: {}, warehouseId: {}, quantity: {}",
-				wareId, warehouseId, quantity);
+	public Integer updateInventoryQuantity(StockKey stockKey, Integer quantity) {
+		log.debug("Updated inventory cache - {}, quantity: {}",	stockKey.toString(), quantity);
 		return quantity;
 	}
 
 	/**
 	 * 개별 재고 캐시 increment (Redis 직접 사용)
 	 */
-	public void incrementStockCache(Long wareId, Long warehouseId, Integer increment) {
+	public void incrementStockCache(StockKey stockKey, Integer increment) {
 		try {
-			String key = String.format("current_stock:%d:%d", warehouseId, wareId);
+			String key = stockKey.toCacheKey();
 			redisTemplate.opsForValue().increment(key, increment);
 			log.debug("Incremented stock cache - key: {}, increment: {}", key, increment);
 		} catch (Exception e) {
-			log.error("Failed to increment stock cache - warehouseId: {}, wareId: {}, increment: {}",
-					warehouseId, wareId, increment, e);
+			log.error("Failed to increment stock cache - {}, increment: {}", stockKey.toString(), increment, e);
 		}
 	}
 
 	/**
 	 * 개별 재고 캐시 decrement (Redis 직접 사용)
 	 */
-	public void decrementStockCache(Long wareId, Long warehouseId, Integer decrement) {
+	public void decrementStockCache(StockKey stockKey, Integer decrement) {
 		try {
-			String key = String.format("current_stock:%d:%d", warehouseId, wareId);
+			String key = stockKey.toCacheKey();
 			redisTemplate.opsForValue().increment(key, -decrement);
 			log.debug("Decremented stock cache - key: {}, decrement: {}", key, decrement);
 		} catch (Exception e) {
-			log.error("Failed to decrement stock cache - warehouseId: {}, wareId: {}, decrement: {}",
-					warehouseId, wareId, decrement, e);
+			log.error("Failed to decrement stock cache - {}, increment: {}", stockKey.toString(), decrement, e);
 		}
 	}
 
@@ -76,8 +74,8 @@ public class StockCacheService {
 	 * 개별 재고 캐시 삭제
 	 */
 	@CacheEvict(value = "stockInventory", keyGenerator = "stockCacheKeyGenerator")
-	public void invalidateInventoryQuantity(Long wareId, Long warehouseId) {
-		log.debug("Invalidated inventory cache - wareId: {}, warehouseId: {}", wareId, warehouseId);
+	public void invalidateInventoryQuantity(StockKey stockKey) {
+		log.debug("Invalidated inventory cache - {}", stockKey.toString());
 	}
 
 	/**
@@ -137,37 +135,38 @@ public class StockCacheService {
 		log.debug("Invalidated warehouse current sum cache - warehouseId: {}", warehouseId);
 	}
 
+
+
 	// 이벤트 리스너 - 재고 생성 이벤트 처리
 	@TransactionalEventListener(phase = AFTER_COMMIT)
 	public void onStockCreated(StockCreatedEvent event) {
-		log.debug("StockCreatedEvent - updating cache for wareId: {}, warehouseId: {}",
-				event.getWareId(), event.getWarehouseId());
+		log.debug("StockCreatedEvent - updating cache for {}", event.getKey().toString());
 
 		// 개별 재고 캐시 갱신
-		updateInventoryQuantity(event.getWareId(), event.getWarehouseId(), event.getQuantity());
+		updateInventoryQuantity(event.getKey(), event.getQuantity());
 
 		// 창고 총 사용량 캐시 증가
-		incrementWarehouseCurrentSumCache(event.getWarehouseId(), event.getQuantity());
+		incrementWarehouseCurrentSumCache(event.getKey().getWarehouseId(), event.getQuantity());
 	}
 
 	// 이벤트 리스너 - 재고 수정 이벤트 처리
 	@TransactionalEventListener(phase = AFTER_COMMIT)
 	public void onStockUpdated(StockUpdatedEvent event) {
-		log.debug("StockUpdatedEvent - updating cache for wareId: {}, warehouseId: {}, oldQuantity: {}, newQuantity: {}",
-				event.getWareId(), event.getWarehouseId(), event.getOldQuantity(), event.getNewQuantity());
+		log.debug("StockUpdatedEvent - updating cache for {}, oldQuantity: {}, newQuantity: {}",
+				event.getKey(), event.getOldQuantity(), event.getNewQuantity());
 
 		// 개별 재고 캐시 갱신
-		updateInventoryQuantity(event.getWareId(), event.getWarehouseId(), event.getNewQuantity());
+		updateInventoryQuantity(event.getKey(), event.getNewQuantity());
 
 		// 창고 총 사용량 캐시 증감 계산
 		int quantityDifference = event.getNewQuantity() - event.getOldQuantity();
 
 		if (quantityDifference > 0) {
 			// 재고 증가
-			incrementWarehouseCurrentSumCache(event.getWarehouseId(), quantityDifference);
+			incrementWarehouseCurrentSumCache(event.getKey().getWarehouseId(), quantityDifference);
 		} else if (quantityDifference < 0) {
 			// 재고 감소
-			decrementWarehouseCurrentSumCache(event.getWarehouseId(), Math.abs(quantityDifference));
+			decrementWarehouseCurrentSumCache(event.getKey().getWarehouseId(), Math.abs(quantityDifference));
 		}
 		// quantityDifference == 0 이면 아무것도 안함
 	}
@@ -175,14 +174,14 @@ public class StockCacheService {
 	// 이벤트 리스너 - 재고 삭제 이벤트 처리
 	@TransactionalEventListener(phase = AFTER_COMMIT)
 	public void onStockDeleted(StockDeletedEvent event) {
-		log.debug("StockDeletedEvent - invalidating cache for wareId: {}, warehouseId: {}, quantity: {}",
-				event.getWareId(), event.getWarehouseId(), event.getQuantity());
+		log.debug("StockDeletedEvent - invalidating cache for {}, quantity: {}",
+				event.getKey(), event.getQuantity());
 
 		// 개별 재고 캐시 무효화
-		invalidateInventoryQuantity(event.getWareId(), event.getWarehouseId());
+		invalidateInventoryQuantity(event.getKey());
 
 		// 창고 총 사용량 캐시 감소 (무효화 X, 감소 O)
-		decrementWarehouseCurrentSumCache(event.getWarehouseId(), event.getQuantity());
+		decrementWarehouseCurrentSumCache(event.getKey().getWarehouseId(), event.getQuantity());
 	}
 
 

@@ -11,6 +11,7 @@ import com.wms.stock.domain.event.StockDeletedEvent;
 import com.wms.stock.domain.event.StockUpdatedEvent;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockDTO;
 import com.wms.ware.domain.exception.WareException;
@@ -53,10 +54,9 @@ public class StockCtrlService {
 		}
 
 		// 중복 재고 확인
-		Optional<Stock> existingStock = stockRepository.findByWarehouseIdAndWareId(req.getWareId(), req.getWarehouseId());
-		if (existingStock.isPresent()) {
-			throw StockException.duplicate(FieldEnum.WARE_WAREHOUSE_PAIR);
-		}
+		StockKey stockKey = StockKey.of(req.getWareId(), req.getWarehouseId());
+		stockRepository.findByKey(stockKey)
+				.ifPresent(s -> { throw StockException.duplicate(FieldEnum.WARE_WAREHOUSE_PAIR); });
 
 		// 창고 용량 확인
 		int currentPaletteCount = stockRepository.getTotalPaletteCountByWarehouseId(req.getWarehouseId());
@@ -75,23 +75,22 @@ public class StockCtrlService {
 
 	@Transactional
 	public Stock update(Long wareId, Long warehouseId, StockDTO.UpdateReq req) {
-		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
-				.orElseThrow(() -> StockException.notFound(
-						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
-				));
+		StockKey stockKey = StockKey.of(wareId, warehouseId);
+		Stock stock = stockRepository.findByKey(stockKey)
+				.orElseThrow(() -> StockException.notFound(stockKey));
 
 		int oldQuantity = stock.getQuantity();
 
 		// 창고 용량 확인 (기존 수량 제외하고 새 수량으로 계산)
-		Location warehouse = locationRepository.findById(stock.getWarehouseId())
-				.orElseThrow(() -> LocationException.notFound(stock.getWarehouseId()));
+		Location warehouse = locationRepository.findById(stock.getKey().getWarehouseId())
+				.orElseThrow(() -> LocationException.notFound(stock.getKey().getWarehouseId()));
 
-		int currentPaletteCount = stockRepository.getTotalPaletteCountByWarehouseId(stock.getWarehouseId());
+		int currentPaletteCount = stockRepository.getTotalPaletteCountByWarehouseId(stock.getKey().getWarehouseId());
 		int adjustedCurrentCount = currentPaletteCount - stock.getQuantity(); // 기존 수량 제외
 
 		if (adjustedCurrentCount + req.getQuantity() > warehouse.getCapacity()) {
 			throw LocationException.warehouseCapacityExceeded(
-					stock.getWarehouseId(), warehouse.getCapacity(), adjustedCurrentCount, req.getQuantity());
+					stock.getKey().getWarehouseId(), warehouse.getCapacity(), adjustedCurrentCount, req.getQuantity());
 		}
 
 		// 재고 수량 업데이트 및 삭제 여부(재고가 0인 경우) 확인
@@ -112,10 +111,9 @@ public class StockCtrlService {
 
 	@Transactional
 	public void delete(Long wareId, Long warehouseId) {
-		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
-				.orElseThrow(() -> StockException.notFound(
-						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
-				));
+		StockKey stockKey = StockKey.of(wareId, warehouseId);
+		Stock stock = stockRepository.findByKey(stockKey)
+				.orElseThrow(() -> StockException.notFound(stockKey));
 
 		// 삭제 이벤트 발행
 		eventPublisher.publishEvent(new StockDeletedEvent(stock));
@@ -131,10 +129,9 @@ public class StockCtrlService {
 	 * @param quantity 감소할 수량
 	 */
 	public void decreaseStock(Long warehouseId, Long wareId, Integer quantity) {
-		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
-				.orElseThrow(() -> StockException.notFound(
-						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
-				));
+		StockKey stockKey = StockKey.of(wareId, warehouseId);
+		Stock stock = stockRepository.findByKey(stockKey)
+				.orElseThrow(() -> StockException.notFound(stockKey));
 
 		Integer oldQuantity = stock.getQuantity();
 
@@ -157,10 +154,9 @@ public class StockCtrlService {
 	 * @param quantity 증가할 수량
 	 */
 	public void increaseStock(Long warehouseId, Long wareId, Integer quantity) {
-		Stock stock = stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)
-				.orElseThrow(() -> StockException.notFound(
-						MessageFormat.format("wareId({0}), warehouseId({1})", wareId, warehouseId)
-				));
+		StockKey stockKey = StockKey.of(wareId, warehouseId);
+		Stock stock = stockRepository.findByKey(stockKey)
+				.orElseThrow(() -> StockException.notFound(stockKey));
 
 		Integer oldQuantity = stock.getQuantity();
 

@@ -170,8 +170,8 @@
 //				.build();
 //
 //		// Then
-//		assertThat(stock.getWareId()).isEqualTo(1L);
-//		assertThat(stock.getWarehouseId()).isEqualTo(100L);
+//		assertThat(stock.getKey().getWareId()).isEqualTo(1L);
+//		assertThat(stock.getKey().getWarehouseId()).isEqualTo(100L);
 //		assertThat(stock.getQuantity()).isEqualTo(50);
 //
 //		// When - 수량 업데이트

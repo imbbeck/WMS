@@ -195,8 +195,8 @@ class StockControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.wareId").value(updatedStock.getWareId()))
-				.andExpect(jsonPath("$.warehouseId").value(updatedStock.getWarehouseId()))
+				.andExpect(jsonPath("$.wareId").value(updatedstock.getKey().getWareId()))
+				.andExpect(jsonPath("$.warehouseId").value(updatedstock.getKey().getWarehouseId()))
 				.andExpect(jsonPath("$.quantity").value(updatedStock.getQuantity()));
 
 		// 여기서도 matcher를 모두 사용

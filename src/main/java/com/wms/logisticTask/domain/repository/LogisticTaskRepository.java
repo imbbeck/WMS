@@ -174,13 +174,13 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	/**
 	 * 특정 창고의 총 재고량 조회 (캐시 fallback용)
 	 */
-	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.key.warehouseId = :warehouseId")
 	Integer getTotalQuantityByWarehouse(@Param("warehouseId") Long warehouseId);
 
 	/**
 	 * 특정 창고의 파레트 총 개수 조회 (캐시 fallback용)
 	 */
-	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.warehouseId = :warehouseId")
+	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.key.warehouseId = :warehouseId")
 	Integer getTotalPaletteCountByWarehouseId(@Param("warehouseId") Long warehouseId);
 
 

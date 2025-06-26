@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -16,12 +17,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class StockSnapshotKey {
-	@Column(name = "ware_id", nullable = false)
-	private Long wareId;
-
-	@Column(name = "location_id", nullable = false)
-	private Long warehouseId;
+	@Embedded
+	private StockKey stockKey;
 
 	@Column(name = "snapshot_date", nullable = false)
 	private LocalDate snapshotDate;
+
+	/**
+	 * 정적 팩토리 메서드
+	 */
+	public static StockSnapshotKey of(StockKey stockKey, LocalDate snapshotDate) {
+		return new StockSnapshotKey(stockKey, snapshotDate);
+	}
+
 }

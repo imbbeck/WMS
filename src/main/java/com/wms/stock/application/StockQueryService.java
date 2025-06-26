@@ -5,7 +5,9 @@ import com.wms.applicationInfra.idnameMapCashing.concrete.WareCacheManager;
 import com.wms.location.application.LocationCacheService;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.repository.LocationRepository;
+import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockQueryDTO;
 import com.wms.ware.domain.exception.WareException;
@@ -43,23 +45,25 @@ public class StockQueryService {
 	 */
 	public Integer getStockQuantity(Long warehouseId, Long wareId) {
 		log.debug("재고 수량 조회 - warehouseId: {}, wareId: {}", warehouseId, wareId);
-		return stockCacheService.getInventoryQuantity(wareId, warehouseId);
+		StockKey key = StockKey.of(wareId, warehouseId);
+		return stockCacheService.getInventoryQuantity(key);
 	}
 
 	/**
 	 * 특정 창고-물품 조합의 재고 DTO 조회 (캐시 우선)
 	 */
-	public Optional<StockQueryDTO.Res> getStockResByWarehouseAndWare(Long warehouseId, Long wareId) {
+	public StockQueryDTO.Res getStockResByWarehouseAndWare(Long warehouseId, Long wareId) {
 		// 캐시에서 수량 먼저 확인
-		Integer quantity = stockCacheService.getInventoryQuantity(wareId, warehouseId);
+		StockKey key = StockKey.of(wareId, warehouseId);
+		Integer quantity = stockCacheService.getInventoryQuantity(key);
 
 		if (quantity == null || quantity == 0) {
-			log.debug("캐시에서 재고 없음 확인 - warehouseId: {}, wareId: {}", warehouseId, wareId);
-			return getStockResByWarehouseAndWareFromDB(warehouseId, wareId);
+			log.debug("캐시에서 재고 없음 확인 - {}", key.toString());
+			return getStockResByWarehouseAndWareFromDB(key);
 		}
 
 		// 캐시 데이터로 DTO 생성
-		return Optional.of(createStockRes(wareId, warehouseId, quantity));
+		return createStockRes(key, quantity);
 	}
 
 	/**
@@ -77,7 +81,7 @@ public class StockQueryService {
 
 		// 캐시에 없으면 DB 조회
 		log.debug("캐시 없음 - DB에서 창고 재고 조회 - warehouseId: {}", warehouseId);
-		return stockRepository.findAllByWarehouseId(warehouseId).stream()
+		return stockRepository.findAllByKey_WarehouseId(warehouseId).stream()
 				.map(this::convertStockToRes)
 				.collect(Collectors.toList());
 	}
@@ -90,7 +94,7 @@ public class StockQueryService {
 
 		// 물품별 조회는 키 패턴상 전체 스캔이 필요하므로 DB 조회가 더 효율적
 		log.debug("DB에서 물품 재고 조회 - wareId: {}", wareId);
-		return stockRepository.findAllByWareId(wareId).stream()
+		return stockRepository.findAllByKey_WareId(wareId).stream()
 				.map(this::convertStockToRes)
 				.collect(Collectors.toList());
 	}
@@ -185,7 +189,7 @@ public class StockQueryService {
 
 		// 물품별 조회는 키 패턴상 전체 스캔이 필요하므로 DB 조회가 더 효율적
 		log.debug("DB에서 물품 전체 재고 합산 - wareId: {}", wareId);
-		return stockRepository.findAllByWareId(wareId).stream()
+		return stockRepository.findAllByKey_WareId(wareId).stream()
 				.mapToInt(Stock::getQuantity)
 				.sum();
 	}
@@ -221,9 +225,10 @@ public class StockQueryService {
 	/**
 	 * DB에서 창고-물품 조합 재고 조회
 	 */
-	private Optional<StockQueryDTO.Res> getStockResByWarehouseAndWareFromDB(Long warehouseId, Long wareId) {
-		return stockRepository.findByWarehouseIdAndWareId(warehouseId, wareId)
-				.map(this::convertStockToRes);
+	private StockQueryDTO.Res getStockResByWarehouseAndWareFromDB(StockKey stockKey) {
+		return stockRepository.findByKey(stockKey)
+				.map(this::convertStockToRes)
+				.orElseThrow(() -> StockException.notFound(stockKey));
 	}
 
 	/**
@@ -244,16 +249,18 @@ public class StockQueryService {
 	/**
 	 * DTO 생성 헬퍼 메서드들
 	 */
-	private StockQueryDTO.Res createStockRes(Long wareId, Long warehouseId, Integer quantity) {
+	private StockQueryDTO.Res createStockRes(StockKey key, Integer quantity) {
+		Long warehouseId = key.getWarehouseId();
+		Long wareId = key.getWareId();
 		String wareName = wareCacheManager.getName(wareId);
 		String warehouseName = locationCacheManager.getName(warehouseId);
 		return StockQueryDTO.Res.from(wareId, wareName, warehouseId, warehouseName, quantity);
 	}
 
 	private StockQueryDTO.Res convertStockToRes(Stock stock) {
-		String wareName = wareCacheManager.getName(stock.getWareId());
-		String warehouseName = locationCacheManager.getName(stock.getWarehouseId());
-		return StockQueryDTO.Res.from(stock.getWareId(), wareName, stock.getWarehouseId(), warehouseName, stock.getQuantity());
+		String wareName = wareCacheManager.getName(stock.getKey().getWareId());
+		String warehouseName = locationCacheManager.getName(stock.getKey().getWarehouseId());
+		return StockQueryDTO.Res.from(stock.getKey().getWareId(), wareName, stock.getKey().getWarehouseId(), warehouseName, stock.getQuantity());
 	}
 
 	/**
@@ -309,12 +316,12 @@ public class StockQueryService {
 			Long warehouseId, String warehouseName, Integer capacity, Integer totalQuantity) {
 
 		Optional<StockRepository.WarehouseStockSummary> summary = stockRepository.findWarehouseStockSummary(warehouseId);
-		List<Stock> stocks = stockRepository.findAllByWarehouseId(warehouseId);
+		List<Stock> stocks = stockRepository.findAllByKey_WarehouseId(warehouseId);
 
 		List<StockQueryDTO.WareUnit> wareUnits = stocks.stream()
 				.map(stock -> StockQueryDTO.WareUnit.builder()
-						.wareId(stock.getWareId())
-						.wareName(wareCacheManager.getName(stock.getWareId()))
+						.wareId(stock.getKey().getWareId())
+						.wareName(wareCacheManager.getName(stock.getKey().getWareId()))
 						.quantity(stock.getQuantity())
 						.build())
 				.collect(Collectors.toList());
@@ -336,15 +343,15 @@ public class StockQueryService {
 	 */
 	private StockQueryDTO.WareAggregationRes createWareAggregationFromDB(Long wareId, String wareName) {
 		Optional<StockRepository.WareStockSummary> summary = stockRepository.findWareStockSummary(wareId);
-		List<Stock> stocks = stockRepository.findAllByWareId(wareId);
+		List<Stock> stocks = stockRepository.findAllByKey_WareId(wareId);
 
 		Integer totalQuantity = summary.map(s -> s.getTotalQuantity().intValue()).orElse(0);
 		Integer warehouseCount = summary.map(s -> s.getWarehouseCount().intValue()).orElse(0);
 
 		List<StockQueryDTO.WarehouseUnit> warehouseUnits = stocks.stream()
 				.map(stock -> StockQueryDTO.WarehouseUnit.builder()
-						.warehouseId(stock.getWarehouseId())
-						.warehouseName(locationCacheManager.getName(stock.getWarehouseId()))
+						.warehouseId(stock.getKey().getWarehouseId())
+						.warehouseName(locationCacheManager.getName(stock.getKey().getWarehouseId()))
 						.quantity(stock.getQuantity())
 						.build())
 				.collect(Collectors.toList());

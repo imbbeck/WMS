@@ -1,6 +1,7 @@
 package com.wms.stock.dto;
 
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -38,8 +39,7 @@ public class StockDTO {
 
 		public Stock toEntity() {
 			return Stock.builder()
-					.wareId(wareId)
-					.warehouseId(warehouseId)
+					.key(StockKey.of(wareId, warehouseId))
 					.quantity(quantity)
 					.build();
 		}
@@ -93,8 +93,8 @@ public class StockDTO {
 		public static Res from(Stock stock) {
 			return Res.builder()
 					.id(stock.getId())
-					.wareId(stock.getWareId())
-					.warehouseId(stock.getWarehouseId())
+					.wareId(stock.getKey().getWareId())
+					.warehouseId(stock.getKey().getWarehouseId())
 					.quantity(stock.getQuantity())
 					.version(stock.getVersion())
 					.build();

@@ -9,6 +9,7 @@ import com.wms.logisticTask.domain.model.SimulationStats;
 import com.wms.logisticTask.domain.repository.LogisticTaskRepository;
 import com.wms.stock.application.StockCacheService;
 import com.wms.location.application.LocationCacheService;
+import com.wms.stock.domain.model.StockKey;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -223,7 +224,7 @@ public class LogisticTaskValidationService {
 				.collect(Collectors.toSet());
 
 		for (StockKey key : requiredStocks) {
-			Integer quantity = stockCacheService.getInventoryQuantity(key.getWareId(), key.getWarehouseId());
+			Integer quantity = stockCacheService.getInventoryQuantity(key);
 			stockMap.put(key, quantity != null ? quantity : 0);
 		}
 
@@ -433,7 +434,7 @@ public class LogisticTaskValidationService {
 	private void validateTaskInitiation(LogisticTask task) {
 		if (isWarehouse(task.getFromLocation().getId())) {
 			Integer currentStock = stockCacheService.getInventoryQuantity(
-					task.getWare().getId(), task.getFromLocation().getId());
+					StockKey.of(task.getWare().getId(), task.getFromLocation().getId()));
 
 			if (currentStock == null || currentStock < task.getQuantity()) {
 				throw LogisticTaskException.stockValidationFailedEx(
@@ -475,32 +476,6 @@ public class LogisticTaskValidationService {
 
 	private enum OperationType {
 		CREATE, MODIFY, DELETE
-	}
-
-
-	@Getter
-	private static class StockKey {
-		private final Long warehouseId;
-		private final Long wareId;
-
-		public StockKey(Long warehouseId, Long wareId) {
-			this.warehouseId = warehouseId;
-			this.wareId = wareId;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			StockKey stockKey = (StockKey) o;
-			return Objects.equals(warehouseId, stockKey.warehouseId) &&
-					Objects.equals(wareId, stockKey.wareId);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(warehouseId, wareId);
-		}
 	}
 
 	@Getter

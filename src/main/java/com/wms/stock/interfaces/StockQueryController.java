@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.wms.stock.application.StockQueryService;
 import com.wms.stock.domain.exception.StockException;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.dto.StockQueryDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,13 +42,12 @@ public class StockQueryController {
 			@ApiResponse(responseCode = "200", description = "Stock information retrieved successfully"),
 			@ApiResponse(responseCode = "404", description = "Stock not found for the given combination")
 	})
-	public Optional<StockQueryDTO.Res> getStockByWarehouseAndWare(
+	public StockQueryDTO.Res getStockByWarehouseAndWare(
 			@Parameter(description = "Warehouse ID") @RequestParam Long warehouseId,
-			@Parameter(description = "Ware ID") @RequestParam Long wareId) {
+			@Parameter(description = "Ware ID") @RequestParam Long wareId
+	) {
 		log.debug("창고-물품별 재고 조회 - warehouseId: {}, wareId: {}", warehouseId, wareId);
-
-		return Optional.ofNullable(stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId).orElseThrow(() -> StockException.notFound(warehouseId + ", " + wareId)
-		));
+		return stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId);
 	}
 
 	@GetMapping("/quantity")

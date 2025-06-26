@@ -23,17 +23,14 @@ public class StockSnapshotProcessor implements ItemProcessor<Stock, StockDailySn
 		LocalDate yesterday = today.minusDays(1);
 
 		// 어제 스냅샷을 찾기 위해 그저께 날짜로 조회
-		StockSnapshotKey yesterdayKey = new StockSnapshotKey(
-				stock.getWareId(),
-				stock.getWarehouseId(),
-				today.minusDays(2)  // 변경: minusDays(1) → minusDays(2)
+		StockSnapshotKey yesterdayKey = StockSnapshotKey.of(stock.getKey(), today.minusDays(2)
 		);
 
 		Optional<StockDailySnapshot> ySnapshot = snapshotRepository.findByKey(yesterdayKey);
 		int yQty = ySnapshot.map(StockDailySnapshot::getQuantity).orElse(0);
 
 		return StockDailySnapshot.builder()
-				.key(new StockSnapshotKey(stock.getWareId(), stock.getWarehouseId(), yesterday))
+				.key(StockSnapshotKey.of(stock.getKey(), yesterday))
 				.quantity(stock.getQuantity())
 				.changeFromYesterday(stock.getQuantity() - yQty)
 				.build();

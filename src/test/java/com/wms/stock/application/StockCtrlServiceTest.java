@@ -10,6 +10,7 @@ import com.wms.stock.domain.event.StockDeletedEvent;
 import com.wms.stock.domain.event.StockUpdatedEvent;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockDTO;
 import com.wms.ware.domain.exception.WareException;
@@ -77,15 +78,16 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock expectedStock = Stock.builder()
-				.wareId(wareId)
-				.warehouseId(warehouseId)
+				.key(key)
 				.quantity(quantity)
 				.build();
 
 		given(wareRepository.existsById(wareId)).willReturn(true);
 		given(locationRepository.findById(warehouseId)).willReturn(Optional.of(warehouse));
-		given(stockRepository.findByWarehouseIdAndWareId(wareId, warehouseId)).willReturn(Optional.empty());
+		given(stockRepository.findByKey(key)).willReturn(Optional.empty());
 		given(stockRepository.getTotalPaletteCountByWarehouseId(warehouseId)).willReturn(200);
 		given(stockRepository.save(any(Stock.class))).willReturn(expectedStock);
 
@@ -94,8 +96,8 @@ class StockCtrlServiceTest {
 
 		// Then
 		assertThat(result).isNotNull();
-		assertThat(result.getWareId()).isEqualTo(wareId);
-		assertThat(result.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(result.getKey().getWareId()).isEqualTo(wareId);
+		assertThat(result.getKey().getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(result.getQuantity()).isEqualTo(quantity);
 
 		// 이벤트 발행 확인
@@ -174,9 +176,12 @@ class StockCtrlServiceTest {
 	@DisplayName("재고 생성 실패 - 중복 재고")
 	void createStock_Duplicate() {
 		// Given
+		Long wareId = 1L;
+		Long warehouseId = 2L;
+
 		StockDTO.CreateReq request = StockDTO.CreateReq.builder()
-				.wareId(1L)
-				.warehouseId(2L)  // warehouseId가 2L
+				.wareId(wareId)
+				.warehouseId(warehouseId)  // warehouseId가 2L
 				.quantity(100)
 				.build();
 
@@ -188,15 +193,16 @@ class StockCtrlServiceTest {
 				.coordinateY(0)
 				.build();
 
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		Stock existingStock = Stock.builder()
-				.wareId(1L)
-				.warehouseId(2L)
+				.key(key)
 				.quantity(50)
 				.build();
 
 		given(wareRepository.existsById(1L)).willReturn(true);
 		given(locationRepository.findById(2L)).willReturn(Optional.of(warehouse));  // 2L로 수정
-		given(stockRepository.findByWarehouseIdAndWareId(1L, 2L)).willReturn(Optional.of(existingStock));
+		given(stockRepository.findByKey(key)).willReturn(Optional.of(existingStock));
 
 		// When & Then
 		assertThatThrownBy(() -> stockCtrlService.create(request))
@@ -209,9 +215,13 @@ class StockCtrlServiceTest {
 	@DisplayName("재고 생성 실패 - 창고 용량 초과")
 	void createStock_CapacityExceeded() {
 		// Given
+		Long wareId = 1L;
+		Long warehouseId = 2L;
+		StockKey key = StockKey.of(wareId, warehouseId);
+
 		StockDTO.CreateReq request = StockDTO.CreateReq.builder()
-				.wareId(1L)
-				.warehouseId(2L)
+				.wareId(wareId)
+				.warehouseId(warehouseId)
 				.quantity(200) // 초과 수량
 				.build();
 
@@ -225,7 +235,7 @@ class StockCtrlServiceTest {
 
 		given(wareRepository.existsById(1L)).willReturn(true);
 		given(locationRepository.findById(2L)).willReturn(Optional.of(warehouse));
-		given(stockRepository.findByWarehouseIdAndWareId(1L, 2L)).willReturn(Optional.empty());
+		given(stockRepository.findByKey(key)).willReturn(Optional.empty());
 		given(stockRepository.getTotalPaletteCountByWarehouseId(2L)).willReturn(250); // 현재 250 사용중
 
 		// When & Then

@@ -195,9 +195,9 @@ class StockRepositoryTest {
 
 	@Test
 	@DisplayName("findAllByWarehouseId: 특정 창고의 모든 재고 조회")
-	void testFindAllByWarehouseId() {
+	void testFindAllByKeyWarehouseId() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByWarehouseId(warehouse1.getId());
+		List<Stock> stocks = stockRepository.findAllByKey_WarehouseId(warehouse1.getId());
 
 		// Then
 		assertThat(stocks).hasSize(3);
@@ -211,9 +211,9 @@ class StockRepositoryTest {
 
 	@Test
 	@DisplayName("findAllByWareId: 특정 물품의 모든 창고 재고 조회")
-	void testFindAllByWareId() {
+	void testFindAllByKeyWareId() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByWareId(wareA.getId());
+		List<Stock> stocks = stockRepository.findAllByKey_WareId(wareA.getId());
 
 		// Then
 		assertThat(stocks).hasSize(2); // warehouse1, warehouse2
@@ -227,9 +227,9 @@ class StockRepositoryTest {
 
 	@Test
 	@DisplayName("findAllByWareIdAndQuantityGreaterThan: 특정 물품의 수량 조건 재고 조회")
-	void testFindAllByWareIdAndQuantityGreaterThan() {
+	void testFindAllByKeyWareIdAndQuantityGreaterThan() {
 		// Given & When
-		List<Stock> stocks = stockRepository.findAllByWareIdAndQuantityGreaterThan(wareA.getId(), 50);
+		List<Stock> stocks = stockRepository.findAllByKey_WareIdAndQuantityGreaterThan(wareA.getId(), 50);
 
 		// Then
 		assertThat(stocks).hasSize(1);
@@ -433,14 +433,14 @@ class StockRepositoryTest {
 
 	@Test
 	@DisplayName("existsByWarehouseId: 창고 재고 존재 여부 확인")
-	void testExistsByWarehouseId() {
+	void testExistsByKeyWarehouseId() {
 		// Given & When & Then
-		assertThat(stockRepository.existsByWarehouseId(warehouse1.getId())).isTrue();
-		assertThat(stockRepository.existsByWarehouseId(warehouse2.getId())).isTrue();
-		assertThat(stockRepository.existsByWarehouseId(warehouse3.getId())).isTrue();
+		assertThat(stockRepository.existsByKey_WarehouseId(warehouse1.getId())).isTrue();
+		assertThat(stockRepository.existsByKey_WarehouseId(warehouse2.getId())).isTrue();
+		assertThat(stockRepository.existsByKey_WarehouseId(warehouse3.getId())).isTrue();
 
 		// 존재하지 않는 창고 ID
-		assertThat(stockRepository.existsByWarehouseId(99999L)).isFalse();
+		assertThat(stockRepository.existsByKey_WarehouseId(99999L)).isFalse();
 	}
 
 	// ========== 유니크 제약조건 테스트 ==========
@@ -559,15 +559,15 @@ class StockRepositoryTest {
 		long startTime = System.currentTimeMillis();
 
 		// 창고별 조회
-		List<Stock> warehouse1Stocks = stockRepository.findAllByWarehouseId(warehouse1.getId());
-		List<Stock> warehouse2Stocks = stockRepository.findAllByWarehouseId(warehouse2.getId());
+		List<Stock> warehouse1Stocks = stockRepository.findAllByKey_WarehouseId(warehouse1.getId());
+		List<Stock> warehouse2Stocks = stockRepository.findAllByKey_WarehouseId(warehouse2.getId());
 
 		// 물품별 조회
-		List<Stock> wareAStocks = stockRepository.findAllByWareId(wareA.getId());
-		List<Stock> wareBStocks = stockRepository.findAllByWareId(wareB.getId());
+		List<Stock> wareAStocks = stockRepository.findAllByKey_WareId(wareA.getId());
+		List<Stock> wareBStocks = stockRepository.findAllByKey_WareId(wareB.getId());
 
 		// 조건부 조회
-		List<Stock> highQuantityStocks = stockRepository.findAllByWareIdAndQuantityGreaterThan(wareA.getId(), 50);
+		List<Stock> highQuantityStocks = stockRepository.findAllByKey_WareIdAndQuantityGreaterThan(wareA.getId(), 50);
 
 		long endTime = System.currentTimeMillis();
 

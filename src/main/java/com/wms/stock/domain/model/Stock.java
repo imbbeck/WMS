@@ -4,6 +4,7 @@ import com.wms.applicationInfra.domain.BaseEntity;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.stock.domain.exception.StockException;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -22,11 +23,8 @@ public class Stock extends BaseEntity {
 	// 매핑 걷어냄. Stock은 단순한 n:n 매핑 테이블이 아니라 상태(수량)를 가지며, 자체 비즈니스 로직도 가질 수 있는 주체적 Aggregate
 	// 재고는 자신의 상태 중심으로 동작하며, 연관 정보는 클라이언트 조회 시에만 필요하므로, 매핑은 오히려 손해
 
-	@Column(name = "ware_id", nullable = false)
-	private Long wareId;  // 물품
-
-	@Column(name = "location_id", nullable = false)
-	private Long warehouseId;  // 창고
+	@Embedded
+	private StockKey key;  // 재고 키 (물품 ID, 창고 ID) pk는 아님. 대리키 있음.
 
 	@Column(name = "quantity", nullable = false)
 	private Integer quantity;  // 수량
@@ -35,9 +33,8 @@ public class Stock extends BaseEntity {
 	private Long version;
 
 	@Builder
-	public Stock(Long wareId, Long warehouseId, Integer quantity) {
-		this.wareId = wareId;
-		this.warehouseId = warehouseId;
+	public Stock(StockKey key, Integer quantity) {
+		this.key = key;
 		this.quantity = quantity;
 	}
 
@@ -62,7 +59,7 @@ public class Stock extends BaseEntity {
 	 */
 	public void plusQuantityWithCapacityCheck(int warehouseCapacity, int currentSum , int addedQuantity) {
 		if (currentSum  + addedQuantity > warehouseCapacity) {
-			throw LocationException.warehouseCapacityExceeded(this.warehouseId, warehouseCapacity, currentSum , addedQuantity);
+			throw LocationException.warehouseCapacityExceeded(this.key.getWarehouseId(), warehouseCapacity, currentSum , addedQuantity);
 		}
 		this.quantity += addedQuantity;
 	}
@@ -73,7 +70,7 @@ public class Stock extends BaseEntity {
 	 */
 	public boolean minusQuantityWithStockCheck(int oldQuantity, int removeQuantity) {
 		if (oldQuantity < removeQuantity) {
-			throw StockException.insufficientStock(this.warehouseId, this.wareId, oldQuantity, removeQuantity
+			throw StockException.insufficientStock(this.key.getWarehouseId(), this.key.getWareId(), oldQuantity, removeQuantity
 			);
 		}
 		this.quantity -= removeQuantity;

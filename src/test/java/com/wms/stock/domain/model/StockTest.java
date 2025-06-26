@@ -196,8 +196,8 @@ class StockTest {
 				.build();
 
 		// Then
-		assertThat(stock.getWarehouseId()).isEqualTo(1L);
-		assertThat(stock.getWareId()).isEqualTo(100L);
+		assertThat(stock.getKey().getWarehouseId()).isEqualTo(1L);
+		assertThat(stock.getKey().getWareId()).isEqualTo(100L);
 		assertThat(stock.getQuantity()).isEqualTo(50);
 		assertThat(stock.getVersion()).isNull(); // JPA에서 관리
 	}

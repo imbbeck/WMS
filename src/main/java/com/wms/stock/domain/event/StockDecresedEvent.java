@@ -1,14 +1,16 @@
 package com.wms.stock.domain.event;
 
 import com.wms.stock.domain.model.Stock;
+import com.wms.stock.domain.model.StockKey;
 import lombok.Getter;
 
 @Getter
-public class StockDecresedEvent extends StockEvent {
+public class StockDecresedEvent {
+	private final StockKey key;
 	private final Integer quantity;
 
 	public StockDecresedEvent(Stock stock) {
-		super( stock.getWareId(), stock.getWarehouseId());
+		this.key = stock.getKey();
 		this.quantity = stock.getQuantity();
 	}
 }
