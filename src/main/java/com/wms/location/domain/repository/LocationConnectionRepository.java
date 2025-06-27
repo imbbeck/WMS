@@ -32,5 +32,7 @@ public interface LocationConnectionRepository extends JpaRepository<LocationConn
 	@Modifying
 	@Query("DELETE FROM LocationConnection lc WHERE lc.locationAId = :locationId OR lc.locationBId = :locationId")
 	void deleteByLocationId(@Param("locationId") Long locationId);
+
+	Optional<LocationConnection> findByLocationAIdAndLocationBId(Long locationAId, Long locationBId);
 }
 

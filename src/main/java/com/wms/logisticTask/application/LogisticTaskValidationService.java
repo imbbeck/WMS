@@ -1,5 +1,10 @@
 package com.wms.logisticTask.application;
 
+import com.wms.location.domain.model.Location;
+import com.wms.location.domain.model.LocationConnection;
+import com.wms.location.domain.model.LocationType;
+import com.wms.location.domain.repository.LocationConnectionRepository;
+import com.wms.location.domain.repository.LocationRepository;
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTask.domain.model.EventType;
 import com.wms.logisticTask.domain.model.LogisticTask;
@@ -10,6 +15,7 @@ import com.wms.logisticTask.domain.repository.LogisticTaskRepository;
 import com.wms.stock.application.StockCacheService;
 import com.wms.location.application.LocationCacheService;
 import com.wms.stock.domain.model.StockKey;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +42,8 @@ public class LogisticTaskValidationService {
 	private final LogisticTaskRepository logisticTaskRepository;
 	private final StockCacheService stockCacheService;
 	private final LocationCacheService locationCacheService;
+	private final LocationConnectionRepository locationConnectionRepository;
+	private final LocationRepository locationRepository;
 
 	/**
 	 * 새로운 물류작업 생성 시 정합성 검증
@@ -175,7 +183,7 @@ public class LogisticTaskValidationService {
 			throw LogisticTaskException.validation("출발 예정시간 및 도착 예정시간은 현재 시각 이후여야 합니다.");
 		}
 
-		// 📅 작업자 스케줄 충돌 검증 추가
+		// 작업자 스케줄 충돌 검증 추가
 		validateWorkerScheduleConflict(task);
 	}
 
@@ -190,9 +198,9 @@ public class LogisticTaskValidationService {
 		List<LogisticTask> workerTasks = logisticTaskRepository
 				.findByScheduledDateAndWorker(newTask.getScheduledDate(), newTask.getWorker().getId());
 
-		// 현재 검증 중인 작업이 수정인 경우, 원래 작업은 제외
+		// 현재 검증 중인 작업이 수정인 경우, 원래 작업은 제외 (ID가 있는 경우만)
 		if (newTask.getId() != null) {
-			workerTasks.removeIf(task -> task.getId().equals(newTask.getId()));
+			workerTasks.removeIf(task -> task.getId() != null && task.getId().equals(newTask.getId()));
 		}
 
 		// 시간 충돌 검사
@@ -215,12 +223,27 @@ public class LogisticTaskValidationService {
 	 */
 	private boolean isTimeOverlapping(LogisticTask task1, LogisticTask task2) {
 		LocalTime start1 = task1.getEtd();
-		LocalTime end1 = task1.getEta();
 		LocalTime start2 = task2.getEtd();
-		LocalTime end2 = task2.getEta();
 
-		// 시간 겹침 로직: (start1 < end2) && (start2 < end1)
-		return start1.isBefore(end2) && start2.isBefore(end1);
+		LogisticTask formerTask = start1.isBefore(start2) ? task1 : task2;
+		LogisticTask latterTask = start1.isBefore(start2) ? task2 : task1;
+
+		Long formerToId = formerTask.getToLocation().getId();
+		Long latterFromId = latterTask.getFromLocation().getId();
+
+		// 전 작업의 도착지 ~ 후 작업의 출발지 간 이동소요시간 TODO: 이동소요시간 캐시화. 프론트에서도 자주 사용될듯함.
+		int trt = locationConnectionRepository
+				.findByLocationAIdAndLocationBId(Math.min(formerToId, latterFromId), Math.max(formerToId, latterFromId))
+				.map(LocationConnection::getTrt)
+				.orElse(0);
+
+		LocalTime formerStart = formerTask.getEtd();
+		LocalTime formerEnd = formerTask.getEta();
+		LocalTime latterStart = latterTask.getEtd().minusMinutes(trt);
+		LocalTime latterEnd = latterTask.getEta();
+
+		// 시간 겹침 여부
+		return formerStart.isBefore(latterEnd) && latterStart.isBefore(formerEnd);
 	}
 
 	/**
@@ -264,8 +287,8 @@ public class LogisticTaskValidationService {
 
 		Set<StockKey> requiredStocks = tasks.stream()
 				.flatMap(task -> Stream.of(
-						new StockKey(task.getFromLocation().getId(), task.getWare().getId()),
-						new StockKey(task.getToLocation().getId(), task.getWare().getId())
+						StockKey.of(task.getWare().getId(), task.getFromLocation().getId()),
+						StockKey.of(task.getWare().getId(), task.getToLocation().getId())
 				))
 				.filter(key -> isWarehouse(key.getWarehouseId()))
 				.collect(Collectors.toSet());
@@ -312,11 +335,19 @@ public class LogisticTaskValidationService {
 				existingTasks.add(context.getTargetTask());
 				break;
 			case MODIFY:
-				existingTasks.removeIf(task -> task.getId().equals(context.getOriginalTask().getId()));
+				// ID가 있는 경우에만 제거 (저장된 작업만)
+				if (context.getOriginalTask().getId() != null) {
+					existingTasks.removeIf(task -> task.getId() != null && 
+							task.getId().equals(context.getOriginalTask().getId()));
+				}
 				existingTasks.add(context.getTargetTask());
 				break;
 			case DELETE:
-				existingTasks.removeIf(task -> task.getId().equals(context.getOriginalTask().getId()));
+				// ID가 있는 경우에만 제거 (저장된 작업만)
+				if (context.getOriginalTask().getId() != null) {
+					existingTasks.removeIf(task -> task.getId() != null && 
+							task.getId().equals(context.getOriginalTask().getId()));
+				}
 				break;
 		}
 		return existingTasks;
@@ -416,7 +447,7 @@ public class LogisticTaskValidationService {
 	 */
 	private void simulateTaskStart(LogisticTask task, Map<StockKey, Integer> stockMap, Map<Long, Integer> usageMap) {
 		if (isWarehouse(task.getFromLocation().getId())) {
-			StockKey fromKey = new StockKey(task.getFromLocation().getId(), task.getWare().getId());
+			StockKey fromKey = StockKey.of(task.getWare().getId(), task.getFromLocation().getId());
 			int currentStock = stockMap.getOrDefault(fromKey, 0);
 
 			if (currentStock < task.getQuantity()) {
@@ -439,7 +470,7 @@ public class LogisticTaskValidationService {
 	private void simulateTaskCompletion(LogisticTask task, Map<StockKey, Integer> stockMap,
 			Map<Long, Integer> usageMap, Map<Long, Integer> capacityMap) {
 		if (isWarehouse(task.getToLocation().getId())) {
-			StockKey toKey = new StockKey(task.getToLocation().getId(), task.getWare().getId());
+			StockKey toKey = StockKey.of(task.getWare().getId(), task.getToLocation().getId());
 			int currentStock = stockMap.getOrDefault(toKey, 0);
 			stockMap.put(toKey, currentStock + task.getQuantity());
 
@@ -515,8 +546,10 @@ public class LogisticTaskValidationService {
 	 * 장소가 창고인지 확인
 	 */
 	private boolean isWarehouse(Long locationId) {
-		// 캐시에 인풋장소의 카파가 있으면 창고임.
-		return locationCacheService.getWarehouseCapacity(locationId) != null;
+		return locationRepository.findById(locationId)
+				.map(Location::getType)
+				.map(type -> type == LocationType.WAREHOUSE)
+				.orElse(false);
 	}
 
 	// ===== 내부 클래스 및 Enum =====

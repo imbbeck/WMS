@@ -3,6 +3,9 @@ package com.wms.userInfo.application;
 import java.util.List;
 
 import com.wms.applicationInfra.domain.FieldEnum;
+import com.wms.userInfo.domain.event.UserInfoCreatedEvent;
+import com.wms.userInfo.domain.event.UserInfoDeletedEvent;
+import com.wms.userInfo.domain.event.UserInfoUpdatedEvent;
 import com.wms.userInfo.domain.exception.UserInfoException;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
@@ -10,6 +13,7 @@ import com.wms.userInfo.domain.repository.UserInfoRepository;
 import com.wms.userInfo.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserInfoService {
 
     private final UserInfoRepository userInfoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserInfo createUser(UserInfoDTO.CreateReq request) {
-        UserInfo userInfo = saveUserWithValidation(request.getUserId(), request.getEmail(),request.toEntity());
+        checkDuplication(request.getUserId(), request.getEmail());
 
-        return userInfo;
+        UserInfo userInfo = request.toEntity();
+
+        eventPublisher.publishEvent(new UserInfoCreatedEvent(userInfo.getId(), userInfo.getName()));
+
+        return userInfoRepository.save(userInfo);
     }
 
     public UserInfo getUserById(Long id) {
@@ -47,18 +56,23 @@ public class UserInfoService {
 
     @Transactional
     public UserInfo join(UserInfoDTO.JoinReq request) {
-        UserInfo userInfo = saveUserWithValidation(request.getUserId(), request.getEmail(),request.toEntity());
+        checkDuplication(request.getUserId(), request.getEmail());
 
-        return userInfo;
+        UserInfo userInfo = request.toEntity();
+
+        eventPublisher.publishEvent(new UserInfoCreatedEvent(userInfo.getId(), userInfo.getName()));
+
+        return userInfoRepository.save(userInfo);
     }
 
     @Transactional
     public UserInfo updateUser(Long id, UserInfoDTO.UpdateReq request) {
-        UserInfo user = getUserById(id);
-        user.update(request.getName(), request.getEmail());
+        UserInfo userInfo = getUserById(id);
+        userInfo.update(request.getName(), request.getEmail());
 
+        eventPublisher.publishEvent(new UserInfoUpdatedEvent(userInfo.getId(), userInfo.getName()));
 
-        return user;
+        return userInfo;
     }
 
     @Transactional
@@ -69,10 +83,12 @@ public class UserInfoService {
 
     @Transactional
     public void deleteUser(Long id) {
-        UserInfo user = getUserById(id);
+        UserInfo userinfo = getUserById(id);
 
+        // 삭제 이벤트 발행
+        eventPublisher.publishEvent(new UserInfoDeletedEvent(userinfo.getId()));
 
-        userInfoRepository.delete(user);
+        userInfoRepository.delete(userinfo);
     }
 
     @Transactional
@@ -80,13 +96,12 @@ public class UserInfoService {
         userInfoRepository.delete(currentUser);
     }
 
-    private UserInfo saveUserWithValidation(String userId, String email, UserInfo user) {
+    private void checkDuplication(String userId, String email) {
         if (userInfoRepository.existsByUsername(userId)) {
             throw UserInfoException.duplicate(FieldEnum.USERID);
         }
         if (userInfoRepository.existsByEmail(email)) {
             throw UserInfoException.duplicate(FieldEnum.EMAIL);
         }
-        return userInfoRepository.save(user);
     }
 }

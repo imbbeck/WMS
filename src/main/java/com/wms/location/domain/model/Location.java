@@ -58,6 +58,24 @@ public class Location extends BaseEntity {
 		this.coordinateY = coordinateY;
 	}
 
+	public void changeCapacity(Integer capacity) {
+		if (this.type != LocationType.WAREHOUSE) {
+			throw LocationException.validation("입고/출고처는 수용량을 변경할 수 없습니다.");
+		}
+		if (capacity == null || capacity <= 0) {
+			throw LocationException.validation("수용량", "창고의 수용량은 0보다 커야 합니다.");
+		}
+		this.capacity = capacity;
+	}
+
+	public void changeCoordinate(Integer coordinateX, Integer coordinateY) {
+		if (coordinateX == null || coordinateY == null) {
+			throw LocationException.validation("좌표", "좌표는 null일 수 없습니다.");
+		}
+		this.coordinateX = coordinateX;
+		this.coordinateY = coordinateY;
+	}
+
 	private static void validateLocationData(String name, LocationType type, Integer capacity) {
 		if (name == null || name.trim().isEmpty()) {
 			throw LocationException.validation(FieldEnum.NAME);

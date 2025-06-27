@@ -1,39 +1,47 @@
-HELP.md
-.gradle
+# 빌드 결과물
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+
+# 예외적으로 src 내부 build는 보통 존재하지 않으므로 예외는 필요 없음
+# !**/src/main/**/build/
+# !**/src/test/**/build/
+
+# 설정 파일
 /src/main/resources/application.yml
 
-### STS ###
-.apt_generated
+# QueryDSL generated sources
+build/generated/
+**/generated/
+
+# Spring Tool Suite (STS)
+.apt_generated/
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
-.sts4-cache
+.sts4-cache/
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# bin도 src 내부에 보통 생성되지 않기 때문에 예외도 보통 불필요
+# !**/src/main/**/bin/
+# !**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+# !**/src/main/**/out/
+# !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
-### VS Code ###
+# VS Code
 .vscode/
-!/.gitignore

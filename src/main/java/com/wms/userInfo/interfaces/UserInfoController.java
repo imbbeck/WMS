@@ -1,7 +1,9 @@
 package com.wms.userInfo.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.userInfo.application.UserInfoService;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserInfoController {
 
 	private final UserInfoService userInfoService;
+	private final DomainCacheManager<Long, String> userInfoCacheManager;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
@@ -85,5 +88,13 @@ public class UserInfoController {
 	@Operation(summary = "Delete user")
 	public void deleteUser(@PathVariable Long id) {
 		userInfoService.deleteUser(id);
+	}
+
+	@GetMapping("/id_name_pair")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Get user ID-name pairs", description = "Retrieves a map of user IDs to user names for reference")
+	@ApiResponse(responseCode = "200", description = "Successfully retrieved user ID-name pairs")
+	public Map<Long, String> getIdNamePair() {
+		return userInfoCacheManager.getIdNamePair();
 	}
 }

@@ -114,10 +114,10 @@ public class LogisticTask extends BaseEntity {
 		validateModificationPossible();
 
 		if (etd == null || eta == null) {
-			throw new IllegalArgumentException("ETD 및 ETA는 필수입니다.");
+			throw LogisticTaskException.timeRequired();
 		}
 		if (etd.isAfter(eta)) {
-			throw new IllegalArgumentException("출발 예정시간은 도착 예정시간보다 빨라야 합니다.");
+			throw LogisticTaskException.etdMustBeBeforeEta();
 		}
 
 		this.worker = worker;
@@ -131,7 +131,7 @@ public class LogisticTask extends BaseEntity {
 	 */
 	public void initiateTask(LocalTime atd) {
 		if (!canInitiate()) {
-			throw LogisticTaskException.validation("현재 상태(" + this.status + ")에서는 작업을 시작할 수 없습니다.");
+			throw LogisticTaskException.cannotInitiateTask(this.status.toString());
 		}
 
 		changeStatus(LogisticTaskStatus.INITIATED);
@@ -143,7 +143,7 @@ public class LogisticTask extends BaseEntity {
 	 */
 	public void completeTask(LocalTime ata) {
 		if (!canComplete()) {
-			throw LogisticTaskException.validation("현재 상태(" + this.status + ")에서는 작업을 완료할 수 없습니다.");
+			throw LogisticTaskException.cannotCompleteTask(this.status.toString());
 		}
 
 		changeStatus(LogisticTaskStatus.COMPLETED);
@@ -155,7 +155,7 @@ public class LogisticTask extends BaseEntity {
 	 */
 	public void delayInitiation() {
 		if (!canDelayInitiation()) {
-			throw LogisticTaskException.validation("현재 상태(" + this.status + ")에서는 시작 지연 처리를 할 수 없습니다.");
+			throw LogisticTaskException.cannotDelayInitiation(this.status.toString());
 		}
 
 		changeStatus(LogisticTaskStatus.INITIATE_DELAYED);
@@ -167,7 +167,7 @@ public class LogisticTask extends BaseEntity {
 	 */
 	public void delayCompletion() {
 		if (!canDelayCompletion()) {
-			throw LogisticTaskException.validation("현재 상태(" + this.status + ")에서는 완료 지연 처리를 할 수 없습니다.");
+			throw LogisticTaskException.cannotDelayCompletion(this.status.toString());
 		}
 
 		changeStatus(LogisticTaskStatus.COMPLETE_DELAYED);
@@ -289,19 +289,19 @@ public class LogisticTask extends BaseEntity {
 
 	private void validateBasicFields(String name, Integer quantity, LocalTime etd, LocalTime eta) {
 		if (name == null || name.trim().isEmpty()) {
-			throw new IllegalArgumentException("작업명은 필수입니다.");
+			throw LogisticTaskException.nameRequired();
 		}
 		if (name.length() > 255) {
-			throw new IllegalArgumentException("작업명은 255자를 초과할 수 없습니다.");
+			throw LogisticTaskException.nameTooLong(255);
 		}
 		if (quantity == null || quantity <= 0) {
-			throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+			throw LogisticTaskException.quantityMustBePositive();
 		}
 		if (etd == null || eta == null) {
-			throw new IllegalArgumentException("ETD 및 ETA는 필수입니다.");
+			throw LogisticTaskException.timeRequired();
 		}
 		if (etd.isAfter(eta)) {
-			throw new IllegalArgumentException("출발 예정시간은 도착 예정시간보다 빨라야 합니다.");
+			throw LogisticTaskException.etdMustBeBeforeEta();
 		}
 	}
 }

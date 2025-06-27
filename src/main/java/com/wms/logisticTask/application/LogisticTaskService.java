@@ -83,6 +83,8 @@ public class LogisticTaskService {
                 .templateIdSnapshot(request.getTemplateIdSnapshot())
                 .build();
 
+        LogisticTask logisticTask1 = request.toEntity(worker, ware, fromLocation, toLocation);
+
         // 3. 정합성 검증 (시뮬레이션)
         validationService.validateTaskCreation(logisticTask);
 
@@ -477,7 +479,7 @@ public class LogisticTaskService {
                     .type(taskType)
                     .build());
 
-            currentTime = currentTime.plusMinutes(30);
+            currentTime = currentTime.plusMinutes(10);
         }
         
         return timeSlots;
@@ -528,131 +530,20 @@ public class LogisticTaskService {
     }
 
     /**
-     * 조건에 따른 물류 작업 검색 (페치 조인 활용)
+     * 조건에 따른 물류 작업 검색 (ID 기반 검색)
      */
     public List<LogisticTask> searchTasks(LogisticTaskDTO.SearchCriteria criteria) {
         log.debug("물류 작업 검색: {}", criteria);
         
-        // 연관 엔티티의 이름으로 검색하는 경우 JPQL 페치 조인 사용
-        if (hasNameBasedCriteria(criteria)) {
-            return logisticTaskRepository.findByComplexSearchCriteria(
-                    criteria.getName(),
-                    getWorkerNameFromId(criteria.getWorkerId()),
-                    getWareNameFromId(criteria.getWareId()),
-                    getLocationNameFromId(criteria.getFromLocationId()),
-                    getLocationNameFromId(criteria.getToLocationId()),
-                    criteria.getStatus(),
-                    criteria.getStartDate(),
-                    criteria.getEndDate()
-            );
-        }
-        
-        // ID 기반 검색인 경우 기본 EntityGraph 사용
-        List<LogisticTask> tasks = logisticTaskRepository.findAllBy();
-
-	    // 날짜순, 시간순 정렬
-	    return tasks.stream()
-                .filter(task -> matchesCriteria(task, criteria))
-                .sorted(Comparator.comparing(LogisticTask::getScheduledDate).thenComparing(LogisticTask::getEtd))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 이름 기반 검색 조건이 있는지 확인
-     */
-    private boolean hasNameBasedCriteria(LogisticTaskDTO.SearchCriteria criteria) {
-        return criteria.getName() != null ||
-               (criteria.getWorkerId() != null && getWorkerNameFromId(criteria.getWorkerId()) != null) ||
-               (criteria.getWareId() != null && getWareNameFromId(criteria.getWareId()) != null) ||
-               (criteria.getFromLocationId() != null && getLocationNameFromId(criteria.getFromLocationId()) != null) ||
-               (criteria.getToLocationId() != null && getLocationNameFromId(criteria.getToLocationId()) != null);
-    }
-
-    /**
-     * 작업자 ID로부터 이름 조회
-     */
-    private String getWorkerNameFromId(Long workerId) {
-        if (workerId == null) return null;
-        return userInfoRepository.findById(workerId)
-                .map(UserInfo::getName)
-                .orElse(null);
-    }
-
-    /**
-     * 물품 ID로부터 이름 조회
-     */
-    private String getWareNameFromId(Long wareId) {
-        if (wareId == null) return null;
-        return wareRepository.findById(wareId)
-                .map(Ware::getName)
-                .orElse(null);
-    }
-
-    /**
-     * 장소 ID로부터 이름 조회
-     */
-    private String getLocationNameFromId(Long locationId) {
-        if (locationId == null) return null;
-        return locationRepository.findById(locationId)
-                .map(Location::getName)
-                .orElse(null);
-    }
-
-    /**
-     * 검색 조건 매칭 확인
-     */
-    private boolean matchesCriteria(LogisticTask task, LogisticTaskDTO.SearchCriteria criteria) {
-        // 작업명 부분 검색
-        if (criteria.getName() != null && 
-            !task.getName().toLowerCase().contains(criteria.getName().toLowerCase())) {
-            return false;
-        }
-        
-        // 물류 타입
-        if (criteria.getType() != null && !task.getType().equals(criteria.getType())) {
-            return false;
-        }
-        
-        // 작업자 ID
-        if (criteria.getWorkerId() != null && 
-            !task.getWorker().getId().equals(criteria.getWorkerId())) {
-            return false;
-        }
-        
-        // 물품 ID
-        if (criteria.getWareId() != null && 
-            !task.getWare().getId().equals(criteria.getWareId())) {
-            return false;
-        }
-        
-        // 출발지 ID
-        if (criteria.getFromLocationId() != null && 
-            !task.getFromLocation().getId().equals(criteria.getFromLocationId())) {
-            return false;
-        }
-        
-        // 도착지 ID
-        if (criteria.getToLocationId() != null && 
-            !task.getToLocation().getId().equals(criteria.getToLocationId())) {
-            return false;
-        }
-        
-        // 상태
-        if (criteria.getStatus() != null && !task.getStatus().equals(criteria.getStatus())) {
-            return false;
-        }
-        
-        // 날짜 범위
-        if (criteria.getStartDate() != null && 
-            task.getScheduledDate().isBefore(criteria.getStartDate())) {
-            return false;
-        }
-
-        if (criteria.getEndDate() != null &&
-            task.getScheduledDate().isAfter(criteria.getEndDate())) {
-            return false;
-        }
-
-        return true;
-    }
-}
+        // ID 기반으로 직접 검색
+        return logisticTaskRepository.findByIdBasedSearchCriteria(
+                criteria.getName(),
+                criteria.getWorkerId(),
+                criteria.getWareId(),
+                criteria.getFromLocationId(),
+                criteria.getToLocationId(),
+                criteria.getStatus(),
+                criteria.getStartDate(),
+                criteria.getEndDate()
+        );
+    }}

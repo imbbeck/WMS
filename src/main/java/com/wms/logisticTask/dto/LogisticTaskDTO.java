@@ -1,9 +1,13 @@
 package com.wms.logisticTask.dto;
 
+import com.wms.location.domain.model.Location;
 import com.wms.logisticTask.domain.model.LogisticTask;
 import com.wms.logisticTask.domain.model.LogisticTaskStatus;
 import com.wms.logisticTemplate.domain.model.LogisticType;
+import com.wms.userInfo.domain.model.UserInfo;
+import com.wms.ware.domain.model.Ware;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -85,6 +89,36 @@ public class LogisticTaskDTO {
             this.eta = eta;
             this.templateIdSnapshot = templateIdSnapshot;
         }
+
+        public LogisticTask toEntity(UserInfo worker, Ware ware, Location fromLocation, Location toLocation) {
+            return LogisticTask.builder()
+                    .name(name)
+                    .type(type)
+                    .worker(worker)
+                    .ware(ware)
+                    .fromLocation(fromLocation)
+                    .toLocation(toLocation)
+                    .quantity(quantity)
+                    .scheduledDate(scheduledDate)
+                    .etd(etd)
+                    .eta(eta)
+                    .templateIdSnapshot(templateIdSnapshot)
+                    .build();
+        }
+
+
+        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
+        public boolean isTimeSlotValid() {
+            return etd != null && eta != null &&
+                    etd.getMinute() % 10 == 0 &&
+                    eta.getMinute() % 10 == 0;
+        }
+
+        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
+        public boolean isEtdBeforeEta() {
+            return etd != null && eta != null && etd.isBefore(eta);
+        }
+
     }
 
     @Getter
@@ -116,11 +150,24 @@ public class LogisticTaskDTO {
         @Builder
         public UpdateReq(String name, Long workerId, Integer quantity,
                         LocalTime etd, LocalTime eta) {
+
             this.name = name;
             this.workerId = workerId;
             this.quantity = quantity;
             this.etd = etd;
             this.eta = eta;
+        }
+
+        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
+        public boolean isTimeSlotValid() {
+            return etd != null && eta != null &&
+                    etd.getMinute() % 10 == 0 &&
+                    eta.getMinute() % 10 == 0;
+        }
+
+        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
+        public boolean isEtdBeforeEta() {
+            return etd != null && eta != null && etd.isBefore(eta);
         }
     }
 
@@ -146,6 +193,18 @@ public class LogisticTaskDTO {
             this.workerId = workerId;
             this.etd = etd;
             this.eta = eta;
+        }
+
+        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
+        public boolean isTimeSlotValid() {
+            return etd != null && eta != null &&
+                    etd.getMinute() % 10 == 0 &&
+                    eta.getMinute() % 10 == 0;
+        }
+
+        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
+        public boolean isEtdBeforeEta() {
+            return etd != null && eta != null && etd.isBefore(eta);
         }
     }
 

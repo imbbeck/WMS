@@ -264,7 +264,7 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	List<LogisticTask> findByWare(@Param("ware") com.wms.ware.domain.model.Ware ware);
 
 	/**
-	 * 복합 검색 (작업명, 작업자명, 물품명, 장소명으로 검색) - 페치 조인 사용
+	 * ID 기반 검색 - 페치 조인 사용
 	 */
 	@Query("SELECT DISTINCT lt FROM LogisticTask lt " +
 			"JOIN FETCH lt.worker w " +
@@ -272,20 +272,20 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			"JOIN FETCH lt.fromLocation fl " +
 			"JOIN FETCH lt.toLocation tl " +
 			"WHERE (:taskName IS NULL OR LOWER(lt.name) LIKE LOWER(CONCAT('%', :taskName, '%'))) " +
-			"AND (:workerName IS NULL OR LOWER(w.name) LIKE LOWER(CONCAT('%', :workerName, '%'))) " +
-			"AND (:wareName IS NULL OR LOWER(ware.name) LIKE LOWER(CONCAT('%', :wareName, '%'))) " +
-			"AND (:fromLocationName IS NULL OR LOWER(fl.name) LIKE LOWER(CONCAT('%', :fromLocationName, '%'))) " +
-			"AND (:toLocationName IS NULL OR LOWER(tl.name) LIKE LOWER(CONCAT('%', :toLocationName, '%'))) " +
+			"AND (:workerId IS NULL OR w.id = :workerId) " +
+			"AND (:wareId IS NULL OR ware.id = :wareId) " +
+			"AND (:fromLocationId IS NULL OR fl.id = :fromLocationId) " +
+			"AND (:toLocationId IS NULL OR tl.id = :toLocationId) " +
 			"AND (:status IS NULL OR lt.status = :status) " +
 			"AND (:startDate IS NULL OR lt.scheduledDate >= :startDate) " +
 			"AND (:endDate IS NULL OR lt.scheduledDate <= :endDate) " +
 			"ORDER BY lt.scheduledDate DESC, lt.etd DESC")
-	List<LogisticTask> findByComplexSearchCriteria(
+	List<LogisticTask> findByIdBasedSearchCriteria(
 			@Param("taskName") String taskName,
-			@Param("workerName") String workerName,
-			@Param("wareName") String wareName,
-			@Param("fromLocationName") String fromLocationName,
-			@Param("toLocationName") String toLocationName,
+			@Param("workerId") Long workerId,
+			@Param("wareId") Long wareId,
+			@Param("fromLocationId") Long fromLocationId,
+			@Param("toLocationId") Long toLocationId,
 			@Param("status") LogisticTaskStatus status,
 			@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);

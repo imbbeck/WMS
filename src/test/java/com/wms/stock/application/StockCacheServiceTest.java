@@ -377,14 +377,21 @@ class StockCacheServiceTest {
                     .build();
 
             StockDeletedEvent event = new StockDeletedEvent(stock);
+            
+            // Redis에서 현재 창고 총량이 충분하다고 가정
+            String warehouseKey = String.format("warehouse:%d:currentSum", warehouseId);
+            given(redisTemplate.opsForValue()).willReturn(valueOperations);
+            given(valueOperations.get(warehouseKey)).willReturn(100); // 50보다 큰 값
 
             // When
             stockCacheService.onStockDeleted(event);
 
             // Then
-            // 창고 총 사용량 캐시 감소 확인
-            String expectedKey = String.format("warehouse:%d:currentSum", warehouseId);
-            verify(valueOperations).increment(expectedKey, -quantity);
+            // 재고 캐시 완전 삭제 확인
+            verify(redisTemplate).delete(key.toCacheKey());
+            
+            // 창고 총 사용량이 충분할 때만 감소 처리 확인
+            verify(valueOperations).increment(warehouseKey, -quantity);
         }
     }
 
@@ -518,6 +525,8 @@ class StockCacheServiceTest {
                     .quantity(100)
                     .build();
 
+            String expectedKey = String.format("warehouse:%d:currentSum", warehouseId);
+
             // 1. 재고 생성
             StockCreatedEvent createEvent = new StockCreatedEvent(stock);
             stockCacheService.onStockCreated(createEvent);
@@ -527,13 +536,13 @@ class StockCacheServiceTest {
             StockUpdatedEvent updateEvent = new StockUpdatedEvent(stock, 100);
             stockCacheService.onStockUpdated(updateEvent);
 
-            // 3. 재고 삭제
+            // 3. 재고 삭제 - 창고에 충분한 재고가 있다고 가정
+            given(redisTemplate.opsForValue()).willReturn(valueOperations); // 추가
+            given(valueOperations.get(expectedKey)).willReturn(200); // 150보다 큰 값으로 설정
             StockDeletedEvent deleteEvent = new StockDeletedEvent(stock);
             stockCacheService.onStockDeleted(deleteEvent);
 
             // Then - 창고 총량 캐시 변화 추적
-            String expectedKey = String.format("warehouse:%d:currentSum", warehouseId);
-
             // 생성 시 +100, 수정 시 +50 (차이), 삭제 시 -150
             ArgumentCaptor<Long> incrementCaptor = ArgumentCaptor.forClass(Long.class);
             verify(valueOperations, times(3)).increment(eq(expectedKey), incrementCaptor.capture());
