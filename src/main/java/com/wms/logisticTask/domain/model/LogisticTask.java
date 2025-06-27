@@ -1,5 +1,6 @@
 package com.wms.logisticTask.domain.model;
 
+import com.wms.applicationInfra.domain.BaseEntity;
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.location.domain.model.Location;
 import com.wms.logisticTemplate.domain.model.LogisticType;
@@ -23,11 +24,7 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class LogisticTask {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class LogisticTask extends BaseEntity {
 
 	@Column(nullable = false, length = 255)
 	private String name;
@@ -73,14 +70,6 @@ public class LogisticTask {
 	private LogisticTaskStatus status;
 
 	private Integer templateIdSnapshot; // 참조한 템플릿 ID (추적용)
-
-	@CreatedDate
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
-
-	@LastModifiedDate
-	@Column(nullable = false)
-	private LocalDateTime updatedAt;
 
 	@Builder
 	public LogisticTask(String name, LogisticType type, UserInfo worker, Ware ware,

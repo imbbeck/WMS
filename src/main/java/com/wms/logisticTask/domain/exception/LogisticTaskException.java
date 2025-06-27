@@ -103,5 +103,18 @@ public final class LogisticTaskException {
 	public static InvalidTaskDataEx invalidTaskDataEx(String message) {
 		return new InvalidTaskDataEx("잘못된 작업 데이터: " + message);
 	}
+
+
+	// WorkerMismatchEx
+	public static class WorkerMismatchEx extends BusinessException.ForbiddenException {
+		public WorkerMismatchEx(String message) {
+			super(message);
+		}
+	}
+
+	public static WorkerMismatchEx workerMismatchEx(Long taskId, Long id) {
+		return new WorkerMismatchEx("작업 ID " + taskId + "와 일치하지 않는 작업자 ID: " + id);
+	}
+
 }
 

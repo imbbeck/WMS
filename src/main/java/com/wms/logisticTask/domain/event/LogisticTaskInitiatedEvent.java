@@ -8,6 +8,6 @@ import lombok.Getter;
 public class LogisticTaskInitiatedEvent {
 	private Long taskId;
 	private Long wareId;
-	private Long fromLocationId;
+	private Long fromLocationId;  // 출발지에서만 재고 감소
 	private Integer quantity;
 }

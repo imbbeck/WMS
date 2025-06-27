@@ -2,6 +2,8 @@ package com.wms.logisticTask.domain.repository;
 
 import com.wms.logisticTask.domain.model.LogisticTask;
 import com.wms.logisticTask.domain.model.LogisticTaskStatus;
+import com.wms.userInfo.domain.model.UserInfo;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,13 +11,27 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long> {
 
 	/**
-	 * 특정 날짜의 물류작업을 ETD 시간순으로 조회
+	 * 기본 조회 시 연관 엔티티 모두 페치 (N+1 방지)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	Optional<LogisticTask> findWithAllById(Long id);
+
+	/**
+	 * 모든 작업 조회 시 연관 엔티티 페치
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	List<LogisticTask> findAllBy();
+
+	/**
+	 * 특정 날짜의 물류작업을 ETD 시간순으로 조회 (연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.status != :excludeStatus " +
@@ -25,55 +41,81 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("excludeStatus") LogisticTaskStatus excludeStatus);
 
 	/**
-	 * 특정 날짜의 물류작업을 ETD 시간순으로 조회 (모든 상태 포함)
+	 * 특정 날짜의 물류작업을 ETD 시간순으로 조회 (모든 상태 포함, 연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"ORDER BY lt.etd ASC")
 	List<LogisticTask> findByScheduledDateOrderByEtd(@Param("scheduledDate") LocalDate scheduledDate);
 
 	/**
-	 * 특정 날짜의 특정 창고에서 시작되는 물류작업을 시간순으로 조회
+	 * 특정 날짜의 특정 창고에서 시작되는 물류작업을 시간순으로 조회 (페치 조인)
 	 */
 	@Query("SELECT lt FROM LogisticTask lt " +
+			"JOIN FETCH lt.worker w " +
+			"JOIN FETCH lt.ware ware " +
+			"JOIN FETCH lt.fromLocation fl " +
+			"JOIN FETCH lt.toLocation tl " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
-			"AND lt.fromLocation.id = :locationId " +
+			"AND fl.name = :fromLocationName " +
 			"AND lt.status != :excludeStatus " +
 			"ORDER BY lt.etd ASC")
-	List<LogisticTask> findByScheduledDateAndFromLocationOrderByEtd(
+	List<LogisticTask> findByScheduledDateAndFromLocationNameOrderByEtd(
 			@Param("scheduledDate") LocalDate scheduledDate,
-			@Param("locationId") Long locationId,
+			@Param("fromLocationName") String fromLocationName,
 			@Param("excludeStatus") LogisticTaskStatus excludeStatus);
 
 	/**
-	 * 특정 날짜의 특정 창고로 도착하는 물류작업을 시간순으로 조회
+	 * 특정 날짜의 특정 창고로 도착하는 물류작업을 시간순으로 조회 (페치 조인)
 	 */
 	@Query("SELECT lt FROM LogisticTask lt " +
+			"JOIN FETCH lt.worker w " +
+			"JOIN FETCH lt.ware ware " +
+			"JOIN FETCH lt.fromLocation fl " +
+			"JOIN FETCH lt.toLocation tl " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
-			"AND lt.toLocation.id = :locationId " +
+			"AND tl.name = :toLocationName " +
 			"AND lt.status != :excludeStatus " +
 			"ORDER BY lt.eta ASC")
-	List<LogisticTask> findByScheduledDateAndToLocationOrderByEta(
+	List<LogisticTask> findByScheduledDateAndToLocationNameOrderByEta(
 			@Param("scheduledDate") LocalDate scheduledDate,
-			@Param("locationId") Long locationId,
+			@Param("toLocationName") String toLocationName,
 			@Param("excludeStatus") LogisticTaskStatus excludeStatus);
 
 	/**
-	 * 특정 날짜의 특정 물품에 대한 물류작업을 시간순으로 조회
+	 * 특정 날짜의 특정 물품에 대한 물류작업을 시간순으로 조회 (페치 조인)
 	 */
 	@Query("SELECT lt FROM LogisticTask lt " +
+			"JOIN FETCH lt.worker w " +
+			"JOIN FETCH lt.ware ware " +
+			"JOIN FETCH lt.fromLocation fl " +
+			"JOIN FETCH lt.toLocation tl " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
-			"AND lt.ware.id = :wareId " +
+			"AND ware.name = :wareName " +
 			"AND lt.status != :excludeStatus " +
 			"ORDER BY lt.etd ASC")
-	List<LogisticTask> findByScheduledDateAndWareOrderByEtd(
+	List<LogisticTask> findByScheduledDateAndWareNameOrderByEtd(
 			@Param("scheduledDate") LocalDate scheduledDate,
-			@Param("wareId") Long wareId,
+			@Param("wareName") String wareName,
 			@Param("excludeStatus") LogisticTaskStatus excludeStatus);
+
+	/**
+	 * 작업자명으로 검색 (페치 조인)
+	 */
+	@Query("SELECT lt FROM LogisticTask lt " +
+			"JOIN FETCH lt.worker w " +
+			"JOIN FETCH lt.ware ware " +
+			"JOIN FETCH lt.fromLocation fl " +
+			"JOIN FETCH lt.toLocation tl " +
+			"WHERE w.name LIKE %:workerName% " +
+			"ORDER BY lt.scheduledDate DESC, lt.etd DESC")
+	List<LogisticTask> findByWorkerNameContaining(@Param("workerName") String workerName);
 
 	/**
 	 * 특정 작업보다 늦은 시간에 시작되는 같은 날짜의 작업들 조회
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.etd > :etd " +
@@ -89,6 +131,7 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	/**
 	 * 특정 작업과 관련된 창고/물품 조합의 후속 작업들 조회
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.etd > :etd " +
@@ -107,13 +150,15 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("excludeStatus") LogisticTaskStatus excludeStatus);
 
 	/**
-	 * 특정 상태의 작업들 조회
+	 * 특정 상태의 작업들 조회 (연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	List<LogisticTask> findByStatus(LogisticTaskStatus status);
 
 	/**
-	 * 특정 날짜 범위의 작업들 조회
+	 * 특정 날짜 범위의 작업들 조회 (연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate BETWEEN :startDate AND :endDate " +
 			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
@@ -122,8 +167,9 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("endDate") LocalDate endDate);
 
 	/**
-	 * 특정 작업자의 특정 날짜 작업들 조회
+	 * 특정 작업자의 특정 날짜 작업들 조회 (연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.worker.id = :workerId " +
@@ -133,16 +179,18 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("workerId") Long workerId);
 
 	/**
-	 * 특정 템플릿 ID로 생성된 작업들 조회
+	 * 특정 템플릿 ID로 생성된 작업들 조회 (연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.templateIdSnapshot = :templateId " +
 			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
 	List<LogisticTask> findByTemplateIdSnapshot(@Param("templateId") Integer templateId);
 
 	/**
-	 * 특정 날짜의 물류작업을 여러 상태 제외하고 조회
+	 * 특정 날짜의 물류작업을 여러 상태 제외하고 조회 (연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.status NOT IN :excludeStatuses " +
@@ -152,8 +200,9 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("excludeStatuses") List<LogisticTaskStatus> excludeStatuses);
 
 	/**
-	 * 특정 날짜의 모든 활성 물류작업 조회 (취소, 실패 제외)
+	 * 특정 날짜의 모든 활성 물류작업 조회 (취소, 실패 제외, 연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :scheduledDate " +
 			"AND lt.status NOT IN ('CANCELLED', 'FAILED') " +
@@ -161,8 +210,9 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	List<LogisticTask> findActiveTasksByScheduledDate(@Param("scheduledDate") LocalDate scheduledDate);
 
 	/**
-	 * 특정 날짜 범위의 완료된 작업들 조회 (재고 히스토리 추적용)
+	 * 특정 날짜 범위의 완료된 작업들 조회 (재고 히스토리 추적용, 연관 엔티티 포함)
 	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate BETWEEN :startDate AND :endDate " +
 			"AND lt.status = 'COMPLETED' " +
@@ -183,8 +233,60 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.key.warehouseId = :warehouseId")
 	Integer getTotalPaletteCountByWarehouseId(@Param("warehouseId") Long warehouseId);
 
-
+	/**
+	 * 특정 장소가 포함된 작업 존재 여부 확인
+	 */
 	boolean existsByFromLocationIdOrToLocationId(Long locationId, Long locationId1);
 
+	/**
+	 * 특정 장소가 포함된 작업들 조회 (연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
 	List<LogisticTask> findAllByFromLocationIdOrToLocationId(Long fromLocationId, Long fromLocationId1);
+
+	/**
+	 * 특정 작업자의 작업들 조회 (연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	List<LogisticTask> findByWorker(UserInfo worker);
+
+	/**
+	 * 날짜별 물류 작업 조회 (연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	List<LogisticTask> findByScheduledDate(LocalDate scheduledDate);
+
+	/**
+	 * 물품별 물류 작업 조회 (연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	@Query("SELECT lt FROM LogisticTask lt WHERE lt.ware = :ware ORDER BY lt.scheduledDate DESC, lt.etd DESC")
+	List<LogisticTask> findByWare(@Param("ware") com.wms.ware.domain.model.Ware ware);
+
+	/**
+	 * 복합 검색 (작업명, 작업자명, 물품명, 장소명으로 검색) - 페치 조인 사용
+	 */
+	@Query("SELECT DISTINCT lt FROM LogisticTask lt " +
+			"JOIN FETCH lt.worker w " +
+			"JOIN FETCH lt.ware ware " +
+			"JOIN FETCH lt.fromLocation fl " +
+			"JOIN FETCH lt.toLocation tl " +
+			"WHERE (:taskName IS NULL OR LOWER(lt.name) LIKE LOWER(CONCAT('%', :taskName, '%'))) " +
+			"AND (:workerName IS NULL OR LOWER(w.name) LIKE LOWER(CONCAT('%', :workerName, '%'))) " +
+			"AND (:wareName IS NULL OR LOWER(ware.name) LIKE LOWER(CONCAT('%', :wareName, '%'))) " +
+			"AND (:fromLocationName IS NULL OR LOWER(fl.name) LIKE LOWER(CONCAT('%', :fromLocationName, '%'))) " +
+			"AND (:toLocationName IS NULL OR LOWER(tl.name) LIKE LOWER(CONCAT('%', :toLocationName, '%'))) " +
+			"AND (:status IS NULL OR lt.status = :status) " +
+			"AND (:startDate IS NULL OR lt.scheduledDate >= :startDate) " +
+			"AND (:endDate IS NULL OR lt.scheduledDate <= :endDate) " +
+			"ORDER BY lt.scheduledDate DESC, lt.etd DESC")
+	List<LogisticTask> findByComplexSearchCriteria(
+			@Param("taskName") String taskName,
+			@Param("workerName") String workerName,
+			@Param("wareName") String wareName,
+			@Param("fromLocationName") String fromLocationName,
+			@Param("toLocationName") String toLocationName,
+			@Param("status") LogisticTaskStatus status,
+			@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate);
 }

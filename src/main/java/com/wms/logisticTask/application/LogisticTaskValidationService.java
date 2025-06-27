@@ -174,6 +174,53 @@ public class LogisticTaskValidationService {
 		if (etdDateTime.isBefore(LocalDateTime.now()) || etaDateTime.isBefore(LocalDateTime.now())) {
 			throw LogisticTaskException.validation("출발 예정시간 및 도착 예정시간은 현재 시각 이후여야 합니다.");
 		}
+
+		// 📅 작업자 스케줄 충돌 검증 추가
+		validateWorkerScheduleConflict(task);
+	}
+
+	/**
+	 * 작업자 스케줄 충돌 검증
+	 */
+	private void validateWorkerScheduleConflict(LogisticTask newTask) {
+		log.debug("작업자 스케줄 충돌 검증 시작 - workerId: {}, date: {}", 
+				newTask.getWorker().getId(), newTask.getScheduledDate());
+
+		// 같은 날짜의 해당 작업자의 기존 작업들 조회
+		List<LogisticTask> workerTasks = logisticTaskRepository
+				.findByScheduledDateAndWorker(newTask.getScheduledDate(), newTask.getWorker().getId());
+
+		// 현재 검증 중인 작업이 수정인 경우, 원래 작업은 제외
+		if (newTask.getId() != null) {
+			workerTasks.removeIf(task -> task.getId().equals(newTask.getId()));
+		}
+
+		// 시간 충돌 검사
+		for (LogisticTask existingTask : workerTasks) {
+			if (isTimeOverlapping(newTask, existingTask)) {
+				throw LogisticTaskException.validation(
+					String.format("작업자 '%s'의 스케줄 충돌: 새 작업(%s-%s)이 기존 작업 '%s'(%s-%s)와 시간이 겹칩니다.",
+						newTask.getWorker().getName(),
+						newTask.getEtd(), newTask.getEta(),
+						existingTask.getName(),
+						existingTask.getEtd(), existingTask.getEta()));
+			}
+		}
+
+		log.debug("작업자 스케줄 충돌 검증 완료 - 충돌 없음");
+	}
+
+	/**
+	 * 두 작업의 시간이 겹치는지 확인
+	 */
+	private boolean isTimeOverlapping(LogisticTask task1, LogisticTask task2) {
+		LocalTime start1 = task1.getEtd();
+		LocalTime end1 = task1.getEta();
+		LocalTime start2 = task2.getEtd();
+		LocalTime end2 = task2.getEta();
+
+		// 시간 겹침 로직: (start1 < end2) && (start2 < end1)
+		return start1.isBefore(end2) && start2.isBefore(end1);
 	}
 
 	/**
