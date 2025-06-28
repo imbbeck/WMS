@@ -126,7 +126,7 @@ public class GlobalExceptionHandler {
         if (ex instanceof ResponseStatusException) {
             return HttpStatus.valueOf(((ResponseStatusException) ex).getStatusCode().value());
         }
-
+        if (ex instanceof java.time.format.DateTimeParseException) return HttpStatus.BAD_REQUEST;
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
