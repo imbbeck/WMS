@@ -7,6 +7,7 @@ import com.wms.ware.domain.model.Ware;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,31 +17,32 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "LogisticTemplate creation request")
+	@Schema(description = "물류 템플릿 생성 요청")
 	public static class CreateReq {
 
 		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
-		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate A")
+		@Schema(description = "물류 템플릿 이름", example = "입고 템플릿 A")
 		private String name;
 
-		@NotNull(message = "물류 템플릿 타입은 필수입니다")
-		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
+		@NotNull(message = "물류 타입은 필수입니다")
+		@Schema(description = "물류 타입", example = "INBOUND", allowableValues = {"INBOUND", "OUTBOUND", "INNER"})
 		private LogisticType type;
 
 		@NotNull(message = "물품 ID는 필수입니다")
-		@Schema(description = "WareId", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
 		@NotNull(message = "출발 장소 ID는 필수입니다")
-		@Schema(description = "fromLocationId", example = "1")
+		@Schema(description = "출발 장소 ID", example = "1")
 		private Long fromLocationId;
 
 		@NotNull(message = "도착 장소 ID는 필수입니다")
-		@Schema(description = "toLocationId", example = "2")
+		@Schema(description = "도착 장소 ID", example = "2")
 		private Long toLocationId;
 
 		@NotNull(message = "표준 수량은 필수입니다")
-		@Schema(description = "Standard Quantity", example = "100")
+		@Positive(message = "표준 수량은 0보다 커야 합니다")
+		@Schema(description = "표준 수량", example = "100")
 		private Integer standardQuantity;
 
 		// 테스트 편의성을 위한 빌더 패턴 생성자
@@ -68,17 +70,19 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Location update request")
+	@Schema(description = "물류 템플릿 수정 요청")
 	public static class UpdateReq {
 		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
-		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate 1")
+		@Schema(description = "물류 템플릿 이름", example = "수정된 입고 템플릿 A")
 		private String name;
 
-		@NotNull(message = "물류 템플릿 타입은 필수입니다")
-		@Schema(description = "LogisticTemplate type", example = "INBOUND, OUTBOUND, INNER")
+		@NotNull(message = "물류 타입은 필수입니다")
+		@Schema(description = "물류 타입", example = "INBOUND", allowableValues = {"INBOUND", "OUTBOUND", "INNER"})
 		private LogisticType type;
 
-		@Schema(description = "Standard Quantity", example = "100")
+		@NotNull(message = "표준 수량은 필수입니다")
+		@Positive(message = "표준 수량은 0보다 커야 합니다")
+		@Schema(description = "표준 수량", example = "150")
 		private Integer standardQuantity;
 
 		@Builder
@@ -92,37 +96,37 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "LogisticTemplate response")
+	@Schema(description = "물류 템플릿 응답")
 	public static class Res {
 
-		@Schema(description = "LogisticTemplate ID", example = "1")
+		@Schema(description = "물류 템플릿 ID", example = "1")
 		private Long id;
 
-		@Schema(description = "LogisticTemplate name", example = "LogisticTemplate A")
+		@Schema(description = "물류 템플릿 이름", example = "입고 템플릿 A")
 		private String name;
 
-		@Schema(description = "LogisticTemplate type", example = "INNER")
+		@Schema(description = "물류 타입", example = "INBOUND")
 		private LogisticType type;
 
-		@Schema(description = "WareId", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
-		@Schema(description = "WareName", example = "Ware A")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String wareName;
 
-		@Schema(description = "fromLocationId", example = "1")
+		@Schema(description = "출발 장소 ID", example = "1")
 		private Long fromLocationId;
 
-		@Schema(description = "fromLocationName", example = "Location A")
+		@Schema(description = "출발 장소명", example = "입고처 A")
 		private String fromLocationName;
 
-		@Schema(description = "toLocationId", example = "2")
+		@Schema(description = "도착 장소 ID", example = "2")
 		private Long toLocationId;
 
-		@Schema(description = "toLocationName", example = "Location B")
+		@Schema(description = "도착 장소명", example = "창고 B")
 		private String toLocationName;
 
-		@Schema(description = "Standard Quantity", example = "100")
+		@Schema(description = "표준 수량", example = "100")
 		private Integer standardQuantity;
 
 

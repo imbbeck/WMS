@@ -5,6 +5,7 @@ import com.wms.logisticTemplate.domain.model.LogisticTemplate;
 import com.wms.logisticTemplate.domain.model.LogisticType;
 import com.wms.logisticTemplate.dto.LogisticTemplateDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,17 +19,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/logistic-templates")
-@Tag(name = "LogisticTemplate Management", description = "APIs for managing LogisticTemplate")
+@Tag(name = "물류 템플릿 관리", description = "물류 템플릿 관리 API")
 public class LogisticTemplateController {
 
 	private final LogisticTemplateService logisticTemplateService;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "Create a new LogisticTemplate", description = "Creates a new logistic template with the provided details")
+	@Operation(summary = "새 물류 템플릿 생성", description = "제공된 정보로 새로운 물류 템플릿을 생성합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "LogisticTemplate created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data")
+			@ApiResponse(responseCode = "201", description = "물류 템플릿 생성 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
 	})
 	public LogisticTemplateDTO.Res create(@Valid @RequestBody LogisticTemplateDTO.CreateReq request) {
 		LogisticTemplate template = logisticTemplateService.create(request);
@@ -37,49 +38,68 @@ public class LogisticTemplateController {
 
 	@PutMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Update a LogisticTemplate", description = "Updates the logistic template by ID")
-	public LogisticTemplateDTO.Res update(@PathVariable Long id, @Valid @RequestBody LogisticTemplateDTO.UpdateReq request) {
+	@Operation(summary = "물류 템플릿 수정", description = "ID로 물류 템플릿을 수정합니다")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "물류 템플릿 수정 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+			@ApiResponse(responseCode = "404", description = "물류 템플릿을 찾을 수 없음")
+	})
+	public LogisticTemplateDTO.Res update(
+			@Parameter(description = "물류 템플릿 ID") @PathVariable Long id, 
+			@Valid @RequestBody LogisticTemplateDTO.UpdateReq request) {
 		LogisticTemplate updated = logisticTemplateService.update(id, request);
 		return new LogisticTemplateDTO.Res(updated);
 	}
 
 	@GetMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get a LogisticTemplate", description = "Fetches logistic template by ID")
-	public LogisticTemplateDTO.Res getById(@PathVariable Long id) {
+	@Operation(summary = "물류 템플릿 조회", description = "ID로 물류 템플릿을 가져옵니다")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "물류 템플릿 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "물류 템플릿을 찾을 수 없음")
+	})
+	public LogisticTemplateDTO.Res getById(@Parameter(description = "물류 템플릿 ID") @PathVariable Long id) {
 		return new LogisticTemplateDTO.Res(logisticTemplateService.findById(id));
 	}
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(summary = "Delete a LogisticTemplate", description = "Deletes logistic template by ID")
-	public void delete(@PathVariable Long id) {
+	@Operation(summary = "물류 템플릿 삭제", description = "ID로 물류 템플릿을 삭제합니다")
+	@ApiResponses({
+			@ApiResponse(responseCode = "204", description = "물류 템플릿 삭제 성공"),
+			@ApiResponse(responseCode = "404", description = "물류 템플릿을 찾을 수 없음")
+	})
+	public void delete(@Parameter(description = "물류 템플릿 ID") @PathVariable Long id) {
 		logisticTemplateService.delete(id);
 	}
 
-	// 전체 조회 (페이징)
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get all logistic templates with pagination")
+	@Operation(summary = "페이지별 전체 물류 템플릿 조회", description = "페이징을 적용하여 모든 물류 템플릿을 조회합니다")
+	@ApiResponse(responseCode = "200", description = "물류 템플릿 목록 조회 성공")
 	public Page<LogisticTemplateDTO.Res> getAllTemplates(Pageable pageable) {
 		return logisticTemplateService.getTemplates(pageable)
 				.map(LogisticTemplateDTO.Res::new);
 	}
 
-	// 타입별 조회 (페이징)
 	@GetMapping("/type")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get logistic templates by type")
-	public Page<LogisticTemplateDTO.Res> getTemplatesByType(@RequestParam LogisticType type, Pageable pageable) {
+	@Operation(summary = "타입별 물류 템플릿 조회", description = "특정 타입의 물류 템플릿을 조회합니다")
+	@ApiResponse(responseCode = "200", description = "타입별 물류 템플릿 조회 성공")
+	public Page<LogisticTemplateDTO.Res> getTemplatesByType(
+			@Parameter(description = "물류 타입") @RequestParam LogisticType type, 
+			Pageable pageable) {
 		return logisticTemplateService.getTemplatesByType(type, pageable)
 				.map(LogisticTemplateDTO.Res::new);
 	}
 
-	// wareId별 조회 (페이징)
 	@GetMapping("/ware")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get logistic templates by ware ID")
-	public Page<LogisticTemplateDTO.Res> getTemplatesByWareId(@RequestParam Long wareId, Pageable pageable) {
+	@Operation(summary = "물품별 물류 템플릿 조회", description = "물품 ID로 물류 템플릿을 조회합니다")
+	@ApiResponse(responseCode = "200", description = "물품별 물류 템플릿 조회 성공")
+	public Page<LogisticTemplateDTO.Res> getTemplatesByWareId(
+			@Parameter(description = "물품 ID") @RequestParam Long wareId, 
+			Pageable pageable) {
 		return logisticTemplateService.getTemplatesByWareId(wareId, pageable)
 				.map(LogisticTemplateDTO.Res::new);
 	}

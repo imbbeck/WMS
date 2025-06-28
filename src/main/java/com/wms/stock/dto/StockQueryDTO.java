@@ -12,13 +12,13 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock search criteria")
+	@Schema(description = "재고 검색 조건")
 	public static class SearchReq {
 
-		@Schema(description = "Ware ID filter", example = "1")
+		@Schema(description = "물품 ID 필터", example = "1")
 		private Long wareId;
 
-		@Schema(description = "Warehouse ID filter", example = "1")
+		@Schema(description = "창고 ID 필터", example = "1")
 		private Long warehouseId;
 
 		@Builder
@@ -30,22 +30,22 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "StockView response")
+	@Schema(description = "재고 조회 응답")
 	public static class Res {
 
-		@Schema(description = "Ware ID", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
-		@Schema(description = "Ware name", example = "물품 A")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String wareName;
 
-		@Schema(description = "Warehouse ID", example = "1")
+		@Schema(description = "창고 ID", example = "1")
 		private Long warehouseId;
 
-		@Schema(description = "Warehouse name", example = "중앙창고")
+		@Schema(description = "창고명", example = "중앙창고")
 		private String warehouseName;
 
-		@Schema(description = "Quantity (palette unit)", example = "10")
+		@Schema(description = "수량 (파레트 단위)", example = "10")
 		private Integer quantity;
 
 		@Builder
@@ -71,22 +71,22 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Ware-wise stock aggregation")
+	@Schema(description = "물품별 재고 집계")
 	public static class WareAggregationRes {
 
-		@Schema(description = "Ware ID", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
-		@Schema(description = "Ware name", example = "물품 A")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String wareName;
 
-		@Schema(description = "Total quantity across all warehouses", example = "150")
+		@Schema(description = "모든 창고의 총 수량", example = "150")
 		private Integer totalQuantity;
 
-		@Schema(description = "Number of warehouses storing this ware", example = "3")
+		@Schema(description = "이 물품을 보관하는 창고 수", example = "3")
 		private Integer warehouseCount;
 
-		@Schema(description = "Child Warehouse List", example = "[{'warehouseId':1,'warehouseName':'중앙창고','quantity':50}, {'warehouseId':2,'warehouseName':'지점창고','quantity':30}]")
+		@Schema(description = "하위 창고 목록", example = "[{'warehouseId':1,'warehouseName':'중앙창고','quantity':50}, {'warehouseId':2,'warehouseName':'지점창고','quantity':30}]")
 		private List<WarehouseUnit> stockList;
 
 		@Builder
@@ -105,28 +105,28 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Warehouse-wise stock aggregation")
+	@Schema(description = "창고별 재고 집계")
 	public static class WarehouseAggregationRes {
 
-		@Schema(description = "Warehouse ID", example = "1")
+		@Schema(description = "창고 ID", example = "1")
 		private Long warehouseId;
 
-		@Schema(description = "Warehouse name", example = "중앙창고")
+		@Schema(description = "창고명", example = "중앙창고")
 		private String warehouseName;
 
-		@Schema(description = "Total quantity in this warehouse", example = "150")
+		@Schema(description = "이 창고의 총 수량", example = "150")
 		private Integer totalQuantity;
 
-		@Schema(description = "Warehouse capacity", example = "100")
+		@Schema(description = "창고 용량", example = "200")
 		private Integer capacity;
 
-		@Schema(description = "Available capacity", example = "25")
+		@Schema(description = "사용 가능한 용량", example = "50")
 		private Integer availableCapacity;
 
-		@Schema(description = "Number of different ware types", example = "5")
+		@Schema(description = "서로 다른 물품 타입 수", example = "5")
 		private Integer wareTypeCount;
 
-		@Schema(description = "Child Ware List", example = "[{'wareId':1,'wareName':'물품 A','quantity':50}, {'wareId':2,'wareName':'물품 B','quantity':30}]")
+		@Schema(description = "하위 물품 목록", example = "[{'wareId':1,'wareName':'스마트폰','quantity':50}, {'wareId':2,'wareName':'태블릿','quantity':30}]")
 		private List<WareUnit> stockList;
 
 		@Builder
@@ -148,16 +148,16 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Warehouse stock information")
+	@Schema(description = "창고 재고 정보")
 	public static class WarehouseUnit {
 
-		@Schema(description = "Warehouse ID", example = "1")
+		@Schema(description = "창고 ID", example = "1")
 		private Long warehouseId;
 
-		@Schema(description = "Warehouse name", example = "중앙창고")
+		@Schema(description = "창고명", example = "중앙창고")
 		private String warehouseName;
 
-		@Schema(description = "Quantity", example = "50")
+		@Schema(description = "수량", example = "50")
 		private Integer quantity;
 
 
@@ -171,16 +171,16 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Ware stock information")
+	@Schema(description = "물품 재고 정보")
 	public static class WareUnit {
 
-		@Schema(description = "Ware ID", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
-		@Schema(description = "Ware name", example = "물품 A")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String wareName;
 
-		@Schema(description = "Quantity", example = "50")
+		@Schema(description = "수량", example = "50")
 		private Integer quantity;
 
 		@Builder

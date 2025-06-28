@@ -4,7 +4,7 @@ import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.model.StockKey;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,20 +14,20 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock creation request")
+	@Schema(description = "재고 생성 요청")
 	public static class CreateReq {
 
 		@NotNull(message = "물품 ID는 필수입니다")
-		@Schema(description = "Ware ID", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
 		@NotNull(message = "창고 ID는 필수입니다")
-		@Schema(description = "Warehouse ID", example = "1")
+		@Schema(description = "창고 ID", example = "1")
 		private Long warehouseId;
 
 		@NotNull(message = "수량은 필수입니다")
-		@Positive(message = "수량은 자연수이어야 합니다")
-		@Schema(description = "Quantity (palette unit)", example = "10")
+		@PositiveOrZero(message = "수량은 0 이상이어야 합니다")
+		@Schema(description = "수량 (파레트 단위)", example = "10")
 		private Integer quantity;
 
 		@Builder
@@ -47,12 +47,12 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock update request")
+	@Schema(description = "재고 수정 요청")
 	public static class UpdateReq {
 
 		@NotNull(message = "수량은 필수입니다")
-		@Positive(message = "수량은 자연수이어야 합니다")
-		@Schema(description = "Quantity (palette unit)", example = "15")
+		@PositiveOrZero(message = "수량은 0 이상이어야 합니다")
+		@Schema(description = "수량 (파레트 단위)", example = "15")
 		private Integer quantity;
 
 		@Builder
@@ -63,22 +63,22 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Stock ctrl response")
+	@Schema(description = "재고 관리 응답")
 	public static class Res {
 
-		@Schema(description = "Stock ID", example = "1")
+		@Schema(description = "재고 ID", example = "1")
 		private Long id;
 
-		@Schema(description = "Ware ID", example = "1")
+		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
-		@Schema(description = "Warehouse ID", example = "1")
+		@Schema(description = "창고 ID", example = "1")
 		private Long warehouseId;
 
-		@Schema(description = "Quantity (palette unit)", example = "10")
+		@Schema(description = "수량 (파레트 단위)", example = "10")
 		private Integer quantity;
 
-		@Schema(description = "Version for optimistic locking", example = "1")
+		@Schema(description = "낙관적 락을 위한 버전", example = "1")
 		private Long version;
 
 		@Builder

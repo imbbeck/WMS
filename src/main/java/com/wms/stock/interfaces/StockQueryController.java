@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/stock-queries")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Stock Query", description = "APIs for querying stock information with optimized read operations")
+@Tag(name = "재고 조회", description = "최적화된 읽기 작업으로 재고 정보 조회 API")
 public class StockQueryController {
 
 	private final StockQueryService stockQueryService;
@@ -35,16 +35,16 @@ public class StockQueryController {
 
 	@GetMapping("/by-warehouse-ware")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get stock by warehouse and ware",
-			description = "Retrieves stock information for a specific warehouse-ware combination. " +
-					"Uses cache for optimized performance.")
+	@Operation(summary = "창고-물품별 재고 조회",
+			description = "특정 창고-물품 조합의 재고 정보를 조회합니다. " +
+					"최적화된 성능을 위해 캐시를 사용합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Stock information retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Stock not found for the given combination")
+			@ApiResponse(responseCode = "200", description = "재고 정보 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "해당 조합의 재고를 찾을 수 없음")
 	})
 	public StockQueryDTO.Res getStockByWarehouseAndWare(
-			@Parameter(description = "Warehouse ID") @RequestParam Long warehouseId,
-			@Parameter(description = "Ware ID") @RequestParam Long wareId
+			@Parameter(description = "창고 ID") @RequestParam Long warehouseId,
+			@Parameter(description = "물품 ID") @RequestParam Long wareId
 	) {
 		log.debug("창고-물품별 재고 조회 - warehouseId: {}, wareId: {}", warehouseId, wareId);
 		return stockQueryService.getStockResByWarehouseAndWare(warehouseId, wareId);
@@ -52,13 +52,13 @@ public class StockQueryController {
 
 	@GetMapping("/quantity")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get stock quantity",
-			description = "Retrieves only the quantity for a specific warehouse-ware combination. " +
-					"Optimized for quick quantity checks.")
-	@ApiResponse(responseCode = "200", description = "Stock quantity retrieved successfully")
+	@Operation(summary = "재고 수량 조회",
+			description = "특정 창고-물품 조합의 수량만 조회합니다. " +
+					"빠른 수량 확인을 위해 최적화되었습니다.")
+	@ApiResponse(responseCode = "200", description = "재고 수량 조회 성공")
 	public Integer getStockQuantity(
-			@Parameter(description = "Warehouse ID") @RequestParam Long warehouseId,
-			@Parameter(description = "Ware ID") @RequestParam Long wareId) {
+			@Parameter(description = "창고 ID") @RequestParam Long warehouseId,
+			@Parameter(description = "물품 ID") @RequestParam Long wareId) {
 		log.debug("재고 수량 조회 - warehouseId: {}, wareId: {}", warehouseId, wareId);
 
 		return stockQueryService.getStockQuantity(warehouseId, wareId);
@@ -66,15 +66,15 @@ public class StockQueryController {
 
 	@GetMapping("/by-warehouse/{warehouseId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get all stocks in warehouse",
-			description = "Retrieves all stock entries for a specific warehouse. " +
-					"Uses cache for optimized performance.")
+	@Operation(summary = "창고 내 전체 재고 조회",
+			description = "특정 창고의 모든 재고 항목을 조회합니다. " +
+					"최적화된 성능을 위해 캐시를 사용합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Warehouse stocks retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Warehouse not found")
+			@ApiResponse(responseCode = "200", description = "창고 재고 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "창고를 찾을 수 없음")
 	})
 	public List<StockQueryDTO.Res> getStocksByWarehouse(
-			@Parameter(description = "Warehouse ID") @PathVariable Long warehouseId) {
+			@Parameter(description = "창고 ID") @PathVariable Long warehouseId) {
 		log.debug("창고별 재고 조회 - warehouseId: {}", warehouseId);
 
 		return stockQueryService.getStocksByWarehouse(warehouseId);
@@ -82,14 +82,14 @@ public class StockQueryController {
 
 	@GetMapping("/by-ware/{wareId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get stocks by ware",
-			description = "Retrieves all stock entries for a specific ware across all warehouses.")
+	@Operation(summary = "물품별 재고 조회",
+			description = "모든 창고에서 특정 물품의 재고 항목을 조회합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Ware stocks retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Ware not found")
+			@ApiResponse(responseCode = "200", description = "물품별 재고 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "물품을 찾을 수 없음")
 	})
 	public List<StockQueryDTO.Res> getStocksByWare(
-			@Parameter(description = "Ware ID") @PathVariable Long wareId) {
+			@Parameter(description = "물품 ID") @PathVariable Long wareId) {
 		log.debug("물품별 재고 조회 - wareId: {}", wareId);
 
 		return stockQueryService.getStocksByWare(wareId);
@@ -99,15 +99,15 @@ public class StockQueryController {
 
 	@GetMapping("/aggregations/warehouse/{warehouseId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get warehouse stock aggregation",
-			description = "Retrieves aggregated stock information for a specific warehouse including " +
-					"total quantity, capacity utilization, and breakdown by ware types.")
+	@Operation(summary = "창고 재고 집계 조회",
+			description = "특정 창고의 집계된 재고 정보를 조회합니다. " +
+					"총 수량, 용량 활용률, 물품 타입별 분석을 포함합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Warehouse aggregation retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Warehouse not found")
+			@ApiResponse(responseCode = "200", description = "창고 집계 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "창고를 찾을 수 없음")
 	})
 	public StockQueryDTO.WarehouseAggregationRes getWarehouseAggregation(
-			@Parameter(description = "Warehouse ID") @PathVariable Long warehouseId) {
+			@Parameter(description = "창고 ID") @PathVariable Long warehouseId) {
 		log.debug("창고 집계 조회 - warehouseId: {}", warehouseId);
 
 		return stockQueryService.getWarehouseAggregation(warehouseId);
@@ -115,15 +115,15 @@ public class StockQueryController {
 
 	@GetMapping("/aggregations/ware/{wareId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get ware stock aggregation",
-			description = "Retrieves aggregated stock information for a specific ware including " +
-					"total quantity across all warehouses and warehouse distribution.")
+	@Operation(summary = "물품 재고 집계 조회",
+			description = "특정 물품의 집계된 재고 정보를 조회합니다. " +
+					"모든 창고의 총 수량과 창고별 분포를 포함합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Ware aggregation retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Ware not found")
+			@ApiResponse(responseCode = "200", description = "물품 집계 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "물품을 찾을 수 없음")
 	})
 	public StockQueryDTO.WareAggregationRes getWareAggregation(
-			@Parameter(description = "Ware ID") @PathVariable Long wareId) {
+			@Parameter(description = "물품 ID") @PathVariable Long wareId) {
 		log.debug("물품 집계 조회 - wareId: {}", wareId);
 
 		return stockQueryService.getWareAggregation(wareId);
@@ -131,10 +131,10 @@ public class StockQueryController {
 
 	@GetMapping("/aggregations/warehouses")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get all warehouse aggregations",
-			description = "Retrieves aggregated stock information for all warehouses. " +
-					"Useful for dashboard views and capacity planning.")
-	@ApiResponse(responseCode = "200", description = "All warehouse aggregations retrieved successfully")
+	@Operation(summary = "전체 창고 집계 조회",
+			description = "모든 창고의 집계된 재고 정보를 조회합니다. " +
+					"대시보드 화면과 용량 계획에 유용합니다.")
+	@ApiResponse(responseCode = "200", description = "전체 창고 집계 조회 성공")
 	public List<StockQueryDTO.WarehouseAggregationRes> getAllWarehouseAggregations() {
 		log.debug("전체 창고 집계 조회");
 
@@ -143,10 +143,10 @@ public class StockQueryController {
 
 	@GetMapping("/aggregations/wares")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get all ware aggregations",
-			description = "Retrieves aggregated stock information for all wares. " +
-					"Useful for inventory analysis and procurement planning.")
-	@ApiResponse(responseCode = "200", description = "All ware aggregations retrieved successfully")
+	@Operation(summary = "전체 물품 집계 조회",
+			description = "모든 물품의 집계된 재고 정보를 조회합니다. " +
+					"재고 분석과 조달 계획에 유용합니다.")
+	@ApiResponse(responseCode = "200", description = "전체 물품 집계 조회 성공")
 	public List<StockQueryDTO.WareAggregationRes> getAllWareAggregations() {
 		log.debug("전체 물품 집계 조회");
 
@@ -157,15 +157,15 @@ public class StockQueryController {
 
 	@GetMapping("/warehouse/{warehouseId}/total-quantity")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get warehouse total stock quantity",
-			description = "Retrieves the total quantity of all stock in a specific warehouse. " +
-					"Optimized for quick capacity checks.")
+	@Operation(summary = "창고 총 재고 수량 조회",
+			description = "특정 창고 내 모든 재고의 총 수량을 조회합니다. " +
+					"빠른 용량 확인을 위해 최적화되었습니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Total quantity retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Warehouse not found")
+			@ApiResponse(responseCode = "200", description = "총 수량 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "창고를 찾을 수 없음")
 	})
 	public Integer getWarehouseTotalQuantity(
-			@Parameter(description = "Warehouse ID") @PathVariable Long warehouseId) {
+			@Parameter(description = "창고 ID") @PathVariable Long warehouseId) {
 		log.debug("창고 총 재고량 조회 - warehouseId: {}", warehouseId);
 
 		return stockQueryService.getWarehouseTotalQuantity(warehouseId);
@@ -173,14 +173,14 @@ public class StockQueryController {
 
 	@GetMapping("/ware/{wareId}/total-quantity")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get ware total stock quantity",
-			description = "Retrieves the total quantity of a specific ware across all warehouses.")
+	@Operation(summary = "물품 총 재고 수량 조회",
+			description = "모든 창고에서 특정 물품의 총 수량을 조회합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Total quantity retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Ware not found")
+			@ApiResponse(responseCode = "200", description = "총 수량 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "물품을 찾을 수 없음")
 	})
 	public Integer getWareTotalQuantity(
-			@Parameter(description = "Ware ID") @PathVariable Long wareId) {
+			@Parameter(description = "물품 ID") @PathVariable Long wareId) {
 		log.debug("물품 총 재고량 조회 - wareId: {}", wareId);
 
 		return stockQueryService.getWareTotalQuantity(wareId);

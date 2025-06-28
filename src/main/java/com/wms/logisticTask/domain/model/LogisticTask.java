@@ -17,7 +17,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
- * 물류 작업 엔티티
+ * 물류 작업 애그리거트 루트
+ * 
+ * 입고, 출고, 내부 이동 작업을 관리하는 핵심 엔티티입니다.
+ * 작업의 생성부터 완료까지의 전체 라이프사이클을 관리하며,
+ * 상태 변경과 비즈니스 규칙 검증을 담당합니다.
  */
 @Entity
 @Table(name = "logistic_task")
@@ -56,14 +60,14 @@ public class LogisticTask extends BaseEntity {
 	private LocalDate scheduledDate;
 
 	@Column(nullable = false)
-	private LocalTime etd; // Estimated Time of Departure
+	private LocalTime etd; // 출발 예정시간 (Estimated Time of Departure)
 
 	@Column(nullable = false)
-	private LocalTime eta; // Estimated Time of Arrival
+	private LocalTime eta; // 도착 예정시간 (Estimated Time of Arrival)
 
-	private LocalTime atd; // Actual Time of Departure
+	private LocalTime atd; // 실제 출발시간 (Actual Time of Departure)
 
-	private LocalTime ata; // Actual Time of Arrival
+	private LocalTime ata; // 실제 도착시간 (Actual Time of Arrival)
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)

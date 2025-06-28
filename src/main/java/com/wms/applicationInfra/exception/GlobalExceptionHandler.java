@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
      * @Valid 어노테이션을 사용한 DTO의 필드 유효성 검사 실패 시 발생하는 예외를 처리합니다.
      * @param ex MethodArgumentNotValidException
      * @param request 웹 요청
-     * @return 상세 필드 에러 정보를 포함하는 ErrorResponse
+     * @return 상세 필드 오류 정보를 포함하는 ErrorResponse
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
      * 직접 정의한 모든 비즈니스 예외를 처리합니다.
      * @param ex BusinessException 인터페이스를 구현한 예외
      * @param request 웹 요청
-     * @return ErrorResponse 를 포함하는 ResponseEntity
+     * @return ErrorResponse를 포함하는 ResponseEntity
      */
     @ExceptionHandler(BusinessException.AbstractBusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException.AbstractBusinessException ex, WebRequest request) {
@@ -83,6 +83,9 @@ public class GlobalExceptionHandler {
      * 그 외 모든 예외를 처리합니다.
      * 개발환경: 원래 상태코드와 상세 메시지
      * 운영환경: 500 상태코드와 일반 메시지
+     * @param ex 발생한 예외
+     * @param request 웹 요청
+     * @return ErrorResponse를 포함하는 ResponseEntity
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) {

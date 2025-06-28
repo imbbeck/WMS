@@ -1,6 +1,7 @@
 package com.wms.ware.dto;
 
 import com.wms.ware.domain.model.Ware;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -13,15 +14,19 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "물품 생성 요청")
 	public static class CreateReq {
 		@NotBlank(message = "물품명은 필수입니다")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String name;
 
 		@NotBlank(message = "물품 타입은 필수입니다")
+		@Schema(description = "물품 타입", example = "전자제품")
 		private String type;
 
 		@NotNull(message = "파레트당 물품 개수는 필수입니다")
 		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
+		@Schema(description = "파레트당 물품 개수", example = "100")
 		private Integer paletteUnit;
 
 		@Builder
@@ -42,15 +47,19 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "물품 수정 요청")
 	public static class UpdateReq {
 		@NotBlank(message = "물품명은 필수입니다")
+		@Schema(description = "물품명", example = "스마트폰")
 		private String name;
 
 		@NotBlank(message = "물품 타입은 필수입니다")
+		@Schema(description = "물품 타입", example = "전자제품")
 		private String type;
 
 		@NotNull(message = "파레트당 물품 개수는 필수입니다")
 		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
+		@Schema(description = "파레트당 물품 개수", example = "100")
 		private Integer paletteUnit;
 
 		@Builder
@@ -63,10 +72,18 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Schema(description = "물품 응답")
 	public static class Res {
+		@Schema(description = "물품 ID", example = "1")
 		private Long id;
+		
+		@Schema(description = "물품명", example = "스마트폰")
 		private String name;
+		
+		@Schema(description = "물품 타입", example = "전자제품")
 		private String type;
+		
+		@Schema(description = "파레트당 물품 개수", example = "100")
 		private Integer paletteUnit;
 
 		public Res(Ware ware) {

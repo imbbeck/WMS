@@ -29,17 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/locations")
 @RequiredArgsConstructor
-@Tag(name = "Location Management", description = "APIs for managing locations")
+@Tag(name = "장소 관리", description = "장소 정보 관리 API")
 public class LocationController {
 
 	private final LocationService locationService;
 
 	@PostMapping
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@Operation(summary = "Create a new location", description = "Creates a new location(INBOUND, OUTBOUND, WAREHOUSE) with the provided details")
+	@Operation(summary = "장소 생성", description = "제공된 정보로 새로운 장소(입고처, 출고처, 창고)를 생성합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Location created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data")
+			@ApiResponse(responseCode = "201", description = "장소 생성 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
 	})
 	public LocationDTO.Res createLocation(@Valid @RequestBody LocationDTO.CreateReq request) {
 		return new LocationDTO.Res(locationService.createLocation(request));
@@ -47,8 +47,8 @@ public class LocationController {
 
 	@GetMapping
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get all locations", description = "Retrieves a list of all locations")
-	@ApiResponse(responseCode = "200", description = "Successfully retrieved locations")
+	@Operation(summary = "전체 장소 조회", description = "모든 장소 목록을 조회합니다")
+	@ApiResponse(responseCode = "200", description = "장소 목록 조회 성공")
 	public List<LocationDTO.Res> getLocations() {
 		return locationService.getAllLocations().stream()
 				.map(LocationDTO.Res::new)
@@ -57,13 +57,13 @@ public class LocationController {
 
 	@GetMapping("/type/{type}")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get locations by type", description = "Retrieves all locations of a specific type(INBOUND, OUTBOUND, WAREHOUSE)")
+	@Operation(summary = "타입별 장소 조회", description = "특정 타입(입고처, 출고처, 창고)의 모든 장소를 조회합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully retrieved locations"),
-			@ApiResponse(responseCode = "400", description = "Invalid location type")
+			@ApiResponse(responseCode = "200", description = "타입별 장소 조회 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 장소 타입")
 	})
 	public List<LocationDTO.Res> getLocationsByType(
-			@Parameter(description = "Location type to filter by") @PathVariable LocationType type) {
+			@Parameter(description = "필터링할 장소 타입") @PathVariable LocationType type) {
 		return locationService.getLocationsByType(type).stream()
 				.map(LocationDTO.Res::new)
 				.toList();
@@ -71,38 +71,38 @@ public class LocationController {
 
 	@GetMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Get location by ID", description = "Retrieves a specific location with its connections")
+	@Operation(summary = "장소 단건 조회", description = "특정 장소와 연결 정보를 조회합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully retrieved location"),
-			@ApiResponse(responseCode = "404", description = "Location not found")
+			@ApiResponse(responseCode = "200", description = "장소 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "장소를 찾을 수 없음")
 	})
 	public LocationWithConnectionsDTO getLocation(
-			@Parameter(description = "Location ID") @PathVariable Long id) {
+			@Parameter(description = "장소 ID") @PathVariable Long id) {
 		return locationService.getLocationWithConnections(id);
 	}
 
 	@PutMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.OK)
-	@Operation(summary = "Update location", description = "Updates an existing location with new details")
+	@Operation(summary = "장소 수정", description = "기존 장소의 정보를 새로운 내용으로 수정합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Location updated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data"),
-			@ApiResponse(responseCode = "404", description = "Location not found")
+			@ApiResponse(responseCode = "200", description = "장소 수정 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+			@ApiResponse(responseCode = "404", description = "장소를 찾을 수 없음")
 	})
 	public LocationDTO.Res updateLocation(
-			@Parameter(description = "Location ID") @PathVariable Long id,
+			@Parameter(description = "장소 ID") @PathVariable Long id,
 			@Valid @RequestBody LocationDTO.UpdateReq request) {
 		return new LocationDTO.Res(locationService.updateLocation(id, request));
 	}
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	@Operation(summary = "Delete location", description = "Deletes a location from the warehouse")
+	@Operation(summary = "장소 삭제", description = "창고에서 장소를 삭제합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Location deleted successfully"),
-			@ApiResponse(responseCode = "404", description = "Location not found")
+			@ApiResponse(responseCode = "204", description = "장소 삭제 성공"),
+			@ApiResponse(responseCode = "404", description = "장소를 찾을 수 없음")
 	})
-	public void deleteLocation(@Parameter(description = "Location ID") @PathVariable Long id) {
+	public void deleteLocation(@Parameter(description = "장소 ID") @PathVariable Long id) {
 		locationService.deleteLocation(id);
 	}
 
@@ -110,8 +110,8 @@ public class LocationController {
 
 	@GetMapping("/id_name_pair")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Get location ID-name pairs", description = "Retrieves a map of location IDs to location names for reference")
-	@ApiResponse(responseCode = "200", description = "Successfully retrieved location ID-name pairs")
+	@Operation(summary = "장소 ID-이름 쌍 조회", description = "참조용 장소 ID와 이름의 매핑 정보를 조회합니다")
+	@ApiResponse(responseCode = "200", description = "장소 ID-이름 쌍 조회 성공")
 	public Map<Long, String> getIdNamePair() {
 		return  locationCacheManager.getIdNamePair();
 	}

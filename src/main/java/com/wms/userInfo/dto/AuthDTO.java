@@ -9,15 +9,15 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "Login request")
+	@Schema(description = "로그인 요청")
 	public static class LoginReq {
 
-		@NotBlank
-		@Schema(description = "UserId", example = "worker01")
+		@NotBlank(message = "사용자 ID는 필수입니다")
+		@Schema(description = "사용자 ID", example = "worker01")
 		private String userId;
 
-		@NotBlank
-		@Schema(description = "Password", example = "password123")
+		@NotBlank(message = "비밀번호는 필수입니다")
+		@Schema(description = "비밀번호", example = "password123")
 		private String password;
 
 		public LoginReq(String userId, String password) {
@@ -29,10 +29,10 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "RefreshToken request")
+	@Schema(description = "리프레시 토큰 요청")
 	public static class RefreshTokenReq  {
 
-		@Schema(description = "JWT refresh token")
+		@Schema(description = "JWT 리프레시 토큰")
 		private String refreshToken;
 
 		public RefreshTokenReq(String refreshToken) {
@@ -42,13 +42,13 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "Token response")
+	@Schema(description = "토큰 응답")
 	public static class TokenRes {
 
-		@Schema(description = "JWT access token")
+		@Schema(description = "JWT 액세스 토큰")
 		private String accessToken;
 
-		@Schema(description = "JWT refresh token")
+		@Schema(description = "JWT 리프레시 토큰")
 		private String refreshToken;
 
 		public TokenRes(String accessToken, String refreshToken) {
@@ -57,4 +57,3 @@ public class AuthDTO {
 		}
 	}
 }
-

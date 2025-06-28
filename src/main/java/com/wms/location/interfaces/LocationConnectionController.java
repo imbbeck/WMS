@@ -28,17 +28,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/location-connections")
-@Tag(name = "Location Connection Management", description = "APIs for managing connections between warehouse locations")
+@Tag(name = "장소 연결 관리", description = "창고 장소 간 연결 관리 API")
 public class LocationConnectionController {
 
 	private final LocationConnectionService connectionService;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "Create location connection", description = "Creates a new connection between two warehouse locations")
+	@Operation(summary = "장소 연결 생성", description = "두 창고 장소 간의 새로운 연결을 생성합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Connection created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data")
+			@ApiResponse(responseCode = "201", description = "연결 생성 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
 	})
 	public LocationConnectionDTO.Res createConnection(@Valid @RequestBody LocationConnectionDTO.CreateReq request) {
 		LocationConnection connection = connectionService.createConnection(request);
@@ -49,8 +49,8 @@ public class LocationConnectionController {
 	}
 
 	@GetMapping
-	@Operation(summary = "Get all location connections", description = "Retrieves all connections between warehouse locations")
-	@ApiResponse(responseCode = "200", description = "Successfully retrieved connections")
+	@Operation(summary = "전체 장소 연결 조회", description = "창고 장소 간의 모든 연결을 조회합니다")
+	@ApiResponse(responseCode = "200", description = "연결 목록 조회 성공")
 	public List<LocationConnectionDTO.Res> getAllConnections() {
 		return connectionService.getAllConnections().stream()
 				.map(LocationConnectionDTO.Res::from)
@@ -58,13 +58,13 @@ public class LocationConnectionController {
 	}
 
 	@GetMapping("/by-location/{locationId}")
-	@Operation(summary = "Get connections by location", description = "Retrieves all connections for a specific location")
+	@Operation(summary = "장소별 연결 조회", description = "특정 장소에 대한 모든 연결을 조회합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully retrieved connections"),
-			@ApiResponse(responseCode = "404", description = "Location not found")
+			@ApiResponse(responseCode = "200", description = "연결 목록 조회 성공"),
+			@ApiResponse(responseCode = "404", description = "장소를 찾을 수 없음")
 	})
 	public List<LocationConnectionDTO.ConnectionInfo> getConnectionsByLocation(
-			@Parameter(description = "Location ID") @PathVariable Long locationId) {
+			@Parameter(description = "장소 ID") @PathVariable Long locationId) {
 		List<LocationConnection> connections = connectionService.getConnectionsByLocationId(locationId);
 		if (connections.isEmpty()) {
 			return new ArrayList<>();
@@ -83,14 +83,14 @@ public class LocationConnectionController {
 	}
 
 	@PutMapping("/{connectionId}")
-	@Operation(summary = "Update location connection", description = "Updates an existing connection between locations (e.g., travel time)")
+	@Operation(summary = "장소 연결 수정", description = "기존 장소 간 연결을 수정합니다 (예: 이동 시간)")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Connection updated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data"),
-			@ApiResponse(responseCode = "404", description = "Connection not found")
+			@ApiResponse(responseCode = "200", description = "연결 수정 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+			@ApiResponse(responseCode = "404", description = "연결을 찾을 수 없음")
 	})
 	public LocationConnectionDTO.Res updateConnection(
-			@Parameter(description = "Connection ID") @PathVariable Long connectionId,
+			@Parameter(description = "연결 ID") @PathVariable Long connectionId,
 			@Valid @RequestBody LocationConnectionDTO.UpdateReq request) {
 		LocationConnection connection = connectionService.updateConnection(connectionId, request);
 		return LocationConnectionDTO.Res.builder()
@@ -101,12 +101,12 @@ public class LocationConnectionController {
 
 	@DeleteMapping("/{connectionId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(summary = "Delete location connection", description = "Deletes a connection between two locations")
+	@Operation(summary = "장소 연결 삭제", description = "두 장소 간의 연결을 삭제합니다")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Connection deleted successfully"),
-			@ApiResponse(responseCode = "404", description = "Connection not found")
+			@ApiResponse(responseCode = "204", description = "연결 삭제 성공"),
+			@ApiResponse(responseCode = "404", description = "연결을 찾을 수 없음")
 	})
-	public void deleteConnection(@Parameter(description = "Connection ID") @PathVariable Long connectionId) {
+	public void deleteConnection(@Parameter(description = "연결 ID") @PathVariable Long connectionId) {
 		connectionService.deleteConnection(connectionId);
 	}
 

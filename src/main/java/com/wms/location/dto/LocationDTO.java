@@ -14,26 +14,26 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Location creation request")
+	@Schema(description = "장소 생성 요청")
 	public static class CreateReq {
 
-		@NotBlank(message = "Location name is required")
-		@Schema(description = "Location name", example = "Warehouse A")
+		@NotBlank(message = "장소명은 필수입니다")
+		@Schema(description = "장소명", example = "창고 A")
 		private String name;
 
-		@NotNull(message = "Location type is required")
-		@Schema(description = "Location type", example = "INBOUND, OUTBOUND, WAREHOUSE")
+		@NotNull(message = "장소 타입은 필수입니다")
+		@Schema(description = "장소 타입", example = "WAREHOUSE", allowableValues = {"INBOUND", "OUTBOUND", "WAREHOUSE"})
 		private LocationType type;
 
-		@Schema(description = "Storage capacity (only valid for WAREHOUSE type)", example = "1000")
+		@Schema(description = "저장 용량 (창고 타입에만 유효)", example = "1000")
 		private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
-		@NotNull(message = "X coordinate is required")
-		@Schema(description = "X coordinate", example = "10")
+		@NotNull(message = "X 좌표는 필수입니다")
+		@Schema(description = "X 좌표", example = "10")
 		private Integer coordinateX;
 
-		@NotNull(message = "Y coordinate is required")
-		@Schema(description = "Y coordinate", example = "20")
+		@NotNull(message = "Y 좌표는 필수입니다")
+		@Schema(description = "Y 좌표", example = "20")
 		private Integer coordinateY;
 
 		// 테스트 편의성을 위한 빌더 패턴 생성자
@@ -59,21 +59,21 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Location update request")
+	@Schema(description = "장소 수정 요청")
 	public static class UpdateReq {
-		@NotBlank(message = "Location name is required")
-		@Schema(description = "Location name", example = "Updated Warehouse A")
+		@NotBlank(message = "장소명은 필수입니다")
+		@Schema(description = "장소명", example = "수정된 창고 A")
 		private String name;
 
-		@Schema(description = "Storage capacity (only valid for WAREHOUSE type)", example = "1500")
+		@Schema(description = "저장 용량 (창고 타입에만 유효)", example = "1500")
 		private Integer capacity;  // WAREHOUSE 타입일 때만 유효
 
-		@NotNull(message = "X coordinate is required")
-		@Schema(description = "X coordinate", example = "10")
+		@NotNull(message = "X 좌표는 필수입니다")
+		@Schema(description = "X 좌표", example = "10")
 		private Integer coordinateX;
 
-		@NotNull(message = "Y coordinate is required")
-		@Schema(description = "Y coordinate", example = "20")
+		@NotNull(message = "Y 좌표는 필수입니다")
+		@Schema(description = "Y 좌표", example = "20")
 		private Integer coordinateY;
 
 		@Builder
@@ -88,25 +88,25 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "Location response")
+	@Schema(description = "장소 응답")
 	public static class Res {
 
-		@Schema(description = "Location ID", example = "1")
+		@Schema(description = "장소 ID", example = "1")
 		private Long id;
 
-		@Schema(description = "Location name", example = "Warehouse A")
+		@Schema(description = "장소명", example = "창고 A")
 		private String name;
 
-		@Schema(description = "Location type", example = "WAREHOUSE")
+		@Schema(description = "장소 타입", example = "WAREHOUSE")
 		private LocationType type;
 
-		@Schema(description = "Storage capacity", example = "1000")
+		@Schema(description = "저장 용량", example = "1000")
 		private Integer capacity;
 
-		@Schema(description = "X coordinate", example = "10")
+		@Schema(description = "X 좌표", example = "10")
 		private Integer coordinateX;
 
-		@Schema(description = "Y coordinate", example = "20")
+		@Schema(description = "Y 좌표", example = "20")
 		private Integer coordinateY;
 
 		public Res(Location location) {

@@ -25,7 +25,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "LogisticTask creation request")
+    @Schema(description = "물류 작업 생성 요청")
     public static class CreateReq {
 
         @NotBlank(message = "작업명은 필수입니다")
@@ -123,7 +123,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "LogisticTask update request")
+    @Schema(description = "물류 작업 수정 요청")
     public static class UpdateReq {
 
         @NotBlank(message = "작업명은 필수입니다")
@@ -173,7 +173,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "LogisticTask partial update request (worker and time only)")
+    @Schema(description = "물류 작업 부분 수정 요청 (작업자와 시간만)")
     public static class PartialUpdateReq {
 
         @NotNull(message = "작업자 ID는 필수입니다")
@@ -210,7 +210,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "LogisticTask response")
+    @Schema(description = "물류 작업 응답")
     public static class Res {
 
         @Schema(description = "작업 ID", example = "1")
@@ -306,7 +306,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "LogisticTask action response")
+    @Schema(description = "물류 작업 상태 변경 응답")
     public static class ActionRes {
 
         @Schema(description = "작업 ID", example = "1")
@@ -337,7 +337,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "Daily dashboard response with worker schedules")
+    @Schema(description = "작업자별 일정을 포함한 일별 대시보드 응답")
     public static class DashboardRes {
 
         @Schema(description = "조회 날짜", example = "2025-01-15")
@@ -348,7 +348,7 @@ public class LogisticTaskDTO {
 
         @Getter
         @Builder
-        @Schema(description = "Worker schedule with time slots")
+        @Schema(description = "시간대별 작업을 포함한 작업자 일정")
         public static class WorkerSchedule {
 
             @Schema(description = "작업자 ID", example = "1")
@@ -363,7 +363,7 @@ public class LogisticTaskDTO {
 
         @Getter
         @Builder
-        @Schema(description = "Time slot with task information")
+        @Schema(description = "작업 정보를 포함한 시간대")
         public static class TimeSlot {
 
             @Schema(description = "시간", example = "09:00")
@@ -379,7 +379,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "LogisticTask search criteria")
+    @Schema(description = "물류 작업 검색 조건")
     public static class SearchCriteria {
 
         @Schema(description = "작업명 (부분 검색)", example = "노트북")

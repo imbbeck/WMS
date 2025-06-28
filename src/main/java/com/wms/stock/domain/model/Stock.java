@@ -40,6 +40,7 @@ public class Stock extends BaseEntity {
 
 	/**
 	 * 재고 수량 업데이트 - 0이면 삭제 마킹
+	 * @param newQuantity 새로운 수량
 	 * @return true: 삭제 필요, false: 업데이트만
 	 */
 	public boolean updateQuantityAndCheckDeletion(Integer newQuantity) {
@@ -55,7 +56,10 @@ public class Stock extends BaseEntity {
 
 	/**
 	 * 재고 증가
-	 * 재고 증가 시에는 재고 수량 이 음수로 내려갈 수 없으므로 void. addedQuantity는 DTO에서 @Positive 로 검증됨.
+	 * 재고 증가 시에는 재고 수량이 음수로 내려갈 수 없으므로 void. addedQuantity는 DTO에서 @Positive로 검증됨.
+	 * @param warehouseCapacity 창고 용량
+	 * @param currentSum 현재 창고 총 재고량
+	 * @param addedQuantity 추가할 수량
 	 */
 	public void plusQuantityWithCapacityCheck(int warehouseCapacity, int currentSum , int addedQuantity) {
 		if (currentSum  + addedQuantity > warehouseCapacity) {
@@ -66,6 +70,8 @@ public class Stock extends BaseEntity {
 
 	/**
 	 * 재고 감소
+	 * @param oldQuantity 기존 수량
+	 * @param removeQuantity 감소할 수량
 	 * @return true: 삭제 필요, false: 업데이트만
 	 */
 	public boolean minusQuantityWithStockCheck(int oldQuantity, int removeQuantity) {

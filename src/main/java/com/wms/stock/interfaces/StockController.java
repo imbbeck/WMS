@@ -25,20 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/stocks")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Stock Management for only admin", description = "APIs for managing warehouse stock inventories")
+@Tag(name = "재고 관리 (관리자 전용)", description = "창고 재고 관리 API")
 public class StockController {
 
 	private final StockCtrlService stockCtrlService;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "Create new stock entry",
-			description = "Creates a new stock entry for a specific ware in a warehouse. " +
-					"This is used for initial stock setup or administrative adjustments.")
+	@Operation(summary = "새 재고 항목 생성",
+			description = "창고의 특정 물품에 대한 새로운 재고 항목을 생성합니다. " +
+					"초기 재고 설정이나 관리자의 재고 조정에 사용됩니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Stock entry created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data or business rule violation"),
-			@ApiResponse(responseCode = "409", description = "Stock entry already exists for this ware-warehouse combination")
+			@ApiResponse(responseCode = "201", description = "재고 항목 생성 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 또는 비즈니스 규칙 위반"),
+			@ApiResponse(responseCode = "409", description = "해당 물품-창고 조합의 재고 항목이 이미 존재")
 	})
 	public StockDTO.Res createStock(@Valid @RequestBody StockDTO.CreateReq request) {
 		log.info("재고 생성 요청 - wareId: {}, warehouseId: {}, quantity: {}",
@@ -52,18 +52,18 @@ public class StockController {
 
 	@PutMapping("/{warehouseId}/{wareId}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Update stock quantity By Business Key(warehouseId, wareId)",
-			description = "Updates the quantity of an existing stock entry. " +
-					"This should be used carefully as it bypasses normal logistic flow controls.")
+	@Operation(summary = "재고 수량 수정 (비즈니스 키 기준: 창고ID, 물품ID)",
+			description = "기존 재고 항목의 수량을 수정합니다. " +
+					"일반적인 물류 흐름 제어를 우회하므로 신중하게 사용해야 합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Stock updated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request data or business rule violation"),
-			@ApiResponse(responseCode = "404", description = "Stock entry not found"),
-			@ApiResponse(responseCode = "409", description = "Optimistic lock conflict")
+			@ApiResponse(responseCode = "200", description = "재고 수정 성공"),
+			@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 또는 비즈니스 규칙 위반"),
+			@ApiResponse(responseCode = "404", description = "재고 항목을 찾을 수 없음"),
+			@ApiResponse(responseCode = "409", description = "낙관적 락 충돌")
 	})
 	public StockDTO.Res updateStock(
-			@Parameter(description = "Warehouse ID") @PathVariable Long warehouseId,
-			@Parameter(description = "Ware ID") @PathVariable Long wareId,
+			@Parameter(description = "창고 ID") @PathVariable Long warehouseId,
+			@Parameter(description = "물품 ID") @PathVariable Long wareId,
 			@Valid @RequestBody StockDTO.UpdateReq request) {
 
 		log.info("재고 수정 요청 - warehouseId: {}, wareId: {}, updatedQuantity: {}", warehouseId, wareId, request.getQuantity());
@@ -76,15 +76,15 @@ public class StockController {
 
 	@DeleteMapping("/{warehouseId}/{wareId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(summary = "Delete stock entry By Business Key(warehouseId, wareId)",
-			description = "Deletes a stock entry. This should be used carefully as it may affect system consistency.")
+	@Operation(summary = "재고 항목 삭제 (비즈니스 키 기준: 창고ID, 물품ID)",
+			description = "재고 항목을 삭제합니다. 시스템 일관성에 영향을 줄 수 있으므로 신중하게 사용해야 합니다.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Stock entry deleted successfully"),
-			@ApiResponse(responseCode = "404", description = "Stock entry not found"),
-			@ApiResponse(responseCode = "409", description = "Cannot delete stock with active dependencies")
+			@ApiResponse(responseCode = "204", description = "재고 항목 삭제 성공"),
+			@ApiResponse(responseCode = "404", description = "재고 항목을 찾을 수 없음"),
+			@ApiResponse(responseCode = "409", description = "활성 의존성이 있어 삭제할 수 없음")
 	})
-	public void deleteStock(@Parameter(description = "Warehouse ID") @PathVariable Long warehouseId,
-	                        @Parameter(description = "Ware ID") @PathVariable Long wareId) {
+	public void deleteStock(@Parameter(description = "창고 ID") @PathVariable Long warehouseId,
+	                        @Parameter(description = "물품 ID") @PathVariable Long wareId) {
 		log.info("재고 삭제 요청 - warehouseId: {}, wareId: {}", warehouseId, wareId);
 
 		stockCtrlService.delete(wareId, warehouseId);
