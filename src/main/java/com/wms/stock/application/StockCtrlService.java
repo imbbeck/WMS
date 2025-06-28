@@ -131,12 +131,18 @@ public class StockCtrlService {
 	 * @param wareId 물품 ID
 	 * @param quantity 감소할 수량
 	 */
+	@Transactional
 	public void decreaseStock(Long warehouseId, Long wareId, Integer quantity) {
 		StockKey stockKey = StockKey.of(wareId, warehouseId);
 		Stock stock = stockRepository.findByKey(stockKey)
 				.orElseThrow(() -> StockException.notFound(stockKey));
 
 		Integer oldQuantity = stock.getQuantity();
+
+		// 재고 부족 검증 추가
+		if (oldQuantity < quantity) {
+			throw StockException.insufficientStock(warehouseId, wareId, quantity, oldQuantity);
+		}
 
 		// 엔티티에서 한방에 처리
 		boolean shouldDelete = stock.minusQuantityWithStockCheck(oldQuantity, quantity);
@@ -156,32 +162,62 @@ public class StockCtrlService {
 
 	// TODO: LogisticCompleteEvent 구독으로
 	/**
-	 * 재고 감소 메소드
+	 * 재고 증가 메소드
 	 * @param warehouseId 창고 ID
 	 * @param wareId 물품 ID
 	 * @param quantity 증가할 수량
 	 */
+	@Transactional
 	public void increaseStock(Long warehouseId, Long wareId, Integer quantity) {
 		StockKey stockKey = StockKey.of(wareId, warehouseId);
-		Stock stock = stockRepository.findByKey(stockKey)
-				.orElseThrow(() -> StockException.notFound(stockKey));
-
-		Integer oldQuantity = stock.getQuantity();
+		Optional<Stock> stockOpt = stockRepository.findByKey(stockKey);
 
 		Integer warehouseCapacity = locationCacheService.getWarehouseCapacity(warehouseId); // 캐시에서 창고 용량 조회
 		if (warehouseCapacity == null) {
 			throw LocationException.notFound(warehouseId);
 		}
 
-		Integer currentSum  = stockCacheService.getWarehouseCurrentSum(warehouseId);
+		Integer currentSum = stockCacheService.getWarehouseCurrentSum(warehouseId);
 
-		// 엔티티에서 한방에 처리
-		stock.plusQuantityWithCapacityCheck(warehouseCapacity, currentSum != null ? currentSum : 0 , quantity);  // null 이면 재고가 없는 상태니 0으로 초기화
-
-		if (currentSum == null) { // 현재 재고가 없던 상태라면 새로 생성된 것으로 간주
-			eventPublisher.publishEvent(new StockCreatedEvent(stock));
-		} else {                  // 기존 재고가 있었던 상태라면 업데이트 이벤트 발행
+		if (stockOpt.isPresent()) {
+			// 기존 재고가 있는 경우 - 증가
+			Stock stock = stockOpt.get();
+			Integer oldQuantity = stock.getQuantity();
+			
+			// 엔티티에서 한방에 처리
+			stock.plusQuantityWithCapacityCheck(warehouseCapacity, currentSum != null ? currentSum : 0, quantity);
+			
 			eventPublisher.publishEvent(new StockUpdatedEvent(stock, oldQuantity));
+		} else {
+			// 재고가 없는 경우 - 새로 생성
+			
+			// 물품과 창고 존재 확인
+			if (!wareRepository.existsById(wareId)) {
+				throw WareException.notFound(wareId);
+			}
+			
+			Location warehouse = locationRepository.findById(warehouseId)
+					.orElseThrow(() -> LocationException.notFound(warehouseId));
+			
+			if (!warehouse.getType().equals(LocationType.WAREHOUSE)) {
+				throw LocationException.notWarehouseEx(warehouseId);
+			}
+			
+			// 창고 용량 확인
+			int currentPaletteCount = currentSum != null ? currentSum : 0;
+			if (currentPaletteCount + quantity > warehouse.getCapacity()) {
+				throw LocationException.warehouseCapacityExceeded(
+						warehouseId, warehouse.getCapacity(), currentPaletteCount, quantity);
+			}
+			
+			// 새 재고 생성
+			Stock newStock = Stock.builder()
+					.key(stockKey)
+					.quantity(quantity)
+					.build();
+			
+			stockRepository.save(newStock);
+			eventPublisher.publishEvent(new StockCreatedEvent(newStock));
 		}
 	}
 }

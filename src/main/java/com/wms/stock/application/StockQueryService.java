@@ -50,6 +50,16 @@ public class StockQueryService {
 	}
 
 	/**
+	 * 특정 창고-물품 조합의 재고 엔티티 조회
+	 */
+	public Stock getStockByWarehouseAndWare(Long warehouseId, Long wareId) {
+		log.debug("재고 엔티티 조회 - warehouseId: {}, wareId: {}", warehouseId, wareId);
+		StockKey key = StockKey.of(wareId, warehouseId);
+		return stockRepository.findByKey(key)
+				.orElseThrow(() -> StockException.notFound(key));
+	}
+
+	/**
 	 * 특정 창고-물품 조합의 재고 DTO 조회 (캐시 우선)
 	 */
 	public StockQueryDTO.Res getStockResByWarehouseAndWare(Long warehouseId, Long wareId) {

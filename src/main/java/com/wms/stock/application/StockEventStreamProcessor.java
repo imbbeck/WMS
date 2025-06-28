@@ -114,7 +114,7 @@ public class StockEventStreamProcessor {
 		streamConsumers.put(streamKey, consumerTask);
 	}
 
-	private void consumeStreamEvents(String streamKey) {
+	public void consumeStreamEvents(String streamKey) {
 		try {
 			// Consumer Group으로 읽기
 			var records = redisTemplate.opsForStream()
@@ -133,7 +133,7 @@ public class StockEventStreamProcessor {
 		}
 	}
 
-	private void processStreamRecord(String streamKey, MapRecord<String, Object, Object> record) {
+	public void processStreamRecord(String streamKey, MapRecord<String, Object, Object> record) {
 		RecordId recordId = record.getId();
 
 		try {
@@ -191,13 +191,14 @@ public class StockEventStreamProcessor {
 	}
 
 	private void handleOptimisticLockFailure(String streamKey, MapRecord<String, Object, Object> record, Exception e) {
-		String taskId = (String) record.getValue().get("taskId");
+		Object taskIdObj = record.getValue().get("taskId");
+		Long taskId = taskIdObj instanceof String ? Long.valueOf((String) taskIdObj) : ((Number) taskIdObj).longValue();
 
 		log.warn("낙관적 락 충돌, 재시도 예정: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId);
 
 		stockSyncEventService.broadcastSyncStatus(
-				Long.valueOf(taskId),
+				taskId,
 				StockSyncStatus.RETRYING,
 				"동시성 충돌로 재시도 중입니다..."
 		);
@@ -207,13 +208,14 @@ public class StockEventStreamProcessor {
 	}
 
 	private void handleProcessingError(String streamKey, MapRecord<String, Object, Object> record, Exception e) {
-		String taskId = (String) record.getValue().get("taskId");
+		Object taskIdObj = record.getValue().get("taskId");
+		Long taskId = taskIdObj instanceof String ? Long.valueOf((String) taskIdObj) : ((Number) taskIdObj).longValue();
 
 		log.error("스트림 이벤트 처리 실패: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId, e);
 
 		stockSyncEventService.broadcastSyncStatus(
-				Long.valueOf(taskId),
+				taskId,
 				StockSyncStatus.FAILED,
 				"재고 업데이트 중 오류가 발생했습니다: " + e.getMessage()
 		);

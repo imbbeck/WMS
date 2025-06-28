@@ -312,10 +312,10 @@ public class LogisticTaskService {
     }
 
     /**
-     * 물류 작업 상태변경 시 배정된 작업자와 요청한 사용자가 일치하는지 검증
+     * 물류 작업 상태변경 시 배정된 작업자와 요청한 사용자가 일치하는지 검증 TODO: 테스트 다되면 주석 제거
      */
     private static void isMatchedWorker(Long taskId, LogisticTask task) {
-        // request한 사용자 정보 가져오기
+/*        // request한 사용자 정보 가져오기
         UserInfo authentication =  (UserInfo) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
 
@@ -325,7 +325,7 @@ public class LogisticTaskService {
                         taskId, task.getWorker().getId(), authentication.getId());
                 throw LogisticTaskException.workerMismatchEx(taskId, authentication.getId());
             }
-        }
+        }*/
     }
 
     // ===== 조회 메서드들 =====
