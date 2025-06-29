@@ -27,17 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @SpringBatchTest
 @Import(QuerydslConfig.class)
-//@TestPropertySource(properties = {
-//		"spring.batch.job.enabled=false",
-//		"spring.jpa.hibernate.ddl-auto=create-drop",
-//		"spring.datasource.url=jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE",
-//		"spring.datasource.driver-class-name=org.h2.Driver",
-//		"spring.datasource.username=sa",
-//		"spring.datasource.password=",
-//		"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-//		"spring.cache.type=none",
-//		"spring.data.redis.repositories.enabled=false"
-//})
 class step4_StockSnapshotBatchTest {
 
 	@Autowired

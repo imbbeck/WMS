@@ -28,7 +28,7 @@ public class StockEventStreamProcessor {
 	private final StockCtrlService stockCtrlService;
 	private final StockSyncEventService stockSyncEventService;
 
-	@Value("${stock.streams.enabled:true}")
+	@Value("${stock.streams.enable:true}")
 	private boolean streamsEnabled;
 
 	@Value("${stock.streams.consumer-group:stock-processors}")
@@ -91,11 +91,9 @@ public class StockEventStreamProcessor {
 			// stock:events:* 패턴의 스트림 검색
 			var streamKeys = redisTemplate.keys("stock:events:*");
 
-			if (streamKeys != null) {
-				for (String streamKey : streamKeys) {
-					if (!streamConsumers.containsKey(streamKey)) {
-						startStreamConsumer(streamKey);
-					}
+			for (String streamKey : streamKeys) {
+				if (!streamConsumers.containsKey(streamKey)) {
+					startStreamConsumer(streamKey);
 				}
 			}
 		} catch (Exception e) {
@@ -206,7 +204,7 @@ public class StockEventStreamProcessor {
 
 	private void handleOptimisticLockFailure(String streamKey, MapRecord<String, Object, Object> record, Exception e) {
 		Object taskIdObj = record.getValue().get("taskId");
-		Long taskId = taskIdObj instanceof String ? Long.valueOf((String) taskIdObj) : ((Number) taskIdObj).longValue();
+		Long taskId = taskIdObj instanceof String ? Long.parseLong((String) taskIdObj) : ((Number) taskIdObj).longValue();
 
 		log.warn("낙관적 락 충돌, 재시도 예정: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId);
@@ -223,7 +221,7 @@ public class StockEventStreamProcessor {
 
 	private void handleProcessingError(String streamKey, MapRecord<String, Object, Object> record, Exception e) {
 		Object taskIdObj = record.getValue().get("taskId");
-		Long taskId = taskIdObj instanceof String ? Long.valueOf((String) taskIdObj) : ((Number) taskIdObj).longValue();
+		Long taskId = taskIdObj instanceof String ? Long.parseLong((String) taskIdObj) : ((Number) taskIdObj).longValue();
 
 		log.error("스트림 이벤트 처리 실패: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId, e);
