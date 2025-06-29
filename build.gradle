@@ -78,6 +78,9 @@ test {
 
     systemProperty "spring.profiles.active", "test"
 
+    systemProperty 'user.timezone', 'UTC'
+    jvmArgs '-Duser.timezone=UTC'
+
     reports {
         html.required.set(true)
         junitXml.required.set(true)

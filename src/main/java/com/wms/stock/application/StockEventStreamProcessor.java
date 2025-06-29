@@ -28,6 +28,9 @@ public class StockEventStreamProcessor {
 	private final StockCtrlService stockCtrlService;
 	private final StockSyncEventService stockSyncEventService;
 
+	@Value("${stock.streams.enabled:true}")
+	private boolean streamsEnabled;
+
 	@Value("${stock.streams.consumer-group:stock-processors}")
 	private String consumerGroup;
 
@@ -45,7 +48,18 @@ public class StockEventStreamProcessor {
 
 	@PostConstruct
 	public void startStreamConsumers() {
+		if (!streamsEnabled) {
+			log.info("Redis Streams 비활성화됨");
+			return;
+		}
+		running = true;
 		log.info("Redis Streams 소비자 시작: group={}, consumer={}", consumerGroup, consumerName);
+		startDiscoveryTask();
+	}
+
+	public void forceStartStreamConsumers() {
+		running = true;
+		log.info("Redis Streams 소비자 강제 시작: group={}, consumer={}", consumerGroup, consumerName);
 		startDiscoveryTask();
 	}
 
@@ -227,6 +241,19 @@ public class StockEventStreamProcessor {
 	private void acknowledgeRecord(String streamKey, RecordId recordId) {
 		try {
 			redisTemplate.opsForStream().acknowledge(streamKey, consumerGroup, recordId);
+//			redisTemplate.opsForStream().delete(streamKey, recordId);
+//
+//			try {
+//				Long streamLength = redisTemplate.opsForStream().size(streamKey);
+//				if (streamLength == 0) {
+//					redisTemplate.delete(streamKey);
+//					// Consumer도 정리
+//					streamConsumers.remove(streamKey);
+//					log.info("빈 스트림 및 Consumer 정리: {}", streamKey);
+//				}
+//			} catch (Exception e) {
+//				log.debug("스트림 정리 중 오류 (무시 가능): {}", streamKey, e);
+//			}
 		} catch (Exception e) {
 			log.error("메시지 ACK 실패: stream={}, recordId={}", streamKey, recordId, e);
 		}

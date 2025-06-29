@@ -60,13 +60,17 @@ public class LogisticTask extends BaseEntity {
 	private LocalDate scheduledDate;
 
 	@Column(nullable = false)
+	@Temporal(TemporalType.TIME)
 	private LocalTime etd; // 출발 예정시간 (Estimated Time of Departure)
 
 	@Column(nullable = false)
+	@Temporal(TemporalType.TIME)
 	private LocalTime eta; // 도착 예정시간 (Estimated Time of Arrival)
 
+	@Temporal(TemporalType.TIME)
 	private LocalTime atd; // 실제 출발시간 (Actual Time of Departure)
 
+	@Temporal(TemporalType.TIME)
 	private LocalTime ata; // 실제 도착시간 (Actual Time of Arrival)
 
 	@Enumerated(EnumType.STRING)

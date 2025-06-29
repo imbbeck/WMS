@@ -53,7 +53,7 @@ public class LogisticTaskDTO {
         private Long toLocationId;
 
         @NotNull(message = "수량은 필수입니다")
-        @Positive(message = "수량은 0보다 커야 합니다")
+        @Positive(message = "수량은 자연수이어야 합니다")
         @Schema(description = "수량", example = "10")
         private Integer quantity;
 
@@ -135,7 +135,7 @@ public class LogisticTaskDTO {
         private Long workerId;
 
         @NotNull(message = "수량은 필수입니다")
-        @Positive(message = "수량은 0보다 커야 합니다")
+        @Positive(message = "수량은 자연수이어야 합니다")
         @Schema(description = "수량", example = "15")
         private Integer quantity;
 

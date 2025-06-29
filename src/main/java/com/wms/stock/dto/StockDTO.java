@@ -4,6 +4,7 @@ import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.model.StockKey;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -26,7 +27,7 @@ public class StockDTO {
 		private Long warehouseId;
 
 		@NotNull(message = "수량은 필수입니다")
-		@PositiveOrZero(message = "수량은 0 이상이어야 합니다")
+		@Positive(message = "수량은 자연수이어야 합니다")
 		@Schema(description = "수량 (파레트 단위)", example = "10")
 		private Integer quantity;
 
@@ -51,7 +52,7 @@ public class StockDTO {
 	public static class UpdateReq {
 
 		@NotNull(message = "수량은 필수입니다")
-		@PositiveOrZero(message = "수량은 0 이상이어야 합니다")
+		@Positive(message = "수량은 자연수이어야 합니다")
 		@Schema(description = "수량 (파레트 단위)", example = "15")
 		private Integer quantity;
 

@@ -87,6 +87,7 @@ batch:
 # redis stream 설정
 stock:
   streams:
+    enabled: false
     consumer-group: stock-processors
     consumer-name: ${spring.application.name}-${random.uuid}
     max-pending: 1000

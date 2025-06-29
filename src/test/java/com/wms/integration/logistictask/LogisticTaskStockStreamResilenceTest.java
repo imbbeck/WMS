@@ -53,7 +53,7 @@ import static org.mockito.Mockito.*;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Disabled("Redis Stream Consumer 재시작으로 인한 다른 테스트 간섭 방지 - 개별 테스트로만 실행")
+@Disabled("오래걸려서 비활성화")
 @DisplayName("LogisticTask-Stock Redis Stream 장애 복원력 테스트")
 class LogisticTaskStockStreamResilenceTest {
 
@@ -95,9 +95,12 @@ class LogisticTaskStockStreamResilenceTest {
     private StockRepository stockRepository;
 
     @BeforeEach
-    void setUp() {
-        // Consumer Group 정리 추가
-        cleanupConsumerGroups();
+    void setUp() throws InterruptedException {
+        streamProcessor.stopStreamConsumers();
+        Thread.sleep(2000); // 2초 대기
+        streamProcessor.forceStartStreamConsumers();
+        Thread.sleep(2000); // 2초 대기
+
 
         // 테스트 데이터 준비
         worker = userInfoRepository.save(UserInfo.builder()
@@ -267,7 +270,7 @@ class LogisticTaskStockStreamResilenceTest {
             Thread.currentThread().interrupt();
         }
 
-        streamProcessor.startStreamConsumers();
+        streamProcessor.forceStartStreamConsumers();
 
         // Then: 재시작 후에도 정상 처리되어야 함
         Awaitility.await()

@@ -25,7 +25,7 @@ public class WareDTO {
 		private String type;
 
 		@NotNull(message = "파레트당 물품 개수는 필수입니다")
-		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
+		@Positive(message = "파레트당 물품 개수는 자연수이어야 합니다")
 		@Schema(description = "파레트당 물품 개수", example = "100")
 		private Integer paletteUnit;
 
@@ -58,7 +58,7 @@ public class WareDTO {
 		private String type;
 
 		@NotNull(message = "파레트당 물품 개수는 필수입니다")
-		@Positive(message = "파레트당 물품 개수는 0보다 커야 합니다")
+		@Positive(message = "파레트당 물품 개수는 자연수이어야 합니다")
 		@Schema(description = "파레트당 물품 개수", example = "100")
 		private Integer paletteUnit;
 

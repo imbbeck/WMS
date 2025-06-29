@@ -41,7 +41,7 @@ public class LogisticTemplateDTO {
 		private Long toLocationId;
 
 		@NotNull(message = "표준 수량은 필수입니다")
-		@Positive(message = "표준 수량은 0보다 커야 합니다")
+		@Positive(message = "표준 수량은 자연수이어야 합니다")
 		@Schema(description = "표준 수량", example = "100")
 		private Integer standardQuantity;
 
@@ -81,7 +81,7 @@ public class LogisticTemplateDTO {
 		private LogisticType type;
 
 		@NotNull(message = "표준 수량은 필수입니다")
-		@Positive(message = "표준 수량은 0보다 커야 합니다")
+		@Positive(message = "표준 수량은 자연수이어야 합니다")
 		@Schema(description = "표준 수량", example = "150")
 		private Integer standardQuantity;
 
