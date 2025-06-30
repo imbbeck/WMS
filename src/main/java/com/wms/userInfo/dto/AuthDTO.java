@@ -9,7 +9,7 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "로그인 요청")
+	@Schema(name = "LoginRequest", description = "로그인 요청")
 	public static class LoginReq {
 
 		@NotBlank(message = "사용자 ID는 필수입니다")
@@ -29,7 +29,7 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "리프레시 토큰 요청")
+	@Schema(name = "RefreshTokenRequest", description = "리프레시 토큰 요청")
 	public static class RefreshTokenReq  {
 
 		@Schema(description = "JWT 리프레시 토큰")
@@ -42,7 +42,7 @@ public class AuthDTO {
 
 	@Getter
 	@NoArgsConstructor
-	@Schema(description = "토큰 응답")
+	@Schema(name = "TokenResponse", description = "토큰 응답")
 	public static class TokenRes {
 
 		@Schema(description = "JWT 액세스 토큰")

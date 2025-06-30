@@ -27,6 +27,12 @@ public final class LogisticTemplateException  {
         }
     }
 
+    public static class NotMatchedLocationWithTypeEx extends BusinessException.ValidationException {
+        public NotMatchedLocationWithTypeEx(String message) {
+            super(message);
+        }
+    }
+
     // ValidationException 생성
     public static ValidationEx validation(String field, String additionalMessage) {
         return new ValidationEx(DomainExceptionHelper.validation(field, additionalMessage));
@@ -48,6 +54,10 @@ public final class LogisticTemplateException  {
     // ConflictException 생성
     public static ConflictEx duplicate(FieldEnum fieldEnum, String value) {
         return new ConflictEx(DomainExceptionHelper.duplicate(fieldEnum, value));
+    }
+
+    public static NotMatchedLocationWithTypeEx notMatchedLocationWithType(String message) {
+        return new NotMatchedLocationWithTypeEx(message);
     }
 
 } 

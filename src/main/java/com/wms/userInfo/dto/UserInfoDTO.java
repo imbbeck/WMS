@@ -20,7 +20,7 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "사용자 생성 요청")
+	@Schema(name = "UserCreateRequest", description = "사용자 생성 요청")
 	public static class CreateReq {
 
 		@NotBlank(message = "사용자 ID는 필수입니다")
@@ -69,7 +69,7 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "회원가입 요청")
+	@Schema(name = "UserJoinRequest", description = "회원가입 요청")
 	public static class JoinReq {
 
 		@NotBlank(message = "사용자 ID는 필수입니다")
@@ -113,7 +113,7 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "사용자 수정 요청")
+	@Schema(name = "UserUpdateRequest", description = "사용자 수정 요청")
 	public static class UpdateReq {
 
 		@NotBlank(message = "이름은 필수입니다")
@@ -134,7 +134,7 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "비밀번호 변경 요청")
+	@Schema(name = "UserChangePasswordRequest", description = "비밀번호 변경 요청")
 	public static class ChangePasswordReq {
 
 		@NotBlank(message = "기존 비밀번호는 필수입니다")
@@ -155,7 +155,7 @@ public class UserInfoDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "사용자 응답")
+	@Schema(name = "UserResponse", description = "사용자 응답")
 	public static class Res {
 
 		@Schema(description = "사용자 고유 번호", example = "1")

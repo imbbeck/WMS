@@ -25,7 +25,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "물류 작업 생성 요청")
+    @Schema(name = "LogisticTaskCreateRequest", description = "물류 작업 생성 요청")
     public static class CreateReq {
 
         @NotBlank(message = "작업명은 필수입니다")
@@ -33,7 +33,7 @@ public class LogisticTaskDTO {
         private String name;
 
         @NotNull(message = "물류 타입은 필수입니다")
-        @Schema(description = "물류 타입", example = "INBOUND")
+        @Schema(description = "물류 타입", example = "INBOUND" , allowableValues = {"INBOUND", "OUTBOUND", "INNER"})
         private LogisticType type;
 
         @NotNull(message = "작업자 ID는 필수입니다")
@@ -123,7 +123,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "물류 작업 수정 요청")
+    @Schema(name = "LogisticTaskUpdateRequest", description = "물류 작업 수정 요청")
     public static class UpdateReq {
 
         @NotBlank(message = "작업명은 필수입니다")
@@ -173,7 +173,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(description = "물류 작업 부분 수정 요청 (작업자와 시간만)")
+    @Schema(name = "LogisticTaskPartialUpdateRequest", description = "물류 작업 부분 수정 요청 (작업자와 시간만)")
     public static class PartialUpdateReq {
 
         @NotNull(message = "작업자 ID는 필수입니다")
@@ -210,7 +210,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "물류 작업 응답")
+    @Schema(name = "LogisticTaskResponse", description = "물류 작업 응답")
     public static class Res {
 
         @Schema(description = "작업 ID", example = "1")
@@ -306,7 +306,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "물류 작업 상태 변경 응답")
+    @Schema(name = "LogisticTaskActionResponse", description = "물류 작업 상태 변경 응답")
     public static class ActionRes {
 
         @Schema(description = "작업 ID", example = "1")
@@ -337,7 +337,7 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "작업자별 일정을 포함한 일별 대시보드 응답")
+    @Schema(name = "LogisticTaskDashboardResponse", description = "작업자별 일정을 포함한 일별 대시보드 응답")
     public static class DashboardRes {
 
         @Schema(description = "조회 날짜", example = "2025-01-15")
@@ -348,7 +348,7 @@ public class LogisticTaskDTO {
 
         @Getter
         @Builder
-        @Schema(description = "시간대별 작업을 포함한 작업자 일정")
+        @Schema(name = "WorkerSchedule", description = "시간대별 작업을 포함한 작업자 일정")
         public static class WorkerSchedule {
 
             @Schema(description = "작업자 ID", example = "1")
@@ -363,7 +363,7 @@ public class LogisticTaskDTO {
 
         @Getter
         @Builder
-        @Schema(description = "작업 정보를 포함한 시간대")
+        @Schema(name = "TimeSlot", description = "작업 정보를 포함한 시간대")
         public static class TimeSlot {
 
             @Schema(description = "시간", example = "09:00")
@@ -379,13 +379,13 @@ public class LogisticTaskDTO {
 
     @Getter
     @Builder
-    @Schema(description = "물류 작업 검색 조건")
+    @Schema(name = "LogisticTaskSearchCriteria", description = "물류 작업 검색 조건")
     public static class SearchCriteria {
 
         @Schema(description = "작업명 (부분 검색)", example = "노트북")
         private String name;
 
-        @Schema(description = "물류 타입", example = "INNER")
+        @Schema(description = "물류 타입", example = "INNER" , allowableValues = {"INBOUND", "OUTBOUND", "INNER"})
         private LogisticType type;
 
         @Schema(description = "작업자 ID", example = "1")
@@ -400,7 +400,7 @@ public class LogisticTaskDTO {
         @Schema(description = "도착지 ID", example = "2")
         private Long toLocationId;
 
-        @Schema(description = "작업 상태", example = "PENDING")
+        @Schema(description = "작업 상태", example = "PENDING ", allowableValues = {"PENDING", "INITIATED", "INITIATE_DELAYED", "COMPLETED", "COMPLETE_DELAYED", "CANCELED", "FAILED", "EXPIRED"})
         private LogisticTaskStatus status;
 
         @Schema(description = "시작 날짜", example = "2025-01-01")

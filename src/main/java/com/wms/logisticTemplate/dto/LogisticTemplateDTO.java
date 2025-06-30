@@ -17,7 +17,7 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물류 템플릿 생성 요청")
+	@Schema(name = "LogisticTemplateCreateRequest", description = "물류 템플릿 생성 요청")
 	public static class CreateReq {
 
 		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
@@ -56,13 +56,14 @@ public class LogisticTemplateDTO {
 			this.standardQuantity = standardQuantity;
 		}
 
-		public LogisticTemplate toEntity(Ware ware, Location fromLocation, Location toLocation) {
+		public LogisticTemplate toEntity(Ware ware, Location fromLocation, Location toLocation, Integer trt) {
 			return LogisticTemplate.builder()
 					.name(name)
 					.type(type)
 					.ware(ware)
 					.fromLocation(fromLocation)
 					.toLocation(toLocation)
+					.trt(trt)
 					.standardQuantity(standardQuantity)
 					.build();
 		}
@@ -70,15 +71,14 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물류 템플릿 수정 요청")
+	@Schema(name = "LogisticTemplateUpdateRequest", description = "물류 템플릿 수정 요청")
 	public static class UpdateReq {
 		@NotBlank(message = "물류 템플릿 이름은 필수입니다")
 		@Schema(description = "물류 템플릿 이름", example = "수정된 입고 템플릿 A")
 		private String name;
 
-		@NotNull(message = "물류 타입은 필수입니다")
-		@Schema(description = "물류 타입", example = "INBOUND", allowableValues = {"INBOUND", "OUTBOUND", "INNER"})
-		private LogisticType type;
+		@Schema(description = "평균 소요 시간", example = "50")
+		private Integer trt;
 
 		@NotNull(message = "표준 수량은 필수입니다")
 		@Positive(message = "표준 수량은 자연수이어야 합니다")
@@ -86,9 +86,9 @@ public class LogisticTemplateDTO {
 		private Integer standardQuantity;
 
 		@Builder
-		public UpdateReq(String name, LogisticType type, Integer standardQuantity) {
+		public UpdateReq(String name, Integer trt, Integer standardQuantity) {
 			this.name = name;
-			this.type = type;
+			this.trt = trt;
 			this.standardQuantity = standardQuantity;
 		}
 
@@ -96,7 +96,7 @@ public class LogisticTemplateDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물류 템플릿 응답")
+	@Schema(name = "LogisticTemplateResponse", description = "물류 템플릿 응답")
 	public static class Res {
 
 		@Schema(description = "물류 템플릿 ID", example = "1")
@@ -126,11 +126,14 @@ public class LogisticTemplateDTO {
 		@Schema(description = "도착 장소명", example = "창고 B")
 		private String toLocationName;
 
+		@Schema(description = "평균 소요시간(분)", example = "100")
+		private Integer trt;
+
 		@Schema(description = "표준 수량", example = "100")
 		private Integer standardQuantity;
 
 
-		public Res(LogisticTemplate logisticTemplate) {
+		public Res(LogisticTemplate logisticTemplate)  {
 			this.id = logisticTemplate.getId();
 			this.name = logisticTemplate.getName();
 			this.type = logisticTemplate.getType();
@@ -140,11 +143,12 @@ public class LogisticTemplateDTO {
 			this.fromLocationName = logisticTemplate.getFromLocation().getName();
 			this.toLocationId = logisticTemplate.getToLocation().getId();
 			this.toLocationName = logisticTemplate.getToLocation().getName();
+			this.trt = logisticTemplate.getTrt();
 			this.standardQuantity = logisticTemplate.getStandardQuantity();
 		}
 
 		@Builder
-		public Res(Long id, String name, LogisticType type, Ware ware, Location fromLocation, Location toLocation, Integer standardQuantity) {
+		public Res(Long id, String name, LogisticType type, Ware ware, Location fromLocation, Location toLocation, Integer trt, Integer standardQuantity) {
 			this.id = id;
 			this.name = name;
 			this.type = type;
@@ -154,6 +158,7 @@ public class LogisticTemplateDTO {
 			this.fromLocationName = fromLocation.getName();
 			this.toLocationId = toLocation.getId();
 			this.toLocationName = toLocation.getName();
+			this.trt = trt;
 			this.standardQuantity = standardQuantity;
 		}
 	}

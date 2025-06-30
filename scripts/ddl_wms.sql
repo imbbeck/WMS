@@ -131,6 +131,7 @@ CREATE TABLE logistic_template (
 	                               ware_id BIGINT NOT NULL,
 	                               from_location_id BIGINT NOT NULL,
 	                               to_location_id BIGINT NOT NULL,
+	                               trt INT NULL,
 	                               standard_quantity INT NOT NULL,
 	                               created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
 	                               updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),

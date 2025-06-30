@@ -12,8 +12,8 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("WMS Location Aggregate API")
-                        .description("Warehouse Management System - Location Aggregate API Documentation")
+                        .title("WMS API Documentation")
+                        .description("Warehouse Management System - Complete API Documentation")
                         .version("1.0.0"));
     }
 }

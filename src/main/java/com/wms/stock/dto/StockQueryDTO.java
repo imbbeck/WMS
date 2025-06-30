@@ -12,7 +12,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "재고 검색 조건")
+	@Schema(name = "StockSearchRequest", description = "재고 검색 조건")
 	public static class SearchReq {
 
 		@Schema(description = "물품 ID 필터", example = "1")
@@ -30,7 +30,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "재고 조회 응답")
+	@Schema(name = "StockQueryResponse", description = "재고 조회 응답")
 	public static class Res {
 
 		@Schema(description = "물품 ID", example = "1")
@@ -71,7 +71,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물품별 재고 집계")
+	@Schema(name = "WareAggregationResponse", description = "물품별 재고 집계")
 	public static class WareAggregationRes {
 
 		@Schema(description = "물품 ID", example = "1")
@@ -105,7 +105,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "창고별 재고 집계")
+	@Schema(name = "WarehouseAggregationResponse", description = "창고별 재고 집계")
 	public static class WarehouseAggregationRes {
 
 		@Schema(description = "창고 ID", example = "1")
@@ -148,7 +148,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "창고 재고 정보")
+	@Schema(name = "WarehouseUnit", description = "창고 재고 정보")
 	public static class WarehouseUnit {
 
 		@Schema(description = "창고 ID", example = "1")
@@ -171,7 +171,7 @@ public class StockQueryDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물품 재고 정보")
+	@Schema(name = "WareUnit", description = "물품 재고 정보")
 	public static class WareUnit {
 
 		@Schema(description = "물품 ID", example = "1")

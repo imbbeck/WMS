@@ -135,7 +135,7 @@ class LogisticTemplateControllerTest {
     void update_Success() throws Exception {
         var requestDto = LogisticTemplateDTO.UpdateReq.builder()
                 .name("수정된 템플릿")
-                .type(LogisticType.OUTBOUND)
+                .trt(100)
                 .standardQuantity(20)
                 .build();
         var updatedTemplate = LogisticTemplate.builder()
@@ -144,6 +144,7 @@ class LogisticTemplateControllerTest {
                 .ware(ware)
                 .fromLocation(from)
                 .toLocation(to)
+                .trt(100)
                 .standardQuantity(20)
                 .build();
         given(service.update(eq(1L), any(LogisticTemplateDTO.UpdateReq.class))).willReturn(updatedTemplate);
@@ -152,6 +153,7 @@ class LogisticTemplateControllerTest {
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("수정된 템플릿"))
+                .andExpect(jsonPath("$.trt").value(100))
                 .andExpect(jsonPath("$.standardQuantity").value(20));
     }
 

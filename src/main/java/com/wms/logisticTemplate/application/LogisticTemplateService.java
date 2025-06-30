@@ -1,6 +1,9 @@
 package com.wms.logisticTemplate.application;
 
 import com.wms.location.domain.exception.LocationException;
+import com.wms.location.domain.model.LocationConnection;
+import com.wms.location.domain.model.LocationType;
+import com.wms.location.domain.repository.LocationConnectionRepository;
 import com.wms.logisticTemplate.domain.exception.LogisticTemplateException;
 import com.wms.logisticTemplate.domain.model.LogisticTemplate;
 import com.wms.logisticTemplate.domain.model.LogisticType;
@@ -23,6 +26,7 @@ public class LogisticTemplateService {
 	private final LogisticTemplateRepository logisticTemplateRepository;
 	private final WareRepository wareRepository;
 	private final LocationRepository locationRepository;
+	private final LocationConnectionRepository locationConnectionRepository;
 
 	@Transactional
 	public LogisticTemplate create(LogisticTemplateDTO.CreateReq req) {
@@ -35,7 +39,18 @@ public class LogisticTemplateService {
 		Location to = locationRepository.findById(req.getToLocationId())
 				.orElseThrow(() -> LocationException.notFound(req.getToLocationId()));
 
-		LogisticTemplate template = req.toEntity(ware, from, to);
+		// 타입, from, to의 유효성 검사
+		LogisticType type = req.getType();
+		if (!type.isValidLocationTypes(from.getType(), to.getType())) {
+			throw LogisticTemplateException.notMatchedLocationWithType(type.getValidationMessage());
+		}
+
+		// 평균 소요시간 가져오기
+		Integer trt = locationConnectionRepository.findByLocationAIdAndLocationBId(Math.min(from.getId(), to.getId()), Math.max(from.getId(), to.getId()))
+				.map(LocationConnection::getTrt)
+				.orElse(null);
+
+		LogisticTemplate template = req.toEntity(ware, from, to, trt);
 		return logisticTemplateRepository.save(template);
 	}
 
@@ -44,7 +59,7 @@ public class LogisticTemplateService {
 		LogisticTemplate template = logisticTemplateRepository.findById(id)
 				.orElseThrow(() -> LogisticTemplateException.notFound(id));
 
-		template.update(req.getName(), req.getType(), req.getStandardQuantity());
+		template.update(req.getName(), req.getTrt(), req.getStandardQuantity());
 		return template;
 	}
 

@@ -14,7 +14,7 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물품 생성 요청")
+	@Schema(name = "WareCreateRequest", description = "물품 생성 요청")
 	public static class CreateReq {
 		@NotBlank(message = "물품명은 필수입니다")
 		@Schema(description = "물품명", example = "스마트폰")
@@ -47,7 +47,7 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물품 수정 요청")
+	@Schema(name = "WareUpdateRequest", description = "물품 수정 요청")
 	public static class UpdateReq {
 		@NotBlank(message = "물품명은 필수입니다")
 		@Schema(description = "물품명", example = "스마트폰")
@@ -72,7 +72,7 @@ public class WareDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "물품 응답")
+	@Schema(name = "WareResponse", description = "물품 응답")
 	public static class Res {
 		@Schema(description = "물품 ID", example = "1")
 		private Long id;

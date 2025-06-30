@@ -37,24 +37,28 @@ public class LogisticTemplate extends BaseEntity {
 	@JoinColumn(name = "to_location_id", nullable = false)
 	private Location toLocation;
 
+	@Column(name = "trt")
+	private Integer trt;
+
 	@Column(name = "standard_quantity", nullable = false)
 	private Integer standardQuantity;
 
 	@Builder
-	public LogisticTemplate(String name, LogisticType type, Ware ware, Location fromLocation, Location toLocation, Integer standardQuantity) {
+	public LogisticTemplate(String name, LogisticType type, Ware ware, Location fromLocation, Location toLocation, Integer trt, Integer standardQuantity) {
 		validateData(name, type, standardQuantity);
 		this.name = name;
 		this.type = type;
 		this.ware = ware;
 		this.fromLocation = fromLocation;
 		this.toLocation = toLocation;
+		this.trt = trt;
 		this.standardQuantity = standardQuantity;
 	}
 
-	public void update(String name, LogisticType type, Integer standardQuantity) {
-		validateData(name, type, standardQuantity);
+	public void update(String name, Integer trt, Integer standardQuantity) {
+		validateData(name, this.type, standardQuantity);
 		this.name = name;
-		this.type = type;
+		this.trt = trt;
 		this.standardQuantity = standardQuantity;
 	}
 

@@ -15,7 +15,7 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "재고 생성 요청")
+	@Schema(name = "StockCreateRequest", description = "재고 생성 요청")
 	public static class CreateReq {
 
 		@NotNull(message = "물품 ID는 필수입니다")
@@ -48,7 +48,7 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "재고 수정 요청")
+	@Schema(name = "StockUpdateRequest", description = "재고 수정 요청")
 	public static class UpdateReq {
 
 		@NotNull(message = "수량은 필수입니다")
@@ -64,7 +64,7 @@ public class StockDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "재고 관리 응답")
+	@Schema(name = "StockResponse", description = "재고 관리 응답")
 	public static class Res {
 
 		@Schema(description = "재고 ID", example = "1")

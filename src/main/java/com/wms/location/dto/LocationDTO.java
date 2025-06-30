@@ -14,7 +14,7 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 생성 요청")
+	@Schema(name = "LocationCreateRequest", description = "장소 생성 요청")
 	public static class CreateReq {
 
 		@NotBlank(message = "장소명은 필수입니다")
@@ -59,7 +59,7 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 수정 요청")
+	@Schema(name = "LocationUpdateRequest", description = "장소 수정 요청")
 	public static class UpdateReq {
 		@NotBlank(message = "장소명은 필수입니다")
 		@Schema(description = "장소명", example = "수정된 창고 A")
@@ -88,7 +88,7 @@ public class LocationDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 응답")
+	@Schema(name = "LocationResponse", description = "장소 응답")
 	public static class Res {
 
 		@Schema(description = "장소 ID", example = "1")

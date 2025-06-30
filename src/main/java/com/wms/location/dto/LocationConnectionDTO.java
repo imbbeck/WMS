@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class LocationConnectionDTO {
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 연결 생성 요청")
+	@Schema(name = "LocationConnectionCreateRequest", description = "장소 연결 생성 요청")
 	public static class CreateReq {
 
 		@NotNull(message = "첫 번째 장소 ID는 필수입니다")
@@ -46,7 +46,7 @@ public class LocationConnectionDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 연결 수정 요청")
+	@Schema(name = "LocationConnectionUpdateRequest", description = "장소 연결 수정 요청")
 	public static class UpdateReq {
 
 		@NotNull(message = "이동 시간은 필수입니다")
@@ -64,7 +64,7 @@ public class LocationConnectionDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "장소 연결 응답")
+	@Schema(name = "LocationConnectionResponse", description = "장소 연결 응답")
 	public static class Res {
 
 		@Schema(description = "연결 ID", example = "1")
@@ -99,7 +99,7 @@ public class LocationConnectionDTO {
 
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@Schema(description = "특정 장소의 연결 정보")
+	@Schema(name = "ConnectionInfo", description = "특정 장소의 연결 정보")
 	public static class ConnectionInfo {
 
 		@Schema(description = "연결 ID", example = "1")
