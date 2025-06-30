@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 public class LogisticTaskDTO {
 
     @Getter
@@ -376,6 +378,90 @@ public class LogisticTaskDTO {
             private String type; // START, COMPLETE, EMPTY
         }
     }
+
+    @Getter
+    @Builder
+    @Schema(name = "LogisticTaskDashboard2Response", description = "작업자별 일정을 포함한 일별 대시보드 응답2")
+    public static class Dashboard2Res {
+
+        @Schema(description = "작업자 목록")
+        private List<WorkerList> resources;
+
+        @Schema(description = "작업 목록")
+        private List<TaskList> data;
+
+        @Getter
+        @Builder
+        @Schema(name = "WorkerList", description = "작업자 목록")
+        public static class WorkerList {
+
+            @Schema(description = "작업자 ID", example = "1")
+            private Long id;
+
+            @Schema(description = "작업자명", example = "김작업")
+            private String name;
+
+        }
+
+        @Getter
+        @Builder
+        @Schema(name = "TaskList", description = "작업 목록")
+        public static class TaskList {
+
+            @Schema(description = "작업 id", example = "1")
+            private Long id;
+
+            @Schema(description = "작업명", example = "창고A → 창고B 노트북 이동")
+            private String title;
+
+            @Schema(description = "작업자 ID", example = "1")
+            private Long resource;
+
+            @Schema(description = "실행일", example = "2025-01-15")
+            private LocalDate date; // 예정 날짜
+
+            @Schema(description = "etd", example = "10:00")
+            private LocalTime start;
+
+            @Schema(description = "eta", example = "11:00")
+            private LocalTime end;
+
+            @Schema(description = "시작 지연 시간", example = "10")
+            private Integer bufferBefore; // 시작 지연 시간
+
+            @Schema(description = "종료 지연 시간", example = "5")
+            private Integer bufferAfter; // 종료 지연 시간
+
+            @Schema(description = "작업 유형 (INNER, OUTBOUND, INBOUND)", example = "START")
+            private LogisticType type;
+
+            @Schema(description = "작업 상태 (PENDING, INITIATED, INITIATE_DELAYED, COMPLETED, COMPLETE_DELAYED, CANCELED, FAILED, EXPIRED)", example = "PENDING")
+            private LogisticTaskStatus status;
+
+            @Builder
+            public static TaskList from(LogisticTask task) {
+                return TaskList.builder()
+                        .id(task.getId())
+                        .title(task.getName())
+                        .date(task.getScheduledDate())
+                        .start(task.getEtd())
+                        .end(task.getEta())
+                        .bufferBefore(task.getAtd() != null ? (int) task.getEtd().until(task.getAtd(), MINUTES) : null)
+                        .bufferAfter(task.getAta() != null ? (int) task.getEta().until(task.getAta(), MINUTES) : null)
+                        .type(task.getType())
+                        .status(task.getStatus())
+                        .build();
+            }
+        }
+
+        @Builder
+        public Dashboard2Res(List<WorkerList> resources, List<TaskList> data) {
+            this.resources = resources;
+            this.data = data;
+        }
+    }
+
+
 
     @Getter
     @Builder

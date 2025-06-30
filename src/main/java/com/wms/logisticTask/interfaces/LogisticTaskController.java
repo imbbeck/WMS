@@ -442,6 +442,21 @@ public class LogisticTaskController {
     }
 
     /**
+     * 대시보드용 날짜별 작업자별 물류 작업 조회 - 라이브러리 특화
+     */
+    @GetMapping("/dashboard2/daily")
+    @Operation(summary = "대시보드용 일별 물류 작업 조회 (라이브러리 특화)", description = "특정 날짜의 모든 작업자별 물류 작업을 시간순으로 조회합니다. 라이브러리 특화 버전.")
+    @ApiResponse(responseCode = "200", description = "일별 대시보드 조회 성공")
+    public ResponseEntity<LogisticTaskDTO.Dashboard2Res> getDailyDashboard2(
+            @Parameter(description = "조회할 날짜 (YYYY-MM-DD)") @RequestParam String date) {
+
+        LocalDate targetDate = LocalDate.parse(date);
+        LogisticTaskDTO.Dashboard2Res dashboard = logisticTaskService.getDailyDashboard2(targetDate);
+
+        return ResponseEntity.ok(dashboard);
+    }
+
+    /**
      * 작업자 대시보드용 개인 작업 조회
      */
     @GetMapping("/dashboard/worker/{workerId}")

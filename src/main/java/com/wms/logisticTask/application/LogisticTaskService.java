@@ -1,5 +1,6 @@
 package com.wms.logisticTask.application;
 
+import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.location.domain.model.Location;
 import com.wms.location.domain.repository.LocationRepository;
@@ -433,6 +434,34 @@ public class LogisticTaskService {
     }
 
     /**
+     * 타임라인 라이브러리에서 요구되는 작업자 별 시간대별 작업 조회
+     */
+    public LogisticTaskDTO.Dashboard2Res getDailyDashboard2(LocalDate date) {
+        log.debug("작업자별 시간대별 작업 조회: date={}", date);
+
+        List<LogisticTask> dayTasks = logisticTaskRepository.findByScheduledDate(date);
+        List<LogisticTaskDTO.Dashboard2Res.TaskList> tastList = dayTasks.stream()
+                .map(LogisticTaskDTO.Dashboard2Res.TaskList::from)
+                .toList();
+
+        Map<Long, String> userInfoMap = userInfoCacheManager.getIdNamePair();
+        List<LogisticTaskDTO.Dashboard2Res.WorkerList> workerList = userInfoMap.entrySet().stream()
+                .map(entry -> LogisticTaskDTO.Dashboard2Res.WorkerList.builder()
+                        .id(entry.getKey())
+                        .name(entry.getValue())
+                        .build())
+                .toList();
+
+        LogisticTaskDTO.Dashboard2Res responseBuilder = LogisticTaskDTO.Dashboard2Res.builder()
+                .resources(workerList)
+                .data(tastList)
+                .build();
+
+        return responseBuilder;
+    }
+
+
+    /**
      * 작업자별 특정 날짜 작업 조회
      */
     public List<LogisticTask> findByWorkerAndDate(Long workerId, LocalDate date) {
@@ -484,6 +513,8 @@ public class LogisticTaskService {
         
         return timeSlots;
     }
+
+    private final DomainCacheManager<Long, String> userInfoCacheManager;
 
     /**
      * 특정 시간에 작업이 해당하는지 확인

@@ -22,13 +22,10 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "logistic_task_history")
 public class LogisticTaskHistory {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false)
-	private Long id;
 
-	@Column(name = "original_task_id", nullable = false)
-	private Long originalTaskId;
+	@Id
+	@Column(name = "task_id", nullable = false)
+	private Long taskId;
 
 	@Column(name = "name", nullable = false)
 	private String name;
@@ -80,20 +77,10 @@ public class LogisticTaskHistory {
 	private LocalTime ata;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "final_status", nullable = false)
+	@Column(name = "status", nullable = false)
 	private LogisticTaskStatus finalStatus;
 
-	@Column(name = "template_id_snapshot")
-	private Integer templateIdSnapshot;
-
-	@Column(name = "completed_at")
+	@Column(name = "updated_at")
 	private LocalDateTime completedAt;
-
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
-
-	@ColumnDefault("CURRENT_TIMESTAMP(6)")
-	@Column(name = "archived_at", nullable = false)
-	private LocalDateTime archivedAt;
 
 }
