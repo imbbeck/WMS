@@ -222,6 +222,21 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("endDate") LocalDate endDate);
 
 	/**
+	 * 특정 날짜에 완료된 작업들 중 특정 창고, 특정 물품과 연관된 작업들 조회 (재고 히스토리 추적용, 연관 엔티티 포함)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	@Query("SELECT lt FROM LogisticTask lt " +
+			"WHERE lt.scheduledDate = :targetDate " +
+			"AND lt.status = 'COMPLETED' " +
+			"AND (lt.fromLocation = :warehouseId OR lt.toLocation = :warehouseId) " +
+			"AND lt.ware.id = :wareId " +
+			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
+	List<LogisticTask> findCompletedTasksByTargetDateAndStock(
+			@Param("targetDate") LocalDate targetDate,
+			@Param("warehouseId") Long warehouseId,
+			@Param("wareId") Long wareId);
+
+	/**
 	 * 특정 창고의 총 재고량 조회 (캐시 fallback용)
 	 */
 	@Query("SELECT COALESCE(SUM(s.quantity), 0) FROM Stock s WHERE s.key.warehouseId = :warehouseId")
@@ -289,4 +304,7 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("status") LogisticTaskStatus status,
 			@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
+
+
+
 }
