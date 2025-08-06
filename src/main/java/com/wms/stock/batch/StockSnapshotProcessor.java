@@ -128,36 +128,13 @@ public class StockSnapshotProcessor implements ItemProcessor<Stock, StockDailySn
 	/**
 	 * 재고 정합성 검증
 	 */
-	private void validateStockConsistency(StockKey stockKey, Integer previousQty,
-			StockMovement movement, Integer actualQty) {
+	private void validateStockConsistency(StockKey stockKey, Integer previousQty, StockMovement movement, Integer actualQty) {
 
 		int expectedQty = previousQty - movement.outboundQty() + movement.inboundQty();
 
 		if (expectedQty != actualQty) {
 			log.warn("재고 불일치 발견: stockKey={}, 이전재고={}, 출고={}, 입고={}, 예상재고={}, 실제재고={}, 차이={}",
 					stockKey, previousQty, movement.outboundQty(), movement.inboundQty(), expectedQty, actualQty, actualQty - expectedQty);
-
-			// 상세한 물류작업 로그 출력 (디버깅용)
-			logDetailedMovement(stockKey, movement);
-		}
-	}
-
-	/**
-	 * 물류작업 상세 로그 출력
-	 */
-	private void logDetailedMovement(StockKey stockKey, StockMovement movement) {
-		if (log.isDebugEnabled()) {
-			log.debug("재고 불일치 상세 정보: stockKey={}", stockKey);
-
-			movement.outboundTasks().forEach(task ->
-					log.debug("출고작업: taskId={}, quantity={}, from={}, to={}",
-							task.getId(), task.getQuantity(), task.getFromLocation().getId(), task.getToLocation().getId())
-			);
-
-			movement.inboundTasks().forEach(task ->
-					log.debug("입고작업: taskId={}, quantity={}, from={}, to={}",
-							task.getId(), task.getQuantity(), task.getFromLocation().getId(), task.getToLocation().getId())
-			);
 		}
 	}
 
@@ -176,8 +153,6 @@ public class StockSnapshotProcessor implements ItemProcessor<Stock, StockDailySn
 				log.info("캐시 재고 동기화 완료: stockKey={}, 업데이트된재고={}",
 						stockKey, actualQty);
 
-				// 메트릭 수집
-				// meterRegistry.counter("stock.cache.sync", "warehouse", stockKey.getWarehouseId().toString()).increment();
 			}
 		} catch (Exception e) {
 			log.error("캐시 동기화 중 오류 발생: stockKey={}, error={}",
