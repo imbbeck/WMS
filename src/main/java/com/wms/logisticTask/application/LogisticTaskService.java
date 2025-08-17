@@ -107,15 +107,10 @@ public class LogisticTaskService {
         LogisticTask existingTask = logisticTaskRepository.findById(taskId)
                 .orElseThrow(() -> LogisticTaskException.notFound(taskId));
 
-        // 2. 새 작업자 조회
-        UserInfo newWorker = userInfoRepository.findById(request.getWorkerId())
-                .orElseThrow(() -> UserInfoException.notFound(request.getWorkerId()));
-
-        // 3. 수정된 작업 생성 (검증용)
+        // 2. 수정된 작업 생성 (검증용)
         LogisticTask modifiedTask = LogisticTask.builder()
                 .name(request.getName())
                 .type(existingTask.getType())
-                .worker(newWorker)
                 .ware(existingTask.getWare())
                 .fromLocation(existingTask.getFromLocation())
                 .toLocation(existingTask.getToLocation())
@@ -126,19 +121,18 @@ public class LogisticTaskService {
                 .templateIdSnapshot(existingTask.getTemplateIdSnapshot())
                 .build();
 
-        // 4. 정합성 검증 (시뮬레이션)
+        // 3. 정합성 검증 (시뮬레이션)
         validationService.validateTaskModification(existingTask, modifiedTask);
 
-        // 5. 실제 수정
-        existingTask.modifyTask(request.getName(), newWorker, request.getQuantity(),
-                               request.getEtd(), request.getEta());
+        // 4. 실제 수정
+        existingTask.modifyTask(request.getName(), request.getQuantity(), request.getEtd(), request.getEta());
 
         log.info("물류 작업 수정 완료 - id: {}, name: {}", existingTask.getId(), existingTask.getName());
         return existingTask;
     }
 
     /**
-     * 물류 작업 부분 수정 (작업자와 시간만)
+     * 물류 작업 부분 수정 (시간만)
      */
     @Transactional
     public LogisticTask partialUpdate(Long taskId, LogisticTaskDTO.PartialUpdateReq request) {
@@ -148,12 +142,8 @@ public class LogisticTaskService {
         LogisticTask existingTask = logisticTaskRepository.findById(taskId)
                 .orElseThrow(() -> LogisticTaskException.notFound(taskId));
 
-        // 2. 새 작업자 조회
-        UserInfo newWorker = userInfoRepository.findById(request.getWorkerId())
-                .orElseThrow(() -> UserInfoException.notFound(request.getWorkerId()));
-
-        // 3. 부분 수정 (작업자와 시간만)
-        existingTask.modifyTask(newWorker, request.getEtd(), request.getEta());
+        // 2. 부분 수정 (시간만)
+        existingTask.modifyTask(request.getEtd(), request.getEta());
 
         log.info("물류 작업 부분 수정 완료 - id: {}", existingTask.getId());
         return existingTask;

@@ -100,14 +100,13 @@ public class LogisticTask extends BaseEntity {
 	}
 
 	/**
-	 * 물류 작업 전체 수정 (이름, 작업자, 수량, 시간 변경)
+	 * 물류 작업 전체 수정 (이름, 수량, 시간 변경)
 	 */
-	public void modifyTask(String name, UserInfo worker, Integer quantity, LocalTime etd, LocalTime eta) {
+	public void modifyTask(String name, Integer quantity, LocalTime etd, LocalTime eta) {
 		validateModificationPossible();
 		validateBasicFields(name, quantity, etd, eta);
 
 		this.name = name;
-		this.worker = worker;
 		this.quantity = quantity;
 		this.etd = etd;
 		this.eta = eta;
@@ -115,9 +114,9 @@ public class LogisticTask extends BaseEntity {
 	}
 
 	/**
-	 * 물류 작업 부분 수정 (작업자, 시간만 변경)
+	 * 물류 작업 부분 수정 (시간만 변경)
 	 */
-	public void modifyTask(UserInfo worker, LocalTime etd, LocalTime eta) {
+	public void modifyTask(LocalTime etd, LocalTime eta) {
 		validateModificationPossible();
 
 		if (etd == null || eta == null) {
@@ -127,7 +126,6 @@ public class LogisticTask extends BaseEntity {
 			throw LogisticTaskException.etdMustBeBeforeEta();
 		}
 
-		this.worker = worker;
 		this.etd = etd;
 		this.eta = eta;
 		this.status = LogisticTaskStatus.PENDING; // 수정 시 PENDING으로 초기화

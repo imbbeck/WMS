@@ -112,19 +112,6 @@ public class LogisticTaskDTO {
                     .build();
         }
 
-
-        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
-        public boolean isTimeSlotValid() {
-            return etd != null && eta != null &&
-                    etd.getMinute() % 10 == 0 &&
-                    eta.getMinute() % 10 == 0;
-        }
-
-        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
-        public boolean isEtdBeforeEta() {
-            return etd != null && eta != null && etd.isBefore(eta);
-        }
-
     }
 
     @Getter
@@ -135,10 +122,6 @@ public class LogisticTaskDTO {
         @NotBlank(message = "작업명은 필수입니다")
         @Schema(description = "작업명", example = "창고A → 창고B 노트북 이동 (수정)")
         private String name;
-
-        @NotNull(message = "작업자 ID는 필수입니다")
-        @Schema(description = "작업자 ID", example = "2")
-        private Long workerId;
 
         @NotNull(message = "수량은 필수입니다")
         @Positive(message = "수량은 자연수이어야 합니다")
@@ -154,37 +137,19 @@ public class LogisticTaskDTO {
         private LocalTime eta;
 
         @Builder
-        public UpdateReq(String name, Long workerId, Integer quantity,
-                        LocalTime etd, LocalTime eta) {
+        public UpdateReq(String name, Integer quantity, LocalTime etd, LocalTime eta) {
 
             this.name = name;
-            this.workerId = workerId;
             this.quantity = quantity;
             this.etd = etd;
             this.eta = eta;
-        }
-
-        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
-        public boolean isTimeSlotValid() {
-            return etd != null && eta != null &&
-                    etd.getMinute() % 10 == 0 &&
-                    eta.getMinute() % 10 == 0;
-        }
-
-        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
-        public boolean isEtdBeforeEta() {
-            return etd != null && eta != null && etd.isBefore(eta);
         }
     }
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @Schema(name = "LogisticTaskPartialUpdateRequest", description = "물류 작업 부분 수정 요청 (작업자와 시간만)")
+    @Schema(name = "LogisticTaskPartialUpdateRequest", description = "물류 작업 부분 수정 요청 (시간만)")
     public static class PartialUpdateReq {
-
-        @NotNull(message = "작업자 ID는 필수입니다")
-        @Schema(description = "작업자 ID", example = "3")
-        private Long workerId;
 
         @NotNull(message = "출발 예정시간은 필수입니다")
         @Schema(description = "출발 예정시간", example = "14:00")
@@ -195,22 +160,9 @@ public class LogisticTaskDTO {
         private LocalTime eta;
 
         @Builder
-        public PartialUpdateReq(Long workerId, LocalTime etd, LocalTime eta) {
-            this.workerId = workerId;
+        public PartialUpdateReq(LocalTime etd, LocalTime eta) {
             this.etd = etd;
             this.eta = eta;
-        }
-
-        @AssertTrue(message = "작업 시작시간과 종료시간은 10분 단위여야 합니다.")
-        public boolean isTimeSlotValid() {
-            return etd != null && eta != null &&
-                    etd.getMinute() % 10 == 0 &&
-                    eta.getMinute() % 10 == 0;
-        }
-
-        @AssertTrue(message = "작업 시작시간은 종료시간보다 빨라야 합니다.")
-        public boolean isEtdBeforeEta() {
-            return etd != null && eta != null && etd.isBefore(eta);
         }
     }
 

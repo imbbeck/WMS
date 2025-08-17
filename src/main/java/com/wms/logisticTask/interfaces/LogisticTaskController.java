@@ -95,7 +95,7 @@ public class LogisticTaskController {
      */
     @PatchMapping("/{taskId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "물류 작업 부분 수정", description = "물류 작업의 작업자와 예정 시간만 수정합니다.")
+    @Operation(summary = "물류 작업 부분 수정", description = "물류 작업의 예정 시간만 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "물류 작업 부분 수정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
