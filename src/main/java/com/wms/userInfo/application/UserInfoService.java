@@ -31,9 +31,11 @@ public class UserInfoService {
 
         UserInfo userInfo = request.toEntity();
 
+		UserInfo saved = userInfoRepository.save(userInfo);
+
         eventPublisher.publishEvent(new UserInfoCreatedEvent(userInfo.getId(), userInfo.getName()));
 
-        return userInfoRepository.save(userInfo);
+        return saved;
     }
 
     public UserInfo getUserById(Long id) {
@@ -60,9 +62,11 @@ public class UserInfoService {
 
         UserInfo userInfo = request.toEntity();
 
+		UserInfo saved = userInfoRepository.save(userInfo);
+
         eventPublisher.publishEvent(new UserInfoCreatedEvent(userInfo.getId(), userInfo.getName()));
 
-        return userInfoRepository.save(userInfo);
+        return saved;
     }
 
     @Transactional

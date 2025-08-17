@@ -19,7 +19,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -269,6 +273,8 @@ public class LogisticTaskDTO {
         @Schema(description = "작업 상태", example = "PENDING")
         private LogisticTaskStatus status;
 
+		private String color;
+
         @Schema(description = "템플릿 ID (참조용)", example = "1")
         private Integer templateIdSnapshot;
 
@@ -460,6 +466,119 @@ public class LogisticTaskDTO {
             this.data = data;
         }
     }
+
+	@Getter
+	@Builder
+	@Schema(name = "LogisticTaskWorkerDashboardResponse", description = "작업자별 대시보드 응답")
+	public static class WorkerDashboardRes {
+
+		@Schema(description = "작업 ID", example = "1")
+		private Long id;
+
+		private String type;
+
+		@Schema(description = "작업명", example = "창고A → 창고B 노트북 이동")
+		private String name;
+
+		@Schema(description = "물류 타입", example = "INNER")
+		private LogisticType logisticType;
+
+		@Schema(description = "물품 ID", example = "1")
+		private Long wareId;
+
+		@Schema(description = "물품명", example = "노트북")
+		private String wareName;
+
+		@Schema(description = "출발지 ID", example = "1")
+		private Long fromLocationId;
+
+		@Schema(description = "출발지명", example = "창고A")
+		private String fromLocationName;
+
+		@Schema(description = "도착지 ID", example = "2")
+		private Long toLocationId;
+
+		@Schema(description = "도착지명", example = "창고B")
+		private String toLocationName;
+
+		@Schema(description = "수량", example = "10")
+		private Integer quantity;
+
+		@Schema(description = "예정 날짜", example = "2025-01-01")
+		private LocalDate scheduledDate;
+
+		@Schema(description = "출발 예정시간", example = "09:00")
+		private LocalTime etd;
+
+		@Schema(description = "도착 예정시간", example = "10:00")
+		private LocalTime eta;
+
+		@Schema(description = "실제 출발시간", example = "09:05")
+		private LocalTime atd;
+
+		@Schema(description = "실제 도착시간", example = "10:03")
+		private LocalTime ata;
+
+		@Schema(description = "작업 상태", example = "PENDING")
+		private LogisticTaskStatus status;
+
+		private Styles styles;
+
+		@Getter
+		@Builder
+		@Schema(name = "Styles", description = "스타일")
+		public static class Styles {
+
+			@Schema(description = "백그라운드 컬러", example = "bg-blue-500")
+			private String backgroundColor;
+
+		}
+
+		private Long start;
+		private Long end;
+		private Integer progress;
+		private Boolean hideChildren;
+
+		@Schema(description = "템플릿 ID (참조용)", example = "1")
+		private Integer templateIdSnapshot;
+
+		@Schema(description = "생성일시", example = "2025-01-01T08:00:00")
+		private LocalDateTime createdAt;
+
+		@Schema(description = "수정일시", example = "2025-01-01T08:30:00")
+		private LocalDateTime updatedAt;
+
+		public static WorkerDashboardRes from(LogisticTask task, String wareName, String fromLocationName, String toLocationName) {
+			LocalDate now = LocalDate.now();
+			return WorkerDashboardRes.builder()
+					.id(task.getId())
+					.name(task.getName())
+					.type("task")
+					.logisticType(task.getType())
+					.wareId(task.getWare().getId())
+					.wareName(wareName)
+					.fromLocationId(task.getFromLocation().getId())
+					.fromLocationName(fromLocationName)
+					.toLocationId(task.getToLocation().getId())
+					.toLocationName(toLocationName)
+					.quantity(task.getQuantity())
+					.scheduledDate(task.getScheduledDate())
+					.etd(task.getEtd())
+					.eta(task.getEta())
+					.atd(task.getAtd())
+					.ata(task.getAta())
+					.status(task.getStatus())
+					.styles(new Styles(task.getStatus().getColor()))
+					.start(LocalDateTime.of(now, task.getEtd()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+					.end(LocalDateTime.of(now, task.getEta()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+					.progress(0)
+					.hideChildren(true)
+					.templateIdSnapshot(task.getTemplateIdSnapshot())
+					.createdAt(task.getCreatedAt())
+					.updatedAt(task.getUpdatedAt())
+					.build();
+		}
+	}
 
 
 

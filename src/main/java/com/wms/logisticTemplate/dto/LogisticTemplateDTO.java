@@ -108,6 +108,9 @@ public class LogisticTemplateDTO {
 		@Schema(description = "물류 타입", example = "INBOUND")
 		private LogisticType type;
 
+		@Schema(description = "컬러", example = "INBOUND")
+		private String color;
+
 		@Schema(description = "물품 ID", example = "1")
 		private Long wareId;
 
@@ -137,6 +140,7 @@ public class LogisticTemplateDTO {
 			this.id = logisticTemplate.getId();
 			this.name = logisticTemplate.getName();
 			this.type = logisticTemplate.getType();
+			this.color = logisticTemplate.getType().getColor();
 			this.wareId = logisticTemplate.getWare().getId();
 			this.wareName = logisticTemplate.getWare().getName();
 			this.fromLocationId = logisticTemplate.getFromLocation().getId();

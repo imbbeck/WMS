@@ -463,15 +463,20 @@ public class LogisticTaskController {
     @PreAuthorize("hasRole('ADMIN') or authentication.principal.id == #workerId")
     @Operation(summary = "작업자 개인 대시보드", description = "작업자 개인의 금일 배정된 작업들을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "작업자 개인 대시보드 조회 성공")
-    public ResponseEntity<List<LogisticTaskDTO.Res>> getWorkerDashboard(
+    public ResponseEntity<List<LogisticTaskDTO.WorkerDashboardRes>> getWorkerDashboard(
             @Parameter(description = "작업자 ID") @PathVariable Long workerId,
             @Parameter(description = "조회할 날짜 (기본값: 오늘)") @RequestParam(required = false) String date) {
         
         LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
         List<LogisticTask> tasks = logisticTaskService.findByWorkerAndDate(workerId, targetDate);
-        List<LogisticTaskDTO.Res> responses = tasks.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        List<LogisticTaskDTO.WorkerDashboardRes> responses = tasks.stream()
+				.map(task -> LogisticTaskDTO.WorkerDashboardRes.from(
+						task,
+						task.getWare().getName(),
+						task.getFromLocation().getName(),
+						task.getToLocation().getName()))
+				.collect(Collectors.toList());
+
         
         return ResponseEntity.ok(responses);
     }

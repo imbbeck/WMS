@@ -1,5 +1,8 @@
 package com.wms.logisticTemplate.domain.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.wms.location.domain.model.LocationType;
 
 public enum LogisticType {
@@ -23,4 +26,15 @@ public enum LogisticType {
         return String.format("%s 작업은 %s에서 %s로만 가능합니다.", 
                 this.name(), this.requiredFromType, this.requiredToType);
     }
+
+	private static final Map<LogisticType, String> COLOR_MAP = 	Map.of(
+			LogisticType.INBOUND, "bg-green-500",
+			LogisticType.OUTBOUND, "bg-purple-500",
+			LogisticType.INNER, "bg-blue-500"
+	);
+
+
+	public String getColor() {
+		return COLOR_MAP.get(this);
+	}
 }
