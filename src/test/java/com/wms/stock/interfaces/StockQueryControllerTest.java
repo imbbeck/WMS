@@ -1,6 +1,7 @@
 package com.wms.stock.interfaces;
 
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.stock.application.StockQueryService;
 import com.wms.stock.domain.exception.StockException;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StockQueryController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 @DisplayName("StockQueryController 테스트")
 class StockQueryControllerTest {
 

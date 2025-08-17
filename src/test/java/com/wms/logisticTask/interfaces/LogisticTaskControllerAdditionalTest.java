@@ -2,6 +2,7 @@ package com.wms.logisticTask.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.logisticTask.application.LogisticTaskService;
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTask.domain.model.LogisticTask;
@@ -48,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - 에러 응답 처리, 권한 검증, 경계값 테스트 등 포함
  */
 @WebMvcTest(LogisticTaskController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 @DisplayName("LogisticTaskController 추가 테스트")
 class LogisticTaskControllerAdditionalTest {
 
@@ -173,7 +174,11 @@ class LogisticTaskControllerAdditionalTest {
 			mockMvc.perform(get("/logistic-tasks/dashboard/worker/{workerId}", workerId))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.length()").value(1))
-					.andExpect(jsonPath("$[0].workerId").value(workerId));
+					.andExpect(jsonPath("$[0].id").value(1L))
+					.andExpect(jsonPath("$[0].type").value("task"))
+					.andExpect(jsonPath("$[0].name").value("창고A → 창고B 노트북 이동"))
+					.andExpect(jsonPath("$[0].logisticType").value("INNER"))
+					.andExpect(jsonPath("$[0].status").value("PENDING"));
 		}
 
 		@Test
@@ -613,7 +618,6 @@ class LogisticTaskControllerAdditionalTest {
 	private LogisticTaskDTO.UpdateReq createValidUpdateRequest() {
 		return LogisticTaskDTO.UpdateReq.builder()
 				.name("수정된 작업")
-				.workerId(1L)
 				.quantity(15)
 				.etd(LocalTime.of(10, 0))
 				.eta(LocalTime.of(11, 0))

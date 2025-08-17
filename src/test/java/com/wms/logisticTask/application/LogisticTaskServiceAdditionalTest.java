@@ -288,7 +288,6 @@ class LogisticTaskServiceAdditionalTest {
 			Long nonExistentTaskId = 999L;
 			LogisticTaskDTO.UpdateReq request = LogisticTaskDTO.UpdateReq.builder()
 					.name("수정된 작업")
-					.workerId(1L)
 					.quantity(15)
 					.etd(LocalTime.of(10, 0))
 					.eta(LocalTime.of(11, 0))
@@ -301,23 +300,6 @@ class LogisticTaskServiceAdditionalTest {
 					.isInstanceOf(RuntimeException.class); // LogisticTaskException.NotFoundEx
 		}
 
-		@Test
-		@DisplayName("부분 수정 시 존재하지 않는 작업자로 예외 발생")
-		void partialUpdate_WorkerNotFound_ThrowsException() {
-			// Given
-			LogisticTaskDTO.PartialUpdateReq request = LogisticTaskDTO.PartialUpdateReq.builder()
-					.workerId(999L)
-					.etd(LocalTime.of(14, 0))
-					.eta(LocalTime.of(15, 0))
-					.build();
-
-			given(logisticTaskRepository.findById(1L)).willReturn(Optional.of(task1));
-			given(userInfoRepository.findById(999L)).willReturn(Optional.empty());
-
-			// When & Then
-			assertThatThrownBy(() -> logisticTaskService.partialUpdate(1L, request))
-					.isInstanceOf(UserInfoException.NotFoundEx.class);
-		}
 	}
 
 	@Nested

@@ -15,6 +15,7 @@ import com.wms.applicationInfra.util.OptimisticLockRetryUtil;
 import com.wms.stock.application.StockCacheService;
 import com.wms.stock.application.TaskEventNotifier;
 import com.wms.stock.domain.event.StockEventStreamPublisher;
+import com.wms.userInfo.application.JwtProvider;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -73,4 +74,8 @@ public class TestConfig {
     // Utility MockBeans
     @MockBean
     private OptimisticLockRetryUtil optimisticLockRetryUtil;
+
+    // JWT 관련 MockBeans (Spring Security 테스트를 위해 필요)
+    @MockBean
+    private JwtProvider jwtProvider;
 }

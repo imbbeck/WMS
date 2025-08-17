@@ -2,6 +2,7 @@ package com.wms.userInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.userInfo.application.UserInfoService;
 import com.wms.userInfo.domain.model.Password;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserInfoController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 class UserInfoControllerTest {
 
     @Autowired

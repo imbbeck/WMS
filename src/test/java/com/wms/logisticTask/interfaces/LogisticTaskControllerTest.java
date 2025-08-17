@@ -2,6 +2,7 @@ package com.wms.logisticTask.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.logisticTask.application.LogisticTaskService;
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTask.domain.model.LogisticTask;
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LogisticTaskController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 @DisplayName("LogisticTaskController 웹 레이어 테스트")
 class LogisticTaskControllerTest {
 
@@ -112,7 +113,6 @@ class LogisticTaskControllerTest {
         Long taskId = 1L;
         LogisticTaskDTO.UpdateReq request = LogisticTaskDTO.UpdateReq.builder()
                 .name("창고A → 창고B 노트북 이동 (수정)")
-                .workerId(2L)
                 .quantity(15)
                 .etd(LocalTime.of(10, 0))
                 .eta(LocalTime.of(11, 0))
@@ -136,7 +136,6 @@ class LogisticTaskControllerTest {
         // Given
         Long taskId = 1L;
         LogisticTaskDTO.PartialUpdateReq request = LogisticTaskDTO.PartialUpdateReq.builder()
-                .workerId(3L)
                 .etd(LocalTime.of(14, 0))
                 .eta(LocalTime.of(15, 0))
                 .build();

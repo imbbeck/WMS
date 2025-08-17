@@ -618,7 +618,6 @@ class LogisticTaskTest {
     class TaskModificationTest {
 
         private LogisticTask task;
-        private UserInfo newWorker;
 
         @BeforeEach
         void setUp() {
@@ -634,26 +633,17 @@ class LogisticTaskTest {
                     .etd(etd)
                     .eta(eta)
                     .build();
-
-            newWorker = UserInfo.builder()
-                    .username("worker2")
-                    .name("박작업")
-                    .email("worker2@test.com")
-                    .password(new Password("password"))
-                    .type(UserType.WORKER)
-                    .build();
         }
 
         @Test
         @DisplayName("전체 수정 성공")
         void modifyTask_Full_Success() {
             // When
-            task.modifyTask("수정된 작업명", newWorker, 20, 
+            task.modifyTask("수정된 작업명", 20,
                            LocalTime.of(10, 0), LocalTime.of(11, 0));
 
             // Then
             assertThat(task.getName()).isEqualTo("수정된 작업명");
-            assertThat(task.getWorker()).isEqualTo(newWorker);
             assertThat(task.getQuantity()).isEqualTo(20);
             assertThat(task.getEtd()).isEqualTo(LocalTime.of(10, 0));
             assertThat(task.getEta()).isEqualTo(LocalTime.of(11, 0));
@@ -661,14 +651,13 @@ class LogisticTaskTest {
         }
 
         @Test
-        @DisplayName("부분 수정 성공 (작업자, 시간만)")
+        @DisplayName("부분 수정 성공 (시간만)")
         void modifyTask_Partial_Success() {
             // When
-            task.modifyTask(newWorker, LocalTime.of(11, 0), LocalTime.of(12, 0));
+            task.modifyTask(LocalTime.of(11, 0), LocalTime.of(12, 0));
 
             // Then
             assertThat(task.getName()).isEqualTo("원본 작업"); // 변경되지 않음
-            assertThat(task.getWorker()).isEqualTo(newWorker);
             assertThat(task.getQuantity()).isEqualTo(10); // 변경되지 않음
             assertThat(task.getEtd()).isEqualTo(LocalTime.of(11, 0));
             assertThat(task.getEta()).isEqualTo(LocalTime.of(12, 0));
@@ -683,7 +672,7 @@ class LogisticTaskTest {
             assertThat(task.getStatus()).isEqualTo(LogisticTaskStatus.INITIATE_DELAYED);
 
             // When
-            task.modifyTask("수정된 작업명", newWorker, 15,
+            task.modifyTask("수정된 작업명", 15,
                            LocalTime.of(10, 30), LocalTime.of(11, 30));
 
             // Then
@@ -699,7 +688,7 @@ class LogisticTaskTest {
             assertThat(task.getStatus()).isEqualTo(LogisticTaskStatus.INITIATED);
 
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", newWorker, 15,
+            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", 15,
                     LocalTime.of(10, 0), LocalTime.of(11, 0)))
                     .isInstanceOf(LogisticTaskException.TaskNotModifiableEx.class);
         }
@@ -708,7 +697,7 @@ class LogisticTaskTest {
         @DisplayName("전체 수정 시 잘못된 이름으로 예외 발생")
         void modifyTask_Full_InvalidName_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask("", newWorker, 20,
+            assertThatThrownBy(() -> task.modifyTask("", 20,
                     LocalTime.of(10, 0), LocalTime.of(11, 0)))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("작업명은 필수입니다");
@@ -718,7 +707,7 @@ class LogisticTaskTest {
         @DisplayName("전체 수정 시 잘못된 수량으로 예외 발생")
         void modifyTask_Full_InvalidQuantity_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", newWorker, 0,
+            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", 0,
                     LocalTime.of(10, 0), LocalTime.of(11, 0)))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("수량은 0보다 커야 합니다");
@@ -728,7 +717,7 @@ class LogisticTaskTest {
         @DisplayName("전체 수정 시 ETD가 ETA보다 늦을 때 예외 발생")
         void modifyTask_Full_EtdAfterEta_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", newWorker, 20,
+            assertThatThrownBy(() -> task.modifyTask("수정된 작업명", 20,
                     LocalTime.of(12, 0), LocalTime.of(10, 0)))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("출발 예정시간은 도착 예정시간보다 빨라야 합니다");
@@ -738,7 +727,7 @@ class LogisticTaskTest {
         @DisplayName("부분 수정 시 null ETD로 예외 발생")
         void modifyTask_Partial_NullEtd_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask(newWorker, null, LocalTime.of(11, 0)))
+            assertThatThrownBy(() -> task.modifyTask(null, LocalTime.of(11, 0)))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("ETD 및 ETA는 필수입니다");
         }
@@ -747,7 +736,7 @@ class LogisticTaskTest {
         @DisplayName("부분 수정 시 null ETA로 예외 발생")
         void modifyTask_Partial_NullEta_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask(newWorker, LocalTime.of(10, 0), null))
+            assertThatThrownBy(() -> task.modifyTask(LocalTime.of(10, 0), null))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("ETD 및 ETA는 필수입니다");
         }
@@ -756,8 +745,7 @@ class LogisticTaskTest {
         @DisplayName("부분 수정 시 ETD가 ETA보다 늦을 때 예외 발생")
         void modifyTask_Partial_EtdAfterEta_ThrowsException() {
             // When & Then
-            assertThatThrownBy(() -> task.modifyTask(newWorker, 
-                    LocalTime.of(13, 0), LocalTime.of(11, 0)))
+            assertThatThrownBy(() -> task.modifyTask(LocalTime.of(13, 0), LocalTime.of(11, 0)))
                     .isInstanceOf(LogisticTaskException.ValidationEx.class)
                     .hasMessageContaining("출발 예정시간은 도착 예정시간보다 빨라야 합니다");
         }

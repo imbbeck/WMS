@@ -2,6 +2,7 @@ package com.wms.userInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.userInfo.application.AuthService;
 import com.wms.userInfo.application.UserInfoService;
 import com.wms.userInfo.domain.model.UserInfo;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 class AuthControllerTest {
 
     @Autowired

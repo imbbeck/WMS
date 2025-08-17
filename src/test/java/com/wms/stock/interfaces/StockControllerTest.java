@@ -2,6 +2,7 @@ package com.wms.stock.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
+import com.wms.config.TestConfig;
 import com.wms.stock.application.StockCtrlService;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StockController.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestConfig.class})
 @DisplayName("StockController 웹 레이어 테스트")
 class StockControllerTest {
 
