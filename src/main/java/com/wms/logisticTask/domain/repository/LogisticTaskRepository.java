@@ -3,8 +3,11 @@ package com.wms.logisticTask.domain.repository;
 import com.wms.logisticTask.domain.model.LogisticTask;
 import com.wms.logisticTask.domain.model.LogisticTaskStatus;
 import com.wms.userInfo.domain.model.UserInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -305,6 +308,38 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 			@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
 
+	// ========== 배치 처리용 메서드들 ==========
+	
+	/**
+	 * 특정 날짜의 LogisticTask 개수 조회 (배치 파티셔닝용)
+	 */
+	@Query("SELECT COUNT(lt) FROM LogisticTask lt WHERE lt.scheduledDate = :targetDate")
+	Long countByScheduledDate(@Param("targetDate") LocalDate targetDate);
+	
+	/**
+	 * 특정 날짜의 최소 ID 조회 (배치 파티셔닝용)
+	 */
+	@Query("SELECT MIN(lt.id) FROM LogisticTask lt WHERE lt.scheduledDate = :targetDate")
+	Long findMinIdByScheduledDate(@Param("targetDate") LocalDate targetDate);
+	
+	/**
+	 * 특정 날짜의 최대 ID 조회 (배치 파티셔닝용)
+	 */
+	@Query("SELECT MAX(lt.id) FROM LogisticTask lt WHERE lt.scheduledDate = :targetDate")
+	Long findMaxIdByScheduledDate(@Param("targetDate") LocalDate targetDate);
+	
+	/**
+	 * ID 범위와 날짜로 LogisticTask 조회 (배치 Reader용)
+	 */
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	List<LogisticTask> findByScheduledDateAndIdBetween(
+			LocalDate scheduledDate, Long minId, Long maxId);
 
+	@EntityGraph(attributePaths = {"worker", "ware", "fromLocation", "toLocation"})
+	Page<LogisticTask> findByScheduledDateAndIdBetween(
+			LocalDate scheduledDate, Long minId, Long maxId, Pageable pageable);
+
+
+	void deleteAllByIdInBatch(List<Long> ids);
 
 }

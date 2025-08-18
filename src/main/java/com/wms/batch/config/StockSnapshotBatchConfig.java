@@ -42,9 +42,41 @@ public class StockSnapshotBatchConfig {
 	@Value("${batch.skip-limit:10}")
 	private int skipLimit;
 
+	@Value("${batch.grid-size:10}")
+	private int gridSize;
+
+	@Value("${batch.thread-pool.core-size:5}")
+	private int corePoolSize;
+
+	@Value("${batch.thread-pool.max-size:10}")
+	private int maxPoolSize;
+
+	@Value("${batch.thread-pool.queue-capacity:100}")
+	private int queueCapacity;
 
 	@Bean
-	public Step slaveStep() {
+	public Job stockSnapshotJob() {
+		JobBuilder jobBuilder = new JobBuilder("stockSnapshotJob", jobRepository);
+
+		return jobBuilder
+				.incrementer(new RunIdIncrementer())
+				.start(stockSnapshotMasterStep())
+				.build();
+	}
+
+	@Bean
+	public Step stockSnapshotMasterStep() {
+		StepBuilder stepBuilder = new StepBuilder("masterStep", jobRepository);
+
+		return stepBuilder.partitioner("slaveStep", partitioner)
+				.step(stockSnapshotSlaveStep())
+				.gridSize(gridSize)
+				.taskExecutor(stockSnapshotTaskExecutor())
+				.build();
+	}
+
+	@Bean
+	public Step stockSnapshotSlaveStep() {
 		StepBuilder stepBuilder = new StepBuilder("slaveStep", jobRepository);
 
 		SimpleStepBuilder<Stock, StockDailySnapshot> step = stepBuilder
@@ -61,41 +93,8 @@ public class StockSnapshotBatchConfig {
 		return step.build();
 	}
 
-	@Value("${batch.grid-size:10}")
-	private int gridSize;
-
 	@Bean
-	public Step masterStep() {
-		StepBuilder stepBuilder = new StepBuilder("masterStep", jobRepository);
-
-		return stepBuilder.partitioner("slaveStep", partitioner)
-				.step(slaveStep())
-				.gridSize(gridSize)
-				.taskExecutor(taskExecutor())
-				.build();
-	}
-
-	@Bean
-	public Job stockSnapshotJob() {
-		JobBuilder jobBuilder = new JobBuilder("stockSnapshotJob", jobRepository);
-
-		return jobBuilder
-				.incrementer(new RunIdIncrementer())
-				.start(masterStep())
-				.build();
-	}
-
-	@Value("${batch.thread-pool.core-size:5}")
-	private int corePoolSize;
-
-	@Value("${batch.thread-pool.max-size:10}")
-	private int maxPoolSize;
-
-	@Value("${batch.thread-pool.queue-capacity:100}")
-	private int queueCapacity;
-
-	@Bean
-	public TaskExecutor taskExecutor() {
+	public TaskExecutor stockSnapshotTaskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(corePoolSize);
 		executor.setMaxPoolSize(maxPoolSize);

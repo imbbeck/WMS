@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @SpringBatchTest
 @Import(QuerydslConfig.class)
-class step4_StockSnapshotBatchTest {
+class StockSnapshotBatchTest {
 
 	@Autowired
 	private JobLauncherTestUtils jobLauncherTestUtils;
