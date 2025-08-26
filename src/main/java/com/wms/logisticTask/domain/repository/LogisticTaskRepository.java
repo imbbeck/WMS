@@ -231,7 +231,7 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	@Query("SELECT lt FROM LogisticTask lt " +
 			"WHERE lt.scheduledDate = :targetDate " +
 			"AND lt.status = 'COMPLETED' " +
-			"AND (lt.fromLocation = :warehouseId OR lt.toLocation = :warehouseId) " +
+			"AND (lt.fromLocation.id = :warehouseId OR lt.toLocation.id = :warehouseId) " +
 			"AND lt.ware.id = :wareId " +
 			"ORDER BY lt.scheduledDate ASC, lt.etd ASC")
 	List<LogisticTask> findCompletedTasksByTargetDateAndStock(
@@ -339,7 +339,9 @@ public interface LogisticTaskRepository extends JpaRepository<LogisticTask, Long
 	Page<LogisticTask> findByScheduledDateAndIdBetween(
 			LocalDate scheduledDate, Long minId, Long maxId, Pageable pageable);
 
+	@Modifying
+	@Query("DELETE FROM LogisticTask lt WHERE lt.id IN :ids")
+	void deleteAllByIdInBatch(@Param("ids") List<Long> ids);
 
-	void deleteAllByIdInBatch(List<Long> ids);
 
 }

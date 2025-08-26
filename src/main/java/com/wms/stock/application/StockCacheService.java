@@ -137,6 +137,55 @@ public class StockCacheService {
 
 
 
+	/**
+	 * 창고 용량 조회 (캐시 조회 후 miss 시 DB 조회)
+	 */
+	@Cacheable(value = "warehouseCapacity", keyGenerator = "stockCacheKeyGenerator")
+	public Integer getWarehouseCapacity(Long warehouseId) {
+		log.debug("Cache miss - querying DB for warehouse capacity: {}", warehouseId);
+		// Location Repository를 통해 창고 용량 조회 (별도 메서드 필요)
+		return null; // TODO: LocationRepository에서 용량 조회 메서드 구현 필요
+	}
+
+	/**
+	 * 창고 용량 갱신
+	 */
+	@CachePut(value = "warehouseCapacity", keyGenerator = "stockCacheKeyGenerator")
+	public Integer updateWarehouseCapacity(Long warehouseId, Integer capacity) {
+		log.debug("Updated warehouse capacity cache - warehouseId: {}, capacity: {}", 
+				warehouseId, capacity);
+		return capacity;
+	}
+
+	/**
+	 * 창고 용량 캐시 삭제
+	 */
+	@CacheEvict(value = "warehouseCapacity", keyGenerator = "stockCacheKeyGenerator")
+	public void invalidateWarehouseCapacity(Long warehouseId) {
+		log.debug("Invalidated warehouse capacity cache - warehouseId: {}", warehouseId);
+	}
+
+	/**
+	 * 모든 재고 캐시 삭제 (전체 초기화용)
+	 */
+	public void clearAllStockCaches() {
+		try {
+			// 개별 재고 캐시 삭제
+			redisTemplate.delete(redisTemplate.keys("current_stock:*"));
+			
+			// 창고 총량 캐시 삭제
+			redisTemplate.delete(redisTemplate.keys("warehouse:*:currentSum"));
+			
+			// 창고 용량 캐시 삭제
+			redisTemplate.delete(redisTemplate.keys("warehouse:*:capacity"));
+			
+			log.info("모든 재고 관련 캐시가 삭제되었습니다.");
+			
+		} catch (Exception e) {
+			log.error("재고 캐시 전체 삭제 실패", e);
+		}
+	}
+
 	// 이벤트 리스너 - 재고 생성 이벤트 처리
 	@TransactionalEventListener(phase = AFTER_COMMIT)
 	public void onStockCreated(StockCreatedEvent event) {

@@ -28,7 +28,7 @@ public class DailySettlementScheduler {
      * 1. 재고 스냅샷 배치 실행
      * 2. 재고 배치 성공 시에만 물류작업 히스토리 배치 실행
      */
-    @Scheduled(cron = "0 0 0 * * *")  // 매일 자정
+    @Scheduled(cron = "0 0 0 * * *")  // 매일 자증
     public void runDailySettlement() {
         log.info("=== 일일 결산 배치 시작 ===");
         
@@ -41,23 +41,21 @@ public class DailySettlementScheduler {
             
             if (stockJobExecution.getStatus() == BatchStatus.COMPLETED) {
                 log.info("재고 스냅샷 배치 성공 완료");
-                
-                // 2단계: 물류작업 히스토리 배치 실행
-                JobExecution historyJobExecution = runLogisticTaskHistoryJob(targetDate);
-                
-                if (historyJobExecution.getStatus() == BatchStatus.COMPLETED) {
-                    log.info("=== 일일 결산 배치 전체 성공 완료 ===");
-                    logBatchSummary(startTime, targetDate, true, null);
-                } else {
-                    String errorMsg = String.format("물류작업 히스토리 배치 실패: %s", 
-                                                   historyJobExecution.getExitStatus());
-                    log.error(errorMsg);
-                    logBatchSummary(startTime, targetDate, false, errorMsg);
-                }
-                
+	            logBatchSummary(startTime, targetDate, true, null);
             } else {
-                String errorMsg = String.format("재고 스냅샷 배치 실패로 인한 물류작업 히스토리 배치 스킵: %s", 
-                                               stockJobExecution.getExitStatus());
+	            String errorMsg = String.format("재고 스냅샷 배치 실패: %s", stockJobExecution.getExitStatus());
+	            log.error(errorMsg);
+	            logBatchSummary(startTime, targetDate, false, errorMsg);
+            }
+                
+            // 2단계: 물류작업 히스토리 배치 실행
+            JobExecution historyJobExecution = runLogisticTaskHistoryJob(targetDate);
+
+            if (historyJobExecution.getStatus() == BatchStatus.COMPLETED) {
+                log.info("=== 일일 결산 배치 전체 성공 완료 ===");
+                logBatchSummary(startTime, targetDate, true, null);
+            } else {
+                String errorMsg = String.format("물류작업 히스토리 배치 실패: %s", historyJobExecution.getExitStatus());
                 log.error(errorMsg);
                 logBatchSummary(startTime, targetDate, false, errorMsg);
             }

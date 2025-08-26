@@ -30,11 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 @Entity
 @Table(name = "logistic_task_history")
 @Slf4j
-public class LogisticTaskHistory extends BaseEntity {
+public class LogisticTaskHistory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false)
+	@Column(name = "id")
 	private Long id;
 
 	@Column(name = "original_task_id", nullable = false)
