@@ -1,16 +1,23 @@
 package com.wms.stock.application;
 
-import com.wms.stock.domain.event.StockSyncStatus;
+import com.wms.notification.application.StockSyncNotificationAdapter;
+import com.wms.notification.domain.model.StockSyncStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+/**
+ * 작업 이벤트 알림 컴포넌트
+ * 
+ * 물류 작업의 생명주기와 재고 동기화 과정에서 발생하는
+ * 다양한 이벤트를 사용자에게 실시간으로 알립니다.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class TaskEventNotifier {
 
-	private final StockSyncEventService stockSyncEventService;
+	private final StockSyncNotificationAdapter stockSyncNotificationAdapter;
 
 	// =============  작업 라이프사이클 이벤트 =============
 
@@ -84,14 +91,83 @@ public class TaskEventNotifier {
 		broadcastEvent(taskId, StockSyncStatus.FAILED, "처리 오류: " + error);
 	}
 
+	// =============  새로운 편의 메서드들 =============
+
+	/**
+	 * 작업 시작 프로세스 전체를 간편하게 알림
+	 */
+	public void notifyTaskInitiationFlow(Long taskId, boolean hasStockChange, String details) {
+		if (hasStockChange) {
+			notifyTaskInitiationStarted(taskId);
+			// 실제 재고 처리는 별도 컴포넌트에서 수행
+			// 완료는 해당 컴포넌트에서 notifyTaskInitiated() 호출
+		} else {
+			notifyTaskInitiatedWithoutStock(taskId, details);
+		}
+	}
+
+	/**
+	 * 작업 완료 프로세스 전체를 간편하게 알림
+	 */
+	public void notifyTaskCompletionFlow(Long taskId, boolean hasStockChange, String details) {
+		if (hasStockChange) {
+			notifyTaskCompletionStarted(taskId);
+			// 실제 재고 처리는 별도 컴포넌트에서 수행
+			// 완료는 해당 컴포넌트에서 notifyTaskCompleted() 호출
+		} else {
+			notifyTaskCompletedWithoutStock(taskId, details);
+		}
+	}
+
+	/**
+	 * 재고 동기화 전체 프로세스 상태 추적
+	 */
+	public void notifyStockSyncFlow(Long taskId, String operation, boolean isRetry, int retryCount) {
+		if (isRetry) {
+			notifyStockSyncRetrying(taskId, retryCount);
+		} else {
+			notifyStockSyncProcessing(taskId, operation);
+		}
+	}
+
+	/**
+	 * 상세한 에러 정보와 함께 알림
+	 */
+	public void notifyDetailedError(Long taskId, String errorType, String details, Exception exception) {
+		String message = String.format("%s: %s", errorType, details);
+		if (exception != null) {
+			message += " (원인: " + exception.getMessage() + ")";
+		}
+		broadcastEvent(taskId, StockSyncStatus.FAILED, message);
+		
+		// 추가적으로 상세 로깅
+		log.error("작업 실패 상세정보: taskId={}, errorType={}, details={}", taskId, errorType, details, exception);
+	}
+
 	// =============  핵심 메서드 =============
 
 	private void broadcastEvent(Long taskId, StockSyncStatus status, String message) {
 		try {
-			stockSyncEventService.broadcastSyncStatus(taskId, status, message);
+			// 새로운 시스템으로 위임 - taskId로부터 workerId 자동 추출
+			stockSyncNotificationAdapter.broadcastStockSyncStatus(taskId, status, message);
 			log.debug("SSE 이벤트 발송: taskId={}, status={}, message={}", taskId, status, message);
 		} catch (Exception e) {
 			log.error("SSE 이벤트 발송 실패: taskId={}, status={}, message={}", taskId, status, message, e);
+		}
+	}
+
+	/**
+	 * 특정 사용자에게 직접 알림 (workerId를 알고 있는 경우)
+	 */
+	public void broadcastEventToUser(Long taskId, Long workerId, StockSyncStatus status, String message) {
+		try {
+			// 사용자 ID를 직접 지정하여 전송
+			stockSyncNotificationAdapter.broadcastStockSyncStatus(taskId, workerId, status, message);
+			log.debug("SSE 이벤트 발송 (직접): taskId={}, workerId={}, status={}, message={}", 
+					taskId, workerId, status, message);
+		} catch (Exception e) {
+			log.error("SSE 이벤트 발송 실패 (직접): taskId={}, workerId={}, status={}, message={}", 
+					taskId, workerId, status, message, e);
 		}
 	}
 }

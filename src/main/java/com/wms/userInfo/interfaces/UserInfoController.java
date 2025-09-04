@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -120,7 +122,10 @@ public class UserInfoController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "사용자 ID-이름 쌍 조회", description = "참조용 사용자 ID와 이름의 매핑 정보를 조회합니다")
 	@ApiResponse(responseCode = "200", description = "사용자 ID-이름 쌍 조회 성공")
-	public Map<Long, String> getIdNamePair() {
+	public Map<Long, String> getIdNamePair(@Parameter(hidden = true) @AuthenticationPrincipal UserInfo userInfo) {
+		if (userInfo.getType() == UserType.WORKER) {
+			return Map.of(userInfo.getId(), userInfo.getName());
+		}
 		return userInfoCacheManager.getIdNamePair();
 	}
 }

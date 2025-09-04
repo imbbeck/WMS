@@ -1,9 +1,10 @@
 package com.wms.stock.application;
 
 import com.wms.applicationInfra.util.JsonUtils;
+import com.wms.notification.application.StockSyncNotificationAdapter;
+import com.wms.notification.domain.model.StockSyncStatus;
 import com.wms.stock.domain.event.StockChangeEvent;
 import com.wms.stock.domain.event.StockChangeType;
-import com.wms.stock.domain.event.StockSyncStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,7 @@ public class StockEventStreamProcessor {
 
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final StockCtrlService stockCtrlService;
-	private final StockSyncEventService stockSyncEventService;
+	private final StockSyncNotificationAdapter stockSyncNotificationAdapter;
 
 	@Value("${stock.streams.enable:true}")
 	private boolean streamsEnabled;
@@ -159,8 +160,8 @@ public class StockEventStreamProcessor {
 
 			StockChangeEvent event = JsonUtils.fromJson(eventJson, StockChangeEvent.class);
 
-			// 처리 시작 알림
-			stockSyncEventService.broadcastSyncStatus(
+			// 처리 시작 알림 - 새로운 시스템 사용
+			stockSyncNotificationAdapter.broadcastStockSyncStatus(
 					event.getTaskId(),
 					StockSyncStatus.PROCESSING,
 					"재고 데이터를 업데이트하고 있습니다..."
@@ -169,8 +170,8 @@ public class StockEventStreamProcessor {
 			// 실제 재고 처리
 			processStockChangeEvent(event);
 
-			// 성공 알림
-			stockSyncEventService.broadcastSyncStatus(
+			// 성공 알림 - 새로운 시스템 사용
+			stockSyncNotificationAdapter.broadcastStockSyncStatus(
 					event.getTaskId(),
 					StockSyncStatus.COMPLETED,
 					"재고 데이터가 성공적으로 업데이트되었습니다"
@@ -209,7 +210,8 @@ public class StockEventStreamProcessor {
 		log.warn("낙관적 락 충돌, 재시도 예정: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId);
 
-		stockSyncEventService.broadcastSyncStatus(
+		// 재시도 알림 - 새로운 시스템 사용
+		stockSyncNotificationAdapter.broadcastStockSyncStatus(
 				taskId,
 				StockSyncStatus.RETRYING,
 				"동시성 충돌로 재시도 중입니다..."
@@ -226,7 +228,8 @@ public class StockEventStreamProcessor {
 		log.error("스트림 이벤트 처리 실패: stream={}, record={}, taskId={}",
 				streamKey, record.getId(), taskId, e);
 
-		stockSyncEventService.broadcastSyncStatus(
+		// 실패 알림 - 새로운 시스템 사용
+		stockSyncNotificationAdapter.broadcastStockSyncStatus(
 				taskId,
 				StockSyncStatus.FAILED,
 				"재고 업데이트 중 오류가 발생했습니다: " + e.getMessage()
