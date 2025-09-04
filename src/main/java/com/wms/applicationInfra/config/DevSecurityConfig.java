@@ -31,7 +31,6 @@ public class DevSecurityConfig {
 
 	// 개발 환경에서만 사용할 CORS 설정
 	@Bean
-	@Profile("dev")
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		
@@ -49,7 +48,6 @@ public class DevSecurityConfig {
 
 	// 추가: 글로벌 CORS 필터 (백업용)
 	@Bean
-	@Profile("dev")
 	public CorsFilter corsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration configuration = new CorsConfiguration();

@@ -13,11 +13,11 @@ public class AuthDTO {
 	public static class LoginReq {
 
 		@NotBlank(message = "사용자 ID는 필수입니다")
-		@Schema(description = "사용자 ID", example = "worker01")
+		@Schema(description = "사용자 ID", example = "worker1")
 		private String userId;
 
 		@NotBlank(message = "비밀번호는 필수입니다")
-		@Schema(description = "비밀번호", example = "password123")
+		@Schema(description = "비밀번호", example = "12341234")
 		private String password;
 
 		public LoginReq(String userId, String password) {

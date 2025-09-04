@@ -5,6 +5,7 @@ import com.wms.logisticTask.domain.model.LogisticTask;
 import com.wms.logisticTask.domain.model.LogisticTaskStatus;
 import com.wms.logisticTask.dto.LogisticTaskDTO;
 import com.wms.logisticTemplate.domain.model.LogisticType;
+import com.wms.userInfo.domain.model.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -336,22 +338,38 @@ public class LogisticTaskController {
      * 작업자별 물류 작업 조회
      */
     @GetMapping("/worker/{workerId}")
-    @PreAuthorize("hasRole('ADMIN') or authentication.principal.id == #workerId")
-    @Operation(summary = "작업자별 물류 작업 조회", description = "특정 작업자에게 배정된 물류 작업들을 조회합니다.")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('WORKER')")
+    @Operation(summary = "작업자별 물류 작업 조회", description = "특정 작업자에게 배정된 물류 작업들을 조회합니다. WORKER는 자신의 작업만, ADMIN은 모든 작업자의 작업을 조회할 수 있습니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "작업자별 물류 작업 조회 성공"),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (자신의 작업만 조회 가능)"),
-            @ApiResponse(responseCode = "404", description = "작업자를 찾을 수 없음")
+		    @ApiResponse(responseCode = "200", description = "작업자별 물류 작업 조회 성공"),
+		    @ApiResponse(responseCode = "403", description = "권한 없음"),
+		    @ApiResponse(responseCode = "404", description = "작업자를 찾을 수 없음")
     })
     public ResponseEntity<List<LogisticTaskDTO.Res>> getTasksByWorkerId(
-            @Parameter(description = "작업자 ID") @PathVariable Long workerId) {
-        
-        List<LogisticTask> tasks = logisticTaskService.findByWorkerId(workerId);
-        List<LogisticTaskDTO.Res> responses = tasks.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(responses);
+		    @Parameter(description = "작업자 ID (ADMIN만 사용)") @PathVariable Long workerId,
+		    Authentication authentication) {
+
+	    Long targetWorkerId;
+
+	    // ADMIN 권한이 있으면 요청된 workerId 사용, 아니면 현재 사용자 ID 사용
+	    if (authentication.getAuthorities().stream()
+			    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+		    targetWorkerId = workerId;
+		    log.debug("ADMIN 사용자가 작업자 ID {} 조회", workerId);
+	    } else {
+		    // WORKER인 경우 자신의 ID만 사용 (요청 파라미터 무시)
+		    UserInfo currentUser = (UserInfo) authentication.getPrincipal();
+		    targetWorkerId = currentUser.getId();
+		    log.debug("WORKER 사용자가 자신의 작업 조회 (요청 파라미터 {} 무시, 실제 조회 ID: {})",
+				    workerId, targetWorkerId);
+	    }
+
+	    List<LogisticTask> tasks = logisticTaskService.findByWorkerId(targetWorkerId);
+	    List<LogisticTaskDTO.Res> responses = tasks.stream()
+			    .map(this::convertToResponse)
+			    .collect(Collectors.toList());
+
+	    return ResponseEntity.ok(responses);
     }
 
     /**

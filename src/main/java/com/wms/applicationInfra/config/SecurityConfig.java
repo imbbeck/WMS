@@ -54,6 +54,9 @@ public class SecurityConfig {
         
         // 운영 환경에서는 구체적인 도메인만 허용
         configuration.setAllowedOrigins(Arrays.asList(
+		        "http://localhost:3000",  // React 개발 서버
+		        "http://localhost:8080",  // 로컬 테스트
+		        "http://192.168.1.43:3000",  // React 개발 서버
                 "https://mydomain.com",
                 "https://www.mydomain.com"
         ));

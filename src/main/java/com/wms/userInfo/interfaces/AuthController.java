@@ -52,7 +52,7 @@ public class AuthController {
 	})
 	public AuthDTO.TokenRes login(@Valid @RequestBody AuthDTO.LoginReq request, HttpServletResponse response) {
 		AuthDTO.TokenRes tokenResponse = authService.login(request);
-		
+
 		// 쿠키에 토큰 설정
 		setTokenCookies(response, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
 		
@@ -106,9 +106,9 @@ public class AuthController {
 	})
 	public ResponseEntity<AuthDTO.TokenRes> refreshToken(@RequestBody @Validated AuthDTO.RefreshTokenReq request, HttpServletResponse response) {
 		AuthDTO.TokenRes tokenResponse = authService.refreshToken(request);
-		
 		// 쿠키에 새로운 토큰 설정
 		setTokenCookies(response, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
+
 		
 		return ResponseEntity.ok(tokenResponse);
 	}
@@ -182,7 +182,7 @@ public class AuthController {
 	 */
 	private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
 		// Access Token 쿠키 설정
-		Cookie accessTokenCookie = createCookie(ACCESS_TOKEN_COOKIE, accessToken, ACCESS_TOKEN_EXPIRE);
+		Cookie accessTokenCookie = createSecureCookie(ACCESS_TOKEN_COOKIE, accessToken, ACCESS_TOKEN_EXPIRE);
 		response.addCookie(accessTokenCookie);
 		
 		// Refresh Token 쿠키 설정 (HttpOnly, Secure)
@@ -222,7 +222,8 @@ public class AuthController {
 		cookie.setPath("/");
 		cookie.setMaxAge(maxAge);
 		cookie.setHttpOnly(true); // JavaScript에서 접근 불가
-		cookie.setSecure(!"dev".equals(activeProfile)); // 개발환경에서는 false, 운영환경에서는 true
+//		cookie.setSecure(!"dev".equals(activeProfile)); // 개발환경에서는 false, 운영환경에서는 true
+		cookie.setSecure(false);
 		cookie.setAttribute("SameSite", "Lax"); // CSRF 보호
 		return cookie;
 	}
