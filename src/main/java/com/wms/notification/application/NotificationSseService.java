@@ -2,21 +2,26 @@ package com.wms.notification.application;
 
 import com.wms.notification.domain.model.NotificationStatus;
 import com.wms.notification.domain.model.NotificationType;
+import com.wms.userInfo.domain.model.UserInfo;
+import com.wms.userInfo.domain.model.UserType;
+import com.wms.userInfo.domain.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 범용 알림 SSE 서비스
  * 사용자별 구독 관리와 실시간 알림 전송을 담당
+ * ADMIN 유저는 모든 알림을 수신할 수 있음
  */
 @Service
 @RequiredArgsConstructor
@@ -26,8 +31,7 @@ public class NotificationSseService {
     // 사용자별 구독자 관리: userId -> Set<SseEmitter>
     private final Map<Long, Set<SseEmitter>> userSubscribers = new ConcurrentHashMap<>();
     
-    // 전체 공지 구독자 관리
-    private final Set<SseEmitter> broadcastSubscribers = ConcurrentHashMap.newKeySet();
+    private final UserInfoRepository userInfoRepository;
 
     /**
      * 사용자별 알림 구독
@@ -54,41 +58,12 @@ public class NotificationSseService {
     }
 
     /**
-     * 전체 공지 구독
-     */
-    public SseEmitter subscribeToBroadcastNotifications() {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-
-        // 구독자 등록
-        broadcastSubscribers.add(emitter);
-
-        // 연결 관리
-        emitter.onCompletion(() -> removeBroadcastSubscriber(emitter));
-        emitter.onTimeout(() -> removeBroadcastSubscriber(emitter));
-        emitter.onError(e -> {
-            log.warn("전체 공지 SSE 연결 에러: error={}", e.getMessage());
-            removeBroadcastSubscriber(emitter);
-        });
-
-        // 즉시 연결 확인 메시지 전송
-        sendBroadcastConnectionConfirmation(emitter);
-
-        log.info("전체 공지 구독 등록");
-        return emitter;
-    }
-
-    /**
      * 특정 사용자에게 알림 전송
+     * ADMIN 유저들도 모든 알림을 수신함
      */
     public void sendNotificationToUser(Long userId, NotificationType type, String title, 
                                      String message, NotificationStatus status, Long referenceId) {
         
-        Set<SseEmitter> subscribers = userSubscribers.get(userId);
-        if (subscribers == null || subscribers.isEmpty()) {
-            log.debug("구독자 없음: userId={}", userId);
-            return;
-        }
-
         NotificationEvent event = NotificationEvent.builder()
                 .userId(userId)
                 .type(type)
@@ -101,43 +76,77 @@ public class NotificationSseService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        // 모든 구독자에게 전송 (실패한 연결은 자동 제거)
-        subscribers.removeIf(emitter -> !sendEvent(emitter, "user-notification", event));
+        // 1. 대상 사용자에게 전송
+        sendToSpecificUser(userId, event);
+
+        // 2. 모든 ADMIN 유저에게도 전송 (대상 사용자가 ADMIN이 아닌 경우만)
+        sendToAllAdmins(userId, event);
 
         log.info("사용자 알림 전송 완료: userId={}, type={}, status={}", userId, type, status.getStatusCode());
-
-        // 터미널 상태인 경우 5초 후 연결 정리
-        if (status.isTerminal() && referenceId != null) {
-            scheduleConnectionCleanup(userId, referenceId, subscribers);
-        }
     }
 
     /**
-     * 전체 공지 전송
+     * 특정 사용자에게 알림 전송
      */
-    public void sendBroadcastNotification(NotificationType type, String title, 
-                                        String message, NotificationStatus status) {
-        
-        if (broadcastSubscribers.isEmpty()) {
-            log.debug("전체 공지 구독자 없음");
+    private void sendToSpecificUser(Long userId, NotificationEvent event) {
+        Set<SseEmitter> subscribers = userSubscribers.get(userId);
+        if (subscribers == null || subscribers.isEmpty()) {
+            log.debug("구독자 없음: userId={}", userId);
             return;
         }
 
-        NotificationEvent event = NotificationEvent.builder()
-                .userId(-1L) // 전체 공지 표시
-                .type(type)
-                .title(title)
-                .message(message)
-                .statusCode(status.getStatusCode())
-                .statusDisplay(status.getDisplayName())
-                .isTerminal(status.isTerminal())
-                .timestamp(LocalDateTime.now())
-                .build();
+        // 모든 구독자에게 전송 (실패한 연결은 자동 제거)
+        subscribers.removeIf(emitter -> !sendEvent(emitter, "user-notification", event));
+        log.debug("특정 사용자 알림 전송: userId={}", userId);
+    }
 
-        // 모든 전체 공지 구독자에게 전송
-        broadcastSubscribers.removeIf(emitter -> !sendEvent(emitter, "broadcast-notification", event));
+    /**
+     * 모든 ADMIN 유저에게 알림 전송 (원래 대상자가 ADMIN이 아닌 경우만)
+     */
+    private void sendToAllAdmins(Long originalUserId, NotificationEvent event) {
+        try {
+            // 원래 대상자가 ADMIN인지 확인
+            UserInfo originalUser = userInfoRepository.findById(originalUserId).orElse(null);
+            if (originalUser != null && originalUser.getType() == UserType.ADMIN) {
+                log.debug("원래 대상자가 ADMIN이므로 중복 전송 생략: userId={}", originalUserId);
+                return;
+            }
 
-        log.info("전체 공지 전송 완료: type={}, status={}", type, status.getStatusCode());
+            // 모든 ADMIN 유저 조회
+            Set<Long> adminUserIds = userInfoRepository.findAllByType(UserType.ADMIN)
+                    .stream()
+                    .map(UserInfo::getId)
+                    .collect(Collectors.toSet());
+
+            // ADMIN 이벤트 생성 (ADMIN용 메시지 표시)
+            NotificationEvent adminEvent = NotificationEvent.builder()
+                    .userId(-1L)  // ADMIN 모니터링 표시
+                    .type(event.getType())
+                    .title("[모니터링] " + event.getTitle())
+		            .message(String.format("[사용자 ID: %d%s] %s",
+				            originalUserId,
+				            event.getReferenceId() != null ? ", 작업 ID: " + event.getReferenceId() : "",
+				            event.getMessage()))
+                    .statusCode(event.getStatusCode())
+                    .statusDisplay(event.getStatusDisplay())
+                    .isTerminal(event.getIsTerminal())
+                    .referenceId(event.getReferenceId())
+                    .timestamp(event.getTimestamp())
+                    .build();
+
+            // 각 ADMIN에게 전송
+            for (Long adminId : adminUserIds) {
+                Set<SseEmitter> adminSubscribers = userSubscribers.get(adminId);
+                if (adminSubscribers != null && !adminSubscribers.isEmpty()) {
+                    adminSubscribers.removeIf(emitter -> !sendEvent(emitter, "admin-monitoring", adminEvent));
+                }
+            }
+
+            log.debug("ADMIN 모니터링 알림 전송 완료: 대상 ADMIN 수={}", adminUserIds.size());
+
+        } catch (Exception e) {
+            log.warn("ADMIN 모니터링 알림 전송 실패: {}", e.getMessage());
+        }
     }
 
     /**
@@ -155,22 +164,21 @@ public class NotificationSseService {
     }
 
     /**
-     * 구독자 제거 - 전체 공지
-     */
-    public void removeBroadcastSubscriber(SseEmitter emitter) {
-        broadcastSubscribers.remove(emitter);
-    }
-
-    /**
      * 연결 확인 메시지 전송
      */
     private void sendConnectionConfirmation(Long userId, SseEmitter emitter) {
         try {
+            // 사용자 타입 확인
+            UserInfo user = userInfoRepository.findById(userId).orElse(null);
+            String userTypeMessage = (user != null && user.getType() == UserType.ADMIN) 
+                ? "관리자 알림 서비스에 연결되었습니다. (모든 알림 수신)"
+                : "알림 서비스에 연결되었습니다.";
+
             NotificationEvent confirmEvent = NotificationEvent.builder()
                     .userId(userId)
                     .type(NotificationType.SYSTEM)
                     .title("연결 확인")
-                    .message("알림 서비스에 연결되었습니다.")
+                    .message(userTypeMessage)
                     .statusCode("CONNECTED")
                     .statusDisplay("연결됨")
                     .isTerminal(false)
@@ -184,32 +192,6 @@ public class NotificationSseService {
         } catch (Exception e) {
             log.warn("연결 확인 메시지 전송 실패: userId={}", userId);
             removeUserSubscriber(userId, emitter);
-        }
-    }
-
-    /**
-     * 전체 공지 연결 확인 메시지 전송
-     */
-    private void sendBroadcastConnectionConfirmation(SseEmitter emitter) {
-        try {
-            NotificationEvent confirmEvent = NotificationEvent.builder()
-                    .userId(-1L)
-                    .type(NotificationType.SYSTEM)
-                    .title("전체 공지 연결")
-                    .message("전체 공지 서비스에 연결되었습니다.")
-                    .statusCode("CONNECTED")
-                    .statusDisplay("연결됨")
-                    .isTerminal(false)
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-            emitter.send(SseEmitter.event()
-                    .name("broadcast-connection-confirmed")
-                    .data(confirmEvent));
-
-        } catch (Exception e) {
-            log.warn("전체 공지 연결 확인 메시지 전송 실패");
-            removeBroadcastSubscriber(emitter);
         }
     }
 
@@ -228,36 +210,47 @@ public class NotificationSseService {
         }
     }
 
+	@Scheduled(fixedRate = 30000) // 30초마다 실행
+	public void sendHeartbeat() {
+		if (userSubscribers.isEmpty()) {
+			log.trace("구독자 없음, 하트비트 스킵");
+			return;
+		}
+
+		// 모든 구독자에게 하트비트 전송
+		userSubscribers.forEach((userId, emitters) -> {
+			emitters.removeIf(emitter -> {
+				try {
+					// 주석(comment) 형태의 더미 데이터 전송
+					emitter.send(SseEmitter.event().comment("heartbeat"));
+					log.trace("하트비트 전송 성공: userId={}", userId);
+					return false; // 연결 유지
+				} catch (IOException e) {
+					log.debug("하트비트 전송 실패, 구독자 제거: userId={}, error={}", userId, e.getMessage());
+					return true; // 연결 실패, 제거 대상
+				}
+			});
+		});
+	}
+
     /**
-     * 터미널 상태 도달시 연결 정리 스케줄링
+     * 사용자의 모든 SSE 연결 종료 (로그아웃 시 호출)
      */
-    private void scheduleConnectionCleanup(Long userId, Long referenceId, Set<SseEmitter> subscribers) {
-        CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
-                .execute(() -> {
-                    // 종료 알림 전송
-                    NotificationEvent closeEvent = NotificationEvent.builder()
-                            .userId(userId)
-                            .type(NotificationType.SYSTEM)
-                            .title("작업 완료")
-                            .message("작업이 완료되어 연결을 종료합니다.")
-                            .statusCode("DISCONNECTING")
-                            .statusDisplay("연결 종료")
-                            .isTerminal(true)
-                            .referenceId(referenceId)
-                            .timestamp(LocalDateTime.now())
-                            .build();
+    public void disconnectAllUserConnections(Long userId) {
+        Set<SseEmitter> subscribers = userSubscribers.get(userId);
+        if (subscribers != null) {
+            subscribers.forEach(emitter -> {
+                try {
+                    emitter.complete();
+                    log.debug("SSE 연결 종료: userId={}", userId);
+                } catch (Exception e) {
+                    log.debug("SSE 연결 종료 중 오류 (무시 가능): userId={}", userId, e);
+                }
+            });
 
-                    subscribers.forEach(emitter -> {
-                        sendEvent(emitter, "connection-closing", closeEvent);
-                        try {
-                            emitter.complete();
-                        } catch (Exception e) {
-                            log.debug("연결 종료 중 오류: {}", e.getMessage());
-                        }
-                    });
-
-                    log.debug("터미널 상태 연결 정리 완료: userId={}, referenceId={}", userId, referenceId);
-                });
+            userSubscribers.remove(userId);
+            log.info("사용자 모든 SSE 연결 정리 완료: userId={}, 연결 수={}", userId, subscribers.size());
+        }
     }
 
     /**
@@ -266,7 +259,6 @@ public class NotificationSseService {
     public Map<String, Object> getSubscriptionStatus() {
         return Map.of(
             "userSubscribers", userSubscribers.size(),
-            "broadcastSubscribers", broadcastSubscribers.size(),
             "userSubscriberDetails", userSubscribers.entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(
                     Map.Entry::getKey,

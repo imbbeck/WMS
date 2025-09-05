@@ -16,11 +16,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
  * 범용 알림 SSE 컨트롤러
- * 사용자별 개인 알림과 전체 공지 알림을 실시간으로 전송
+ * 사용자별 개인 알림을 실시간으로 전송
+ * ADMIN 유저는 모든 알림을 수신할 수 있음
  */
 @RestController
 @RequestMapping("/notifications")
@@ -33,19 +35,20 @@ public class NotificationController {
 
     /**
      * 로그인한 사용자의 개인 알림 구독
+     * ADMIN 유저의 경우 모든 사용자의 알림을 수신함
      */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(
         summary = "개인 알림 실시간 구독", 
-        description = "로그인한 사용자의 개인 알림을 실시간으로 스트리밍합니다."
+        description = "로그인한 사용자의 개인 알림을 실시간으로 스트리밍합니다. ADMIN 유저는 모든 알림을 수신합니다."
     )
     @ApiResponse(responseCode = "200", description = "SSE 스트림 연결 성공")
     public SseEmitter subscribeToPersonalNotifications(
             @Parameter(hidden = true) @AuthenticationPrincipal UserInfo userInfo) {
         
         Long userId = userInfo.getId();
-        
-        log.info("개인 알림 구독 요청: userId={}, username={}", userId, userInfo.getUsername());
+        log.debug("개인 알림 구독 요청: userId={}, username={}, type={}",
+                userId, userInfo.getUsername(), userInfo.getType());
         
         return notificationSseService.subscribeToUserNotifications(userId);
     }
@@ -64,26 +67,9 @@ public class NotificationController {
             @Parameter(description = "사용자 ID") @PathVariable Long userId,
             @Parameter(hidden = true) @AuthenticationPrincipal UserInfo adminUser) {
         
-        log.info("특정 사용자 알림 구독 요청: targetUserId={}, adminUserId={}", userId, adminUser.getId());
+        log.debug("특정 사용자 알림 구독 요청: targetUserId={}, adminUserId={}", userId, adminUser.getId());
         
         return notificationSseService.subscribeToUserNotifications(userId);
-    }
-
-    /**
-     * 전체 공지 알림 구독
-     */
-    @GetMapping(value = "/subscribe/broadcast", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @Operation(
-        summary = "전체 공지 알림 구독", 
-        description = "전체 공지 알림을 실시간으로 스트리밍합니다."
-    )
-    @ApiResponse(responseCode = "200", description = "SSE 스트림 연결 성공")
-    public SseEmitter subscribeToBroadcastNotifications(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserInfo userInfo) {
-        
-        log.info("전체 공지 알림 구독 요청: userId={}", userInfo.getId());
-        
-        return notificationSseService.subscribeToBroadcastNotifications();
     }
 
     /**
@@ -98,7 +84,7 @@ public class NotificationController {
             @RequestBody SendPersonalNotificationRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal UserInfo senderUser) {
         
-        log.info("개인 알림 수동 전송 요청: targetUserId={}, type={}, senderUserId={}", 
+        log.debug("개인 알림 수동 전송 요청: targetUserId={}, type={}, senderUserId={}",
                 request.userId, request.type, senderUser.getId());
         
         NotificationStatus status = resolveNotificationStatus(request.type, request.statusCode);
@@ -112,34 +98,7 @@ public class NotificationController {
             request.referenceId
         );
         
-        return ResponseEntity.ok("알림이 전송되었습니다.");
-    }
-
-    /**
-     * 전체 공지 수동 전송 (관리자용)
-     */
-    @PostMapping("/send/broadcast")
-    @Operation(
-        summary = "전체 공지 수동 전송", 
-        description = "관리자가 전체 사용자에게 공지를 전송합니다."
-    )
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> sendBroadcastNotification(
-            @RequestBody SendBroadcastNotificationRequest request,
-            @Parameter(hidden = true) @AuthenticationPrincipal UserInfo adminUser) {
-        
-        log.info("전체 공지 수동 전송 요청: type={}, adminUserId={}", request.type, adminUser.getId());
-        
-        NotificationStatus status = resolveNotificationStatus(request.type, request.statusCode);
-        
-        notificationSseService.sendBroadcastNotification(
-            request.type,
-            request.title,
-            request.message,
-            status
-        );
-        
-        return ResponseEntity.ok("전체 공지가 전송되었습니다.");
+        return ResponseEntity.ok("알림이 전송되었습니다. (ADMIN 유저들도 자동으로 수신)");
     }
 
     /**
@@ -155,7 +114,7 @@ public class NotificationController {
             @Parameter(hidden = true) @AuthenticationPrincipal UserInfo userInfo) {
         
         Long userId = userInfo.getId();
-        log.info("본인 알림 전송 요청: userId={}, type={}", userId, request.type);
+        log.debug("본인 알림 전송 요청: userId={}, type={}", userId, request.type);
         
         NotificationStatus status = resolveNotificationStatus(request.type, request.statusCode);
         
@@ -217,16 +176,6 @@ public class NotificationController {
         String message,
         String statusCode,
         Long referenceId
-    ) {}
-
-    /**
-     * 전체 공지 전송 요청 DTO
-     */
-    public record SendBroadcastNotificationRequest(
-        NotificationType type,
-        String title,
-        String message,
-        String statusCode
     ) {}
 
     /**

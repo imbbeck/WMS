@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -130,8 +131,8 @@ public class StockEventStreamProcessor {
 	public void consumeStreamEvents(String streamKey) {
 		try {
 			// Consumer Group으로 읽기
-			var records = redisTemplate.opsForStream()
-					.read(Consumer.from(consumerGroup, consumerName),
+			List<MapRecord<String, Object, Object>> records = redisTemplate.opsForStream().read(
+					Consumer.from(consumerGroup, consumerName),
 							StreamReadOptions.empty().count(batchSize).block(pollTimeout),
 							StreamOffset.create(streamKey, ReadOffset.lastConsumed()));
 
