@@ -37,7 +37,12 @@ public class DynamicStockPartitioner implements Partitioner {
 			return new HashMap<>();
 		}
 
-		int calculatedPartitions = (int) ((totalCount / targetSize) + 1);
+		int calculatedPartitions = (int) Math.ceil((double) totalCount / targetSize);
+		// 데이터가 있지만 계산된 파티션 수가 0인 경우(예: totalCount < targetSize), 최소 1개로 설정
+		if (calculatedPartitions == 0) {
+			calculatedPartitions = 1;
+		}
+
 		int partitions = Math.min(calculatedPartitions, maxPartitionSize);
 
 		if (calculatedPartitions > maxPartitionSize) {
@@ -59,27 +64,25 @@ public class DynamicStockPartitioner implements Partitioner {
 		log.info("[DynamicStockPartitioner] 파티션 설정 - 총 데이터: {}, 목표 크기: {}, 파티션 수: {}",
 				totalCount, targetSize, partitions);
 
-		// 파티션이 1개인 경우 처리
-		if (partitions == 1) {
-			ExecutionContext context = new ExecutionContext();
-			context.putLong("minId", minId);
-			context.putLong("maxId", maxId);
-			result.put("partition0", context);
-			return result;
-		}
-
-		long range = (maxId - minId) / partitions + 1;
+		long range = (maxId - minId) / partitions;
 		long start = minId;
-		long end = start + range - 1;
 
 		for (int i = 0; i < partitions; i++) {
 			ExecutionContext context = new ExecutionContext();
 			context.putLong("minId", start);
-			context.putLong("maxId", Math.min(end, maxId));
+
+			long end;
+			if (i == partitions - 1) {
+				// 마지막 파티션은 maxId까지 모두 포함하도록 설정
+				end = maxId;
+			} else {
+				end = start + range;
+			}
+
+			context.putLong("maxId", end);
 			result.put("partition" + i, context);
 
-			start += range;
-			end += range;
+			start = end + 1;
 		}
 
 		return result;

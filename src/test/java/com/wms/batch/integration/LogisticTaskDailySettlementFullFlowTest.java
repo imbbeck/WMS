@@ -9,6 +9,7 @@ import com.wms.logisticTask.domain.model.LogisticTaskStatus;
 import com.wms.logisticTask.domain.repository.LogisticTaskHistoryRepository;
 import com.wms.logisticTask.domain.repository.LogisticTaskRepository;
 import com.wms.logisticTemplate.domain.model.LogisticType;
+import com.wms.userInfo.domain.model.Password;
 import com.wms.userInfo.domain.model.UserInfo;
 import com.wms.userInfo.domain.model.UserType;
 import com.wms.userInfo.domain.repository.UserInfoRepository;
@@ -175,6 +176,7 @@ class LogisticTaskDailySettlementFullFlowTest {
                 .name("테스트 작업자")
                 .email("testworker@test.com")
                 .type(UserType.WORKER)
+		        .password(Password.builder().value("password").build())
                 .build();
         testWorker = userInfoRepository.save(testWorker);
         
@@ -206,6 +208,9 @@ class LogisticTaskDailySettlementFullFlowTest {
     
     private void createDiverseLogisticTasks() {
         LogisticTaskStatus[] statuses = LogisticTaskStatus.values();
+	    // LogisticTaskStatus.EXPIRED 상태는 생성 시점에서 의미가 없으므로 제외
+	    statuses = java.util.Arrays.copyOfRange(statuses, 1, statuses.length);
+
         
         for (int i = 0; i < statuses.length; i++) {
             LogisticTask task = LogisticTask.builder()

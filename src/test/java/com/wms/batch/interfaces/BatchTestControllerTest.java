@@ -1,13 +1,17 @@
 package com.wms.batch.interfaces;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import com.wms.batch.runner.DailySettlementScheduler;
 import com.wms.logisticTask.domain.repository.LogisticTaskHistoryRepository;
 import com.wms.logisticTask.domain.repository.LogisticTaskRepository;
+import com.wms.userInfo.application.JwtProvider;
+import com.wms.userInfo.domain.repository.UserInfoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -20,11 +24,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BatchTestController.class)
+@WithMockUser(roles = "ADMIN")
 @DisplayName("BatchTestController API 테스트")
 class BatchTestControllerTest {
     
     @Autowired
     private MockMvc mockMvc;
+
+	@MockBean
+	private JwtProvider jwtProvider;
+
+	@MockBean
+	private UserInfoRepository userInfoRepository;
     
     @MockBean
     private DailySettlementScheduler dailySettlementScheduler;
@@ -43,7 +54,8 @@ class BatchTestControllerTest {
         
         // When & Then
         mockMvc.perform(post("/api/batch/daily-settlement")
-                        .param("targetDate", "2024-01-15"))
+                        .param("targetDate", "2024-01-15")
+				        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("started"))
                 .andExpect(jsonPath("$.targetDate").value("2024-01-15"))
@@ -57,7 +69,8 @@ class BatchTestControllerTest {
         doNothing().when(dailySettlementScheduler).runManualSettlement(any(LocalDate.class));
         
         // When & Then
-        mockMvc.perform(post("/api/batch/daily-settlement"))
+        mockMvc.perform(post("/api/batch/daily-settlement")
+				        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("started"))
                 .andExpect(jsonPath("$.targetDate").exists())
@@ -165,7 +178,8 @@ class BatchTestControllerTest {
                 .when(dailySettlementScheduler).runManualSettlement(any(LocalDate.class));
         
         // When & Then
-        mockMvc.perform(post("/api/batch/daily-settlement"))
+        mockMvc.perform(post("/api/batch/daily-settlement")
+				        .with(csrf()))
                 .andExpect(status().isOk()) // 비동기 실행이므로 성공 응답
                 .andExpect(jsonPath("$.status").value("started"));
     }

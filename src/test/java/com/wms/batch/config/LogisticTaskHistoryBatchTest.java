@@ -40,7 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @SpringBatchTest
 @ActiveProfiles("test")
-@Transactional
 class LogisticTaskHistoryBatchTest {
     
     @Autowired
@@ -83,15 +82,19 @@ class LogisticTaskHistoryBatchTest {
         // 데이터 초기화
         logisticTaskHistoryRepository.deleteAll();
         logisticTaskRepository.deleteAll();
+	    userInfoRepository.deleteAll();
+	    wareRepository.deleteAll();
+	    locationRepository.deleteAll();
         
         // 테스트 엔티티 생성
         setupTestEntities();
-        createTestTasks();
+	    createTestTasks();
     }
     
     @Test
     void 배치_정상실행() throws Exception {
         // Given
+	    createTestTasks();
         JobParameters jobParameters = createJobParameters();
         long initialTaskCount = logisticTaskRepository.countByScheduledDate(targetDate);
         

@@ -58,7 +58,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = (int)((dataCount / targetSize) + 1); // (40/20) + 1 = 3개 파티션
+		int expectedPartitions = (int) Math.ceil((double) dataCount / targetSize);; // (40/20) + 1 = 3개 파티션
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		ExecutionContext partition0 = partitions.get("partition0");
@@ -168,7 +168,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = (int)((dataCount / targetSize) + 1); // (80/20) + 1 = 5개
+		int expectedPartitions = (int) Math.ceil((double) dataCount / targetSize); // (80/20) + 1 = 5개
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		ExecutionContext partition0 = partitions.get("partition0");
@@ -197,7 +197,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = (int)((dataCount / targetSize) + 1); // (60/20) + 1 = 4개
+		int expectedPartitions = (int) Math.ceil((double) dataCount / targetSize); // (60/20) + 1 = 4개
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		System.out.println("정확한 배수 테스트 - 데이터: " + dataCount + "건 (TARGET_SIZE * 3), 파티션: " + expectedPartitions + "개");
@@ -213,7 +213,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = (int)((1L / targetSize) + 1); // (1/20) + 1 = 1개
+		int expectedPartitions = (int) Math.ceil((double) 1L / targetSize); ; // (1/20) + 1 = 1개
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		ExecutionContext partition0 = partitions.get("partition0");
@@ -234,7 +234,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = (int)((dataCount / targetSize) + 1); // (20/20) + 1 = 2개
+		int expectedPartitions = (int) Math.ceil((double) dataCount / targetSize); ; // (20/20) + 1 = 2개
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		System.out.println("TARGET_SIZE 정확한 데이터: " + dataCount + "건 → 파티션: " + expectedPartitions + "개");
@@ -251,7 +251,7 @@ class DynamicStockPartitionerTest {
 		Map<String, ExecutionContext> partitions = partitioner.partition(10);
 
 		// Then
-		int expectedPartitions = Math.min((int)((dataCount / targetSize) + 1), maxPartitionSize); // min(6, 5) = 5개
+		int expectedPartitions = Math.min((int) Math.ceil((double) dataCount / targetSize), maxPartitionSize); // min(6, 5) = 5개
 		assertThat(partitions).hasSize(expectedPartitions);
 
 		System.out.println("최대 파티션 경계값 테스트 - 데이터: " + dataCount + "건 → 파티션: " + expectedPartitions + "개");

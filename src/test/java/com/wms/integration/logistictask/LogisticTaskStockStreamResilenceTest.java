@@ -11,8 +11,8 @@ import com.wms.logisticTemplate.domain.model.LogisticType;
 import com.wms.stock.application.StockCtrlService;
 import com.wms.stock.application.StockEventStreamProcessor;
 import com.wms.stock.application.StockQueryService;
-import com.wms.stock.application.StockSyncEventService;
-import com.wms.stock.domain.event.StockSyncStatus;
+import com.wms.notification.application.StockSyncNotificationAdapter;
+import com.wms.notification.domain.model.StockSyncStatus;
 import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockDTO;
@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,7 +78,7 @@ class LogisticTaskStockStreamResilenceTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     @SpyBean
-    private StockSyncEventService stockSyncEventService;
+    private StockSyncNotificationAdapter stockSyncEventService;
 
     @SpyBean
     private StockEventStreamProcessor streamProcessor;
@@ -190,7 +189,7 @@ class LogisticTaskStockStreamResilenceTest {
 
         // Then: 처리 중 상태 확인
         verify(stockSyncEventService, timeout(2000))
-                .broadcastSyncStatus(eq(task.getId()), eq(StockSyncStatus.QUEUED), anyString());
+                .broadcastStockSyncStatus(eq(task.getId()), eq(StockSyncStatus.QUEUED), anyString());
 
         // 최종 완료 대기
         Awaitility.await()
@@ -204,7 +203,7 @@ class LogisticTaskStockStreamResilenceTest {
                 });
 
         verify(stockSyncEventService, timeout(10000))
-                .broadcastSyncStatus(eq(task.getId()), eq(StockSyncStatus.COMPLETED), anyString());
+                .broadcastStockSyncStatus(eq(task.getId()), eq(StockSyncStatus.COMPLETED), anyString());
 
         log.info("스트림 처리 지연 시나리오 완료");
     }
@@ -372,7 +371,7 @@ class LogisticTaskStockStreamResilenceTest {
 
         // 성공 이벤트가 충분히 발생했는지 확인
         verify(stockSyncEventService, timeout(20000).atLeast(taskCount))
-                .broadcastSyncStatus(anyLong(), eq(StockSyncStatus.COMPLETED), anyString());
+                .broadcastStockSyncStatus(anyLong(), eq(StockSyncStatus.COMPLETED), anyString());
 
         log.info("대용량 메시지 처리 시나리오 완료 - {} 개 작업 처리, {} 일에 걸쳐 분산.",
                 taskCount, (taskCount - 1) / 4 + 1);

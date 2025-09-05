@@ -75,10 +75,22 @@ class DynamicLogisticTaskPartitionerTest {
         Map<String, ExecutionContext> result = partitioner.partition(gridSize);
 
         // Then
-        assertThat(result).hasSize(1);
-        
-        ExecutionContext context = result.get("partition0");
-        assertThat(context.getLong("minId")).isEqualTo(1L);
-        assertThat(context.getLong("maxId")).isEqualTo(10L);
+        assertThat(result).hasSize(4);
+
+	    ExecutionContext context0 = result.get("partition0");
+	    assertThat(context0.getLong("minId")).isEqualTo(1L);
+	    assertThat(context0.getLong("maxId")).isEqualTo(2L);
+
+	    ExecutionContext context1 = result.get("partition1");
+	    assertThat(context1.getLong("minId")).isEqualTo(3L);
+	    assertThat(context1.getLong("maxId")).isEqualTo(4L);
+
+	    ExecutionContext context2 = result.get("partition2");
+	    assertThat(context2.getLong("minId")).isEqualTo(5L);
+	    assertThat(context2.getLong("maxId")).isEqualTo(6L);
+
+	    ExecutionContext context3 = result.get("partition3");
+	    assertThat(context3.getLong("minId")).isEqualTo(7L);
+	    assertThat(context3.getLong("maxId")).isEqualTo(10L); // 마지막 파티션은 끝까지
     }
 }

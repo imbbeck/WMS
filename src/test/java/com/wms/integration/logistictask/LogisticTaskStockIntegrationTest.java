@@ -23,8 +23,8 @@ import com.wms.logisticTemplate.domain.model.LogisticType;
 import com.wms.stock.application.StockCtrlService;
 import com.wms.stock.application.StockEventStreamProcessor;
 import com.wms.stock.application.StockQueryService;
-import com.wms.stock.application.StockSyncEventService;
-import com.wms.stock.domain.event.StockSyncStatus;
+import com.wms.notification.application.StockSyncNotificationAdapter;
+import com.wms.notification.domain.model.StockSyncStatus;
 import com.wms.stock.domain.model.Stock;
 import com.wms.stock.domain.repository.StockRepository;
 import com.wms.stock.dto.StockDTO;
@@ -81,7 +81,7 @@ public class LogisticTaskStockIntegrationTest {
 	private LocationRepository locationRepository;
 
 	@SpyBean
-	private StockSyncEventService stockSyncEventService;
+	private StockSyncNotificationAdapter stockSyncEventService;
 
 
 
@@ -279,7 +279,7 @@ public class LogisticTaskStockIntegrationTest {
 
 		// SSE 이벤트 발행 검증
 		verify(stockSyncEventService, timeout(5000).atLeastOnce())
-				.broadcastSyncStatus(eq(inboundTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
+				.broadcastStockSyncStatus(eq(inboundTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
 
 		log.info("입고 작업 완료 - 초기재고: {}, 최종재고: {}",
 				initialQuantity, initialQuantity + 20);
@@ -333,7 +333,7 @@ public class LogisticTaskStockIntegrationTest {
 
 		// SSE 이벤트 발행 검증
 		verify(stockSyncEventService, timeout(5000).atLeastOnce())
-				.broadcastSyncStatus(eq(outboundTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
+				.broadcastStockSyncStatus(eq(outboundTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
 
 		log.info("출고 작업 완료 - 초기재고: {}, 최종재고: {}",
 				initialQuantity, initialQuantity - 15);
@@ -411,7 +411,7 @@ public class LogisticTaskStockIntegrationTest {
 
 		// SSE 이벤트 발행 검증
 		verify(stockSyncEventService, timeout(5000).atLeastOnce())
-				.broadcastSyncStatus(eq(innerTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
+				.broadcastStockSyncStatus(eq(innerTask.getId()), eq(StockSyncStatus.COMPLETED), anyString());
 
 		log.info("내부 이동 완료 - 창고A: {} → {}, 창고B: {} → {}",
 				initialQuantityA, initialQuantityA - 25,
@@ -457,7 +457,7 @@ public class LogisticTaskStockIntegrationTest {
 				.pollInterval(2, TimeUnit.SECONDS)
 				.ignoreExceptions()
 				.untilAsserted(() -> verify(stockSyncEventService, atLeastOnce())
-						.broadcastSyncStatus(eq(outboundTask.getId()), eq(StockSyncStatus.FAILED), anyString()));
+						.broadcastStockSyncStatus(eq(outboundTask.getId()), eq(StockSyncStatus.FAILED), anyString()));
 
 		// 재고가 변경되지 않았는지 확인
 		Stock finalStock = stockQueryService.getStockByWarehouseAndWare(
@@ -536,7 +536,7 @@ public class LogisticTaskStockIntegrationTest {
 
 		// SSE 이벤트 검증
 		verify(stockSyncEventService, timeout(10000).atLeast(3))
-				.broadcastSyncStatus(anyLong(), eq(StockSyncStatus.COMPLETED), anyString());
+				.broadcastStockSyncStatus(anyLong(), eq(StockSyncStatus.COMPLETED), anyString());
 
 		log.info("동시성 시나리오 완료 - 초기 창고A: {}, 최종 창고A: {}, 초기 창고B: {}, 최종 창고B: {}",
 				initialQuantity, initialQuantity - 25, initialQuantityB, initialQuantityB + 25);
@@ -563,7 +563,7 @@ public class LogisticTaskStockIntegrationTest {
 				.ignoreExceptions()
 				.untilAsserted(() -> {
 					verify(stockSyncEventService, atLeast(2))
-							.broadcastSyncStatus(taskIdCaptor.capture(), statusCaptor.capture(), anyString());
+							.broadcastStockSyncStatus(taskIdCaptor.capture(), statusCaptor.capture(), anyString());
 
 					// 캡처된 상태들 검증
 					assertThat(statusCaptor.getAllValues()).contains(
