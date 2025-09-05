@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Import({TestSecurityConfig.class, TestConfig.class})
@@ -44,8 +45,8 @@ class LocationControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@MockBean
-	private DomainCacheManager<Long, String> domainCacheManager;
+	@MockBean(name = "locationCacheManager")
+	private DomainCacheManager<Long, String> locationCacheManager;
 
 	@Test
 	@DisplayName("POST /locations - 장소 생성 요청을 성공하고 201 Created를 반환한다.")

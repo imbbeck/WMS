@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -361,6 +362,7 @@ class LogisticTaskControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /logistic-tasks/worker/{workerId} - 작업자별 물류 작업 조회 성공")
     void getTasksByWorkerId_Success() throws Exception {
         // Given

@@ -26,6 +26,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserInfoController.class)
@@ -39,8 +40,8 @@ class UserInfoControllerTest {
 
     @MockBean
     private UserInfoService userInfoService;
-    @MockBean
-    private DomainCacheManager<Long, String> domainCacheManager;
+    @MockBean(name = "userInfoCacheManager")
+    private DomainCacheManager<Long, String> userInfoCacheManager;
 
     @Test
     @DisplayName("POST /users - 사용자 생성 성공")

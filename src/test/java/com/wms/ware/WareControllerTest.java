@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Import({TestSecurityConfig.class, TestConfig.class})
@@ -39,8 +40,8 @@ class WareControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private DomainCacheManager<Long, String> domainCacheManager;
+    @MockBean(name = "wareCacheManager")
+    private DomainCacheManager<Long, String> wareCacheManager;
 
     @Test
     @DisplayName("POST /wares - 물품 생성 성공 시 201 Created 반환")
