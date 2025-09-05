@@ -2,7 +2,7 @@ package com.wms.logisticTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.logisticTemplate.application.LogisticTemplateService;
 import com.wms.logisticTemplate.domain.model.LogisticTemplate;

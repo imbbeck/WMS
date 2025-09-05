@@ -2,7 +2,7 @@ package com.wms.userInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.userInfo.application.UserInfoService;
 import com.wms.userInfo.domain.model.Password;
@@ -26,7 +26,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserInfoController.class)

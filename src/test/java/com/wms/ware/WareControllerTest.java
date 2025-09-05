@@ -2,7 +2,7 @@ package com.wms.ware;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.applicationInfra.idnameMapCashing.DomainCacheManager;
 import com.wms.ware.application.WareService;
 import com.wms.ware.domain.model.Ware;
@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Import({TestSecurityConfig.class, TestConfig.class})

@@ -1,4 +1,4 @@
-package com.wms.config;
+package com.wms.applicationInfra.config;
 
 import com.wms.applicationInfra.idnameMapCashing.concrete.LocationCacheManager;
 import com.wms.applicationInfra.idnameMapCashing.concrete.UserInfoCacheManager;

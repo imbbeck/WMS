@@ -2,7 +2,7 @@ package com.wms.logisticTask.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.logisticTask.application.LogisticTaskService;
 import com.wms.logisticTask.domain.exception.LogisticTaskException;
 import com.wms.logisticTask.domain.model.LogisticTask;

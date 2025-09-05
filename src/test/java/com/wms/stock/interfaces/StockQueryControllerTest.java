@@ -1,7 +1,7 @@
 package com.wms.stock.interfaces;
 
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.location.domain.exception.LocationException;
 import com.wms.stock.application.StockQueryService;
 import com.wms.stock.domain.exception.StockException;

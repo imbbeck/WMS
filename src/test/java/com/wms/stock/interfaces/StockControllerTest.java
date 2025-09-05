@@ -2,7 +2,7 @@ package com.wms.stock.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wms.applicationInfra.config.TestSecurityConfig;
-import com.wms.config.TestConfig;
+import com.wms.applicationInfra.config.TestConfig;
 import com.wms.stock.application.StockCtrlService;
 import com.wms.stock.domain.exception.StockException;
 import com.wms.stock.domain.model.Stock;
