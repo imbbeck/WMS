@@ -66,10 +66,10 @@ public class WebConfig implements WebMvcConfigurer {
                 httpResponse.setHeader("X-Content-Type-Options", "nosniff");
                 
                 // CORS 헤더 (필요시)
-                httpResponse.setHeader("Access-Control-Allow-Origin", "*");
-                httpResponse.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-                httpResponse.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-                httpResponse.setHeader("Access-Control-Expose-Headers", "Content-Type");
+//                httpResponse.setHeader("Access-Control-Allow-Origin", "*");
+//                httpResponse.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+//                httpResponse.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//                httpResponse.setHeader("Access-Control-Expose-Headers", "Content-Type");
             }
             
             chain.doFilter(request, response);

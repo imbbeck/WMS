@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -22,7 +21,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -44,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		try {
 			String jwt = extractToken(request);
-			log.debug("JWT: {}", jwt);
 
 			if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
 				String username = jwtProvider.getUsernameFromToken(jwt);
